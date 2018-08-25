@@ -1,0 +1,33 @@
+digraph G {
+  layout="dot";
+  rankdir="TB";
+  margin="0.2";
+  node[fontsize="24"];
+  object[label="object"];
+  environment[label="environment"];
+  mobility[label="mobility"];
+  pr[label="received power"];
+  interference[label="interference"];
+  fer[label="frame error rate"];
+  loss[label="packet loss rate"];
+  retr[label="retransmissions"];
+  op[label="oparating rate"];
+  delay[label="delay"];
+  jitter[label="jitter"];
+  bandwidth[label="bandwidth"];
+  object -> mobility;
+  mobility -> environment;
+  environment -> pr;
+  pr -> interference[style="dotted"];
+  pr -> fer;
+  interference -> fer[style="dotted"];
+  fer -> loss;
+  fer -> retr;
+  fer -> op;
+  op -> delay;
+  op -> jitter;
+  delay -> bandwidth;
+  jitter -> bandwidth;
+  { rank=same; loss; retr; op; }
+  { rank=same; delay; jitter; }
+}

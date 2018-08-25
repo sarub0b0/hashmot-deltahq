@@ -1,0 +1,99 @@
+<qomet_scenario duration='0.5' step='0.1'>
+  <node name='node0001' type='regular' connection='infrastructure' adapter='orinoco' x='0' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0002' type='regular' connection='infrastructure' adapter='orinoco' x='10' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0003' type='regular' connection='infrastructure' adapter='orinoco' x='20' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0004' type='regular' connection='infrastructure' adapter='orinoco' x='30' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0005' type='regular' connection='infrastructure' adapter='orinoco' x='40' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0006' type='regular' connection='infrastructure' adapter='orinoco' x='50' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0007' type='regular' connection='infrastructure' adapter='orinoco' x='60' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0008' type='regular' connection='infrastructure' adapter='orinoco' x='70' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0009' type='regular' connection='infrastructure' adapter='orinoco' x='80' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0010' type='regular' connection='infrastructure' adapter='orinoco' x='90' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0011' type='regular' connection='infrastructure' adapter='orinoco' x='100' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0012' type='regular' connection='infrastructure' adapter='orinoco' x='110' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0013' type='regular' connection='infrastructure' adapter='orinoco' x='120' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0014' type='regular' connection='infrastructure' adapter='orinoco' x='130' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0015' type='regular' connection='infrastructure' adapter='orinoco' x='140' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0016' type='regular' connection='infrastructure' adapter='orinoco' x='150' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0017' type='regular' connection='infrastructure' adapter='orinoco' x='160' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0018' type='regular' connection='infrastructure' adapter='orinoco' x='170' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0019' type='regular' connection='infrastructure' adapter='orinoco' x='180' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0020' type='regular' connection='infrastructure' adapter='orinoco' x='190' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0021' type='regular' connection='infrastructure' adapter='orinoco' x='200' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0022' type='regular' connection='infrastructure' adapter='orinoco' x='210' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0023' type='regular' connection='infrastructure' adapter='orinoco' x='220' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0024' type='regular' connection='infrastructure' adapter='orinoco' x='230' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0025' type='regular' connection='infrastructure' adapter='orinoco' x='240' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0026' type='regular' connection='infrastructure' adapter='orinoco' x='250' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0027' type='regular' connection='infrastructure' adapter='orinoco' x='260' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0028' type='regular' connection='infrastructure' adapter='orinoco' x='270' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0029' type='regular' connection='infrastructure' adapter='orinoco' x='280' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0030' type='regular' connection='infrastructure' adapter='orinoco' x='290' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0031' type='regular' connection='infrastructure' adapter='orinoco' x='300' y='0' z='0' Pt='20' internal_delay='1'/>
+  <node name='node0032' type='regular' connection='infrastructure' adapter='orinoco' x='310' y='0' z='0' Pt='20' internal_delay='1'/>
+  <environment name='env_outdoor' is_dynamic='false' alpha='3.2' sigma='0.0' W='0.0' noise_power='-100.0'/>
+  <motion node_name='node0001' speed_x='9' speed_y='4' speed_z='4' start_time='0' stop_time='20'/>
+  <motion node_name='node0002' speed_x='4' speed_y='3' speed_z='3' start_time='0' stop_time='20'/>
+  <motion node_name='node0003' speed_x='3' speed_y='0' speed_z='7' start_time='0' stop_time='20'/>
+  <motion node_name='node0004' speed_x='8' speed_y='4' speed_z='1' start_time='0' stop_time='20'/>
+  <motion node_name='node0005' speed_x='0' speed_y='7' speed_z='5' start_time='0' stop_time='20'/>
+  <motion node_name='node0006' speed_x='2' speed_y='6' speed_z='9' start_time='0' stop_time='20'/>
+  <motion node_name='node0007' speed_x='8' speed_y='7' speed_z='9' start_time='0' stop_time='20'/>
+  <motion node_name='node0008' speed_x='7' speed_y='6' speed_z='5' start_time='0' stop_time='20'/>
+  <motion node_name='node0009' speed_x='0' speed_y='8' speed_z='0' start_time='0' stop_time='20'/>
+  <motion node_name='node0010' speed_x='0' speed_y='9' speed_z='0' start_time='0' stop_time='20'/>
+  <motion node_name='node0011' speed_x='8' speed_y='8' speed_z='3' start_time='0' stop_time='20'/>
+  <motion node_name='node0012' speed_x='7' speed_y='9' speed_z='8' start_time='0' stop_time='20'/>
+  <motion node_name='node0013' speed_x='5' speed_y='4' speed_z='7' start_time='0' stop_time='20'/>
+  <motion node_name='node0014' speed_x='2' speed_y='6' speed_z='4' start_time='0' stop_time='20'/>
+  <motion node_name='node0015' speed_x='7' speed_y='1' speed_z='6' start_time='0' stop_time='20'/>
+  <motion node_name='node0016' speed_x='9' speed_y='6' speed_z='6' start_time='0' stop_time='20'/>
+  <motion node_name='node0017' speed_x='8' speed_y='9' speed_z='4' start_time='0' stop_time='20'/>
+  <motion node_name='node0018' speed_x='7' speed_y='9' speed_z='6' start_time='0' stop_time='20'/>
+  <motion node_name='node0019' speed_x='1' speed_y='7' speed_z='4' start_time='0' stop_time='20'/>
+  <motion node_name='node0020' speed_x='5' speed_y='9' speed_z='9' start_time='0' stop_time='20'/>
+  <motion node_name='node0021' speed_x='3' speed_y='1' speed_z='6' start_time='0' stop_time='20'/>
+  <motion node_name='node0022' speed_x='5' speed_y='3' speed_z='3' start_time='0' stop_time='20'/>
+  <motion node_name='node0023' speed_x='0' speed_y='1' speed_z='9' start_time='0' stop_time='20'/>
+  <motion node_name='node0024' speed_x='3' speed_y='4' speed_z='5' start_time='0' stop_time='20'/>
+  <motion node_name='node0025' speed_x='7' speed_y='5' speed_z='2' start_time='0' stop_time='20'/>
+  <motion node_name='node0026' speed_x='9' speed_y='9' speed_z='7' start_time='0' stop_time='20'/>
+  <motion node_name='node0027' speed_x='6' speed_y='5' speed_z='2' start_time='0' stop_time='20'/>
+  <motion node_name='node0028' speed_x='2' speed_y='9' speed_z='4' start_time='0' stop_time='20'/>
+  <motion node_name='node0029' speed_x='0' speed_y='6' speed_z='8' start_time='0' stop_time='20'/>
+  <motion node_name='node0030' speed_x='5' speed_y='9' speed_z='7' start_time='0' stop_time='20'/>
+  <motion node_name='node0031' speed_x='5' speed_y='1' speed_z='7' start_time='0' stop_time='20'/>
+  <motion node_name='node0032' speed_x='0' speed_y='4' speed_z='7' start_time='0' stop_time='20'/>
+  <connection from_node='node0001' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0002' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0003' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0004' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0005' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0006' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0007' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0008' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0009' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0010' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0011' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0012' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0013' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0014' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0015' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0016' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0017' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0018' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0019' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0020' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0021' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0022' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0023' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0024' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0025' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0026' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0027' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0028' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0029' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0030' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0031' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+  <connection from_node='node0032' to_node='auto_connect' through_environment='env_outdoor' standard='802.11b' packet_size='1024' consider_interference='false'/>
+</qomet_scenario>

@@ -1,0 +1,93 @@
+deltaQ WARNING: deltaQ.c, line 389: Could not identify revision number.
+MEMORY: Allocated 2577.62 MB (2702829680 bytes) for internal scenario storage.
+MEMORY: Allocated 40.00 MB (41943048 bytes) for connection state storage.
+MEMORY: Allocated 1960.00 MB (2055208960 bytes) for connection storage.
+MEMORY: Allocated 6.60 MB (6922240 bytes) for node storage.
+MEMORY: Allocated 0.14 MB (144552 bytes) for object storage.
+MEMORY: Allocated 610.86 MB (640532480 bytes) for motion storage.
+MEMORY: Allocated 0.00 MB (4536 bytes) for environment storage.
+MEMORY: Allocated 1.91 KB (1960 bytes) for connection_class size.
+MEMORY: Allocated 6.60 KB (6760 bytes) for node_class size.
+MEMORY: Allocated 141.16 KB (144552 bytes) for object_class size.
+MEMORY: Allocated 610.86 KB (625520 bytes) for motion_class size.
+MEMORY: Allocated 4.43 KB (4536 bytes) for environment_class size.
+{"init": [[{"center": {"id": 0, "x": 1.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 1}, {"id": 2}, {"id": 3}]}], [{"center": {"id": 1, "x": 2.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 0}, {"id": 2}, {"id": 3}, {"id": 4}]}], [{"center": {"id": 2, "x": 3.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 0}, {"id": 1}, {"id": 3}, {"id": 4}, {"id": 5}]}], [{"center": {"id": 3, "x": 4.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 0}, {"id": 1}, {"id": 2}, {"id": 4}, {"id": 5}, {"id": 6}]}], [{"center": {"id": 4, "x": 5.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 5}, {"id": 6}, {"id": 7}]}], [{"center": {"id": 5, "x": 6.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 2}, {"id": 3}, {"id": 4}, {"id": 6}, {"id": 7}, {"id": 8}]}], [{"center": {"id": 6, "x": 7.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 3}, {"id": 4}, {"id": 5}, {"id": 7}, {"id": 8}, {"id": 9}]}], [{"center": {"id": 7, "x": 8.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 4}, {"id": 5}, {"id": 6}, {"id": 8}, {"id": 9}]}], [{"center": {"id": 8, "x": 9.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 5}, {"id": 6}, {"id": 7}, {"id": 9}]}], [{"center": {"id": 9, "x": 10.0, "y": 0.0, "r": 243}}, {"neighbor": [{"id": 6}, {"id": 7}, {"id": 8}]}]]}
+own 0
+1 2 3 
+conn_i=0 9 1 18 2 27 
+own 1
+0 2 3 4 
+conn_i=9 0 10 19 11 28 12 37 
+own 2
+0 1 3 4 5 
+conn_i=18 1 19 10 20 29 21 38 22 47 
+own 3
+0 1 2 4 5 6 
+conn_i=27 2 28 11 29 20 30 39 31 48 32 57 
+own 4
+1 2 3 5 6 7 
+conn_i=37 12 38 21 39 30 40 49 41 58 42 67 
+own 5
+2 3 4 6 7 8 
+conn_i=47 22 48 31 49 40 50 59 51 68 52 77 
+own 6
+3 4 5 7 8 9 
+conn_i=57 32 58 41 59 50 60 69 61 78 62 87 
+own 7
+4 5 6 8 9 
+conn_i=67 42 68 51 69 60 70 79 71 88 
+own 8
+5 6 7 9 
+conn_i=77 52 78 61 79 70 80 89 
+own 9
+6 7 8 
+conn_i=87 62 88 71 89 80 
+done connection_init_neighbor
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0005' to_node_index='5' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0005' from_node_index='5' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0000' to_node_index='0' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0000' from_node_index='0' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0005' to_node_index='5' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0005' from_node_index='5' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0006' to_node_index='6' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0006' from_node_index='6' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0001' to_node_index='1' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0001' from_node_index='1' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0002' to_node_index='2' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0002' from_node_index='2' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0003' to_node_index='3' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0003' from_node_index='3' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0005' to_node_index='5' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0005' from_node_index='5' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0006' to_node_index='6' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0006' from_node_index='6' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0004' from_node_index='4' from_interface=0 to_node='node0007' to_node_index='7' to_interface =  0 through_environment = 'env_outdoor'
+  Connection: from_node='node0007' from_node_index='7' from_interface=0 to_node='node0004' to_node_index='4' to_interface =  0 through_environment = 'env_outdoor'

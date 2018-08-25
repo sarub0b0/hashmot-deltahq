@@ -1,0 +1,15 @@
+<!-- Example scenario file for QOMET v1.3-beta -->
+
+<qomet_scenario duration="20" step="0.1">
+
+  <node name="node001" type="regular" id="2" connection="infrastructure" adapter="orinoco" x="0" y="10" z="0" Pt="20" internal_delay="1"/>
+  <node name="node002" type="regular" id="2" connection="infrastructure" adapter="orinoco" x="0" y="10" z="0" Pt="20" internal_delay="1"/>
+
+  <environment name="env_outdoor" is_dynamic="false" alpha="3.200" sigma="0.000" W="0.000" noise_power="-100.000"/>
+
+  <motion node_name="node002" speed_x="1.0" speed_y="0" speed_z="0" start_time="0" stop_time="20"/>
+
+  <connection from_node="node001" to_node="auto_connect" through_environment="env_outdoor" standard="802.11b" packet_size="1024" consider_interference="false" />
+  <connection from_node="node002" to_node="auto_connect" through_environment="env_outdoor" standard="802.11b" packet_size="1024" consider_interference="false" />
+
+</qomet_scenario>
