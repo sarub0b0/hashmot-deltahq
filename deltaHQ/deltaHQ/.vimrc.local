@@ -1,0 +1,3 @@
+let g:ale_linters = {'c': ['clang']}
+let g:ale_c_clang_options = '-Wall -D_GNU_SOURCE -I../include -Wextra -Wendif-labels -Wfloat-equal -Wnon-virtual-dtor -Wold-style-cast -Wpointer-arith -Wredundant-decls -Wswitch-default -Wswitch-enum -Wvariadic-macros -Wwrite-strings -Wunused-private-field -Wno-variadic-macros'
+

@@ -54,8 +54,6 @@ void socket_finalize(bc_info_t *info) {
     /* ソケット破棄 */
     if (info->sd != 0) close(info->sd);
     info->msg = NULL;
-
-    return;
 }
 
 /*!

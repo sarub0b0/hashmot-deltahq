@@ -21,13 +21,21 @@ if __name__ == '__main__':
 
     time.sleep(1)
 
+    if 2 < len(sys.argv):
+        loop_max = int(sys.argv[2])
+    else:
+        loop_max = 0
+
     loop_count = 0
     while True:
-        #  if 3 < loop_count:
-        #      sys.stdout.write('{"finish":"finish"}')
-        #      sys.stdout.write("\n")
-        #      sys.stdout.flush()
-        #      sys.exit(1)
+        if 0 < loop_max:
+            if loop_max < loop_count:
+                sys.stdout.write('{"finish":"finish"}')
+                sys.stdout.write("\n")
+                sys.stdout.flush()
+                time.sleep(2)
+
+                sys.exit(1)
 
         idx = random.randint(0, len(json_init['init']['node']) - 1)
 

@@ -825,7 +825,7 @@ void *scenario_deltaQ(void *arg) {
 
     fprintf(stdout, "pthread_exit scenario_deltaQ\n");
     pthread_exit(NULL);
-    pthread_detach(pthread_self());
+    // pthread_detach(pthread_self());
     return NULL;
 }
 

@@ -1,0 +1,3 @@
+/root/work/hashmot/deltaHQ/build/CMakeFiles/rebuild_cache.dir
+/root/work/hashmot/deltaHQ/build/CMakeFiles/deltaHQ.dir
+/root/work/hashmot/deltaHQ/build/CMakeFiles/edit_cache.dir

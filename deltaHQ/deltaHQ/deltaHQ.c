@@ -38,6 +38,7 @@
 #include <json.h>
 #include <input.h>
 #include <socket.h>
+#include <jansson.h>
 
 //#define DISABLE_EMPTY_TIME_RECORDS
 
@@ -362,6 +363,8 @@ int main(int argc, char **argv) {
              (IS_BETA == TRUE) ? "beta " : "",
              svn_revision_str);
 
+    printf("JANSSON VERSION %s\n", JANSSON_VERSION);
+
     memset(ipaddr, 0, sizeof(char) * 16);
     ////////////////////////////////////////////////////////////
     // option parsing
@@ -515,19 +518,41 @@ int main(int argc, char **argv) {
     pthread_mutex_t ibuf_mutex_queue;
     pthread_cond_t ibuf_cond;
 
+    pthread_mutex_t ibuf_mut_write;
+    pthread_cond_t ibuf_cond_write;
+
     pthread_mutex_init(&ibuf_mutex_value, NULL);
     pthread_mutex_init(&ibuf_mutex_queue, NULL);
     pthread_cond_init(&ibuf_cond, NULL);
 
+    pthread_mutex_init(&ibuf_mut_write, NULL);
+    pthread_cond_init(&ibuf_cond_write, NULL);
+
     input_buffer_t ibuf;
-    ibuf.bufs_size   = 20;
-    ibuf.buf_size    = 200000;
-    ibuf.read_pos    = 0;
-    ibuf.write_pos   = 0;
-    ibuf.buf_count   = 0;
+    ibuf.bufs_size = 20;
+    ibuf.buf_size  = 200000;
+    ibuf.read_pos  = 0;
+    ibuf.write_pos = 0;
+    ibuf.buf_count = 0;
+    // ibuf.is_writable        = 1;
     ibuf.mutex_value = &ibuf_mutex_value;
     ibuf.mutex_queue = &ibuf_mutex_queue;
     ibuf.cond        = &ibuf_cond;
+    // ibuf.mutex_write_buffer = &ibuf_mut_write;
+    // ibuf.cond_write_buffer  = &ibuf_cond_write;
+    // ibuf.read_idx           = 0;
+    // ibuf.write_idx          = 0;
+
+    meteor_param_t *meteor_param = NULL;
+
+    struct connection_class **neighbor = NULL;
+    int neighbor_number                = 0;
+
+    int *center_ids    = NULL;
+    int **neighbor_ids = NULL;
+
+    int **neighbor_ids_bmp      = NULL;
+    int **prev_neighbor_ids_bmp = NULL;
 
     ////////////////////////////////////////////////////////////
     // open test json file
@@ -548,21 +573,10 @@ int main(int argc, char **argv) {
     pthread_create(&pt_input_buf, NULL, thread_buffer_write, &ibuf);
 
     if (json_init_scenario(scenario, &ibuf) == ERROR) {
-        WARNING("init_scenario_json");
+        WARNING("json_init_scenario");
         goto ERROR_HANDLE;
     }
-    // WARNING("json_init_scenario done");
-
-    meteor_param_t *meteor_param = NULL;
-
-    struct connection_class **neighbor = NULL;
-    int neighbor_number                = 0;
-
-    int *center_ids    = NULL;
-    int **neighbor_ids = NULL;
-
-    int **neighbor_ids_bmp      = NULL;
-    int **prev_neighbor_ids_bmp = NULL;
+    WARNING("json_init_scenario done");
 
     // WARNING("malloc start");
     meteor_param = (meteor_param_t *) malloc(sizeof(meteor_param_t) *
@@ -981,7 +995,9 @@ int main(int argc, char **argv) {
     for (int i = 0; i < thread_number; i++) {
         pthread_join(pt_scenario[i], NULL);
     }
+
     pthread_join(pt_input_buf, NULL);
+
     // FINISH:
     if (send_result_to_meteor(meteor_param,
                               center_ids,
@@ -1092,7 +1108,7 @@ FINAL_HANDLE:
     // pthread_cond_destroy(&cond_assign);
     // pthread_cond_destroy(&cond_calc);
 
-    socket_finalize(&info);
+    // socket_finalize(&info);
 
     // close output files
     if (scenario_file != NULL) {

@@ -1,0 +1,16 @@
+GPATH
+GRTAGS
+GTAGS
+.DS_Store
+*.o
+*.bin
+*.out
+*.log
+.style.yapf
+__pycache__
+*.bak
+core
+core.*
+*.a
+log
+
