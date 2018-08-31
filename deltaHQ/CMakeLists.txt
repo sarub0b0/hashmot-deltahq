@@ -14,10 +14,10 @@ endif(APPLE)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_C_FLAGS "-Wall -fPIE -D_GNU_SOURCE -DMESSAGE_WARNING")
-set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fPIE")
-# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -s -DMESSAGE_WARNING")
+set(CMAKE_C_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
+# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fPIE")
+set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
+set(CMAKE_C_FLAGS_RELEASE "-O0 -s -DMESSAGE_WARNING")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g3 -Og -pg")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
 

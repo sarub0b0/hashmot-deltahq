@@ -7,6 +7,7 @@ A. Andoni and P. Indyk, "Near-optimal hashing algorithms for approximate nearest
 http://people.csail.mit.edu/indyk/p117-andoni.pdf
 """
 
+import pprint
 import random
 from collections import defaultdict
 
@@ -31,10 +32,12 @@ class LSHIndex:
             hash_funcs = [[
                 self.hash_family.create_hash_func() for h in range(self.k)
             ] for l in range(self.L, L)]
+
             self.hash_tables.extend(
                 [(g, defaultdict(lambda: [])) for g in hash_funcs])
 
     def hash(self, g, p):
+        pprint.pprint(self.hash_family.combine([h.hash(p) for h in g]))
         return self.hash_family.combine([h.hash(p) for h in g])
 
     def index(self, points):
@@ -75,7 +78,8 @@ class LSHIndex:
 
         temp_candi = []
         for i in candidates:
-            if metric(q, self.points[i]) <= self.radius and metric(q, self.points[i]) != 0.0:
+            if metric(q, self.points[i]) <= self.radius and metric(
+                    q, self.points[i]) != 0.0:
                 temp_candi.append(i)
 
         candidates = temp_candi
@@ -156,6 +160,7 @@ class L2Hash:
         self.w = w
 
     def hash(self, vec):
+        print(int((dot(vec, self.r) + self.b) / self.w), vec, self.r)
         return int((dot(vec, self.r) + self.b) / self.w)
 
 
