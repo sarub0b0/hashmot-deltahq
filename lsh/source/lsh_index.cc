@@ -1,5 +1,6 @@
 #include <set>
 
+#include <global.hh>
 #include <lsh_index.hh>
 
 namespace neighbor_search {
@@ -8,6 +9,7 @@ LSHIndex::LSHIndex(float w, int d, int k, int L, int radius)
     : w_(w), d_(d), k_(k), L_(0), radius_(radius) {
     hash_family_ = new L2HashFamily(w_, d_);
     Resize(L);
+    L_ = L;
 }
 LSHIndex::~LSHIndex() {
 }
@@ -20,8 +22,7 @@ void LSHIndex::Resize(int L) {
         for (int i = L_; i < L; i++) {
             hash_func.push_back(vector<L2Hash>());
             for (int j = 0; j < k_; j++) {
-                int l = hash_func.size();
-                hash_func[l - 1].push_back(hash_family_->CreateHashFunc());
+                hash_func[i].push_back(hash_family_->CreateHashFunc());
             }
         }
 
@@ -33,7 +34,7 @@ void LSHIndex::Resize(int L) {
     }
 }
 
-string LSHIndex::Hash(vector<L2Hash> g, vector<float> v) {
+string LSHIndex::Hash(vector<L2Hash> &g, vector<float> &v) {
     vector<int> hashes;
     for (auto &&h : g) {
         point p(v[0], v[1]);
@@ -44,7 +45,7 @@ string LSHIndex::Hash(vector<L2Hash> g, vector<float> v) {
     return hash_family_->Combine(hashes);
 }
 
-void LSHIndex::Index(vector<vector<float>> points) {
+void LSHIndex::Index(vector<vector<float>> &points) {
     points_ = points;
     for (auto &&table : hash_table_) {
         for (unsigned int i = 0; i < points.size(); i++) {
@@ -53,13 +54,36 @@ void LSHIndex::Index(vector<vector<float>> points) {
     }
 }
 
-void LSHIndex::Update() {
+void LSHIndex::Update(int id, vector<float> &point) {
+
+    for (auto &&table : hash_table_) {
+        table.table[Hash(table.g, points_[id])].remove(id);
+        if (table.table[Hash(table.g, points_[id])].size() == 0) {
+            table.table.erase(Hash(table.g, points_[id]));
+        }
+    }
+
+    points_[id] = point;
+
+    for (auto &&table : hash_table_) {
+        table.table[Hash(table.g, point)].push_back(id);
+
+        // for (auto itr = table.table.begin(); itr != table.table.end();
+        //      ++itr) {
+
+        //     printf("key=%s: ", itr->first.c_str());
+        //     for (auto &&l : itr->second) {
+        //         printf("%d ", l);
+        //     }
+        //     puts("");
+        // }
+    }
 }
 
-vector<int> LSHIndex::Query(vector<float> q) {
+vector<int> LSHIndex::Query(vector<float> &q) {
     set<int> temp_candidate;
 
-    vector<int> match;
+    list<int> match;
     for (auto &&table : hash_table_) {
         match = table.table[Hash(table.g, q)];
         temp_candidate.insert(match.begin(), match.end());
@@ -83,7 +107,16 @@ vector<int> LSHIndex::Query(vector<float> q) {
         }
     }
 
+    puts("");
     return candidate;
+}
+
+bool LSHIndex::IsSameRadius(int radius) {
+    if (radius_ == radius) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 } // namespace neighbor_search

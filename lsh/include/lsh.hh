@@ -14,15 +14,14 @@ namespace neighbor_search {
 
 class LSH : public NeighborSearch {
    public:
-    LSH(float w, int d, int k, int L);
+    LSH(int d, int k, int L);
     ~LSH();
-    void Init(Value *object, Json *json);
-    void Update(Value *object, Json *json);
-    void GetNeighbor(Json *json);
-    void SendDeltaHQ(vector<int> neighbor, Json *json, string key);
+    void Init(const Value &json);
+    void Update(const Value &json);
+    void GetNeighbor(const Value &json);
+    void SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key);
 
    private:
-    float w_;
     int d_;
     int k_;
     int L_;

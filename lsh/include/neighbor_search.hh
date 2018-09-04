@@ -14,16 +14,18 @@ class NeighborSearch {
         fprintf(stderr, "NeighborSearch Destructor\n");
     };
 
-    virtual void Init(Value *object, Json *json) {
+    virtual void Init(const Value &json) {
         fprintf(stderr, "NeighborSearch Init\n");
     };
-    virtual void Update(Value *object, Json *json) {
+    virtual void Update(const Value &json) {
         fprintf(stderr, "NeighborSearch Update\n");
     };
-    virtual void GetNeighbor(Json *json) {
+    virtual void GetNeighbor(const Value &json) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
     };
-    virtual void SendDeltaHQ(vector<int> neighbor, Json *json, string key) {
+    virtual void SendDeltaHQ(vector<int> &neighbor,
+                             const Value &json,
+                             string &key) {
         fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
     };
 };

@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
         x = json_init['init']['node'][idx]['x']
         y = json_init['init']['node'][idx]['y']
+        r = json_init['init']['node'][idx]['radius']
 
         #  x = round(random.uniform(x - speed, y + speed), 1)
         #  y = round(random.uniform(y - speed, y + speed), 1)
@@ -50,12 +51,13 @@ if __name__ == '__main__':
         json_update['id'] = idx
         json_update['x'] = x
         json_update['y'] = y
+        json_update['r'] = r
+
 
         json_init['init']['node'][idx]['x'] = x
         json_init['init']['node'][idx]['y'] = y
 
-        update = {'update': []}
-        update['update'].append(json_update)
+        update = {'update': json_update}
 
         #  idx = 1
         #  x = json_init['init']['node'][idx]['x']

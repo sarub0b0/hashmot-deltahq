@@ -9,28 +9,24 @@
 
 namespace neighbor_search {
 
-LSH::LSH(float w, int d, int k, int L) : w_(w), d_(d), k_(k), L_(L) {
+LSH::LSH(int d, int k, int L) : d_(d), k_(k), L_(L) {
 }
 
 LSH::~LSH() {
 }
-void LSH::Init(Value *object, Json *json) {
+void LSH::Init(const Value &json) {
     fprintf(stderr, "LSH Init\n");
 
     vector<vector<float>> points;
 
-    Value *array;
-    array = Pointer("/init/node").Get(*json);
-
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
 
-    json->Accept(writer);
+    json.Accept(writer);
 
-    // printf("%s\n", buffer.GetString());
+    printf("%s\n", buffer.GetString());
 
-    for (auto &&n : array->GetArray()) {
-        // printf("radius=%d\n", n["radius"].GetInt());
+    for (auto &&n : json["node"].GetArray()) {
         assert(n["radius"].IsNumber());
         radius_.insert(n["radius"].GetInt());
 
@@ -40,16 +36,51 @@ void LSH::Init(Value *object, Json *json) {
     }
 
     for (auto &&r : radius_) {
-        lsh_.push_back(new LSHIndex(w_, d_, k_, L_, r));
+        lsh_.push_back(new LSHIndex(r * 1.1, d_, k_, L_, r));
         lsh_[lsh_.size() - 1]->Index(points);
     }
 }
-void LSH::Update(Value *object, Json *json) {
-    // TODO 更新処理の作成
+void LSH::Update(const Value &json) {
+    int id, r;
+    float x, y;
+    id = json["id"].GetInt();
+    x  = json["x"].GetDouble();
+    y  = json["y"].GetDouble();
+    r  = json["r"].GetInt();
+
+    for (auto &&lsh : lsh_) {
+        if (lsh->IsSameRadius(r)) {
+            vector<float> point{x, y};
+
+            lsh->Update(id, point);
+        }
+    }
 }
-void LSH::GetNeighbor(Json *json) {
+
+void LSH::GetNeighbor(const Value &json) {
+    int id, r;
+    float x, y;
+    id = json["id"].GetInt();
+    x  = json["x"].GetDouble();
+    y  = json["y"].GetDouble();
+    r  = json["r"].GetInt();
+
+    vector<int> neighbor;
+    for (auto &&lsh : lsh_) {
+        if (lsh->IsSameRadius(r)) {
+            vector<float> point{x, y};
+
+            neighbor = lsh->Query(point);
+        }
+    }
+
+    printf("neighbor: ");
+    for (auto &&n : neighbor) {
+        printf("%d ", n);
+    }
+    puts("");
 }
-void LSH::SendDeltaHQ(vector<int> neighbor, Json *json, string key) {
+void LSH::SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key) {
 }
 
 } // namespace neighbor_search

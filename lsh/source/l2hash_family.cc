@@ -9,8 +9,9 @@ L2HashFamily::L2HashFamily() : w_(0), d_(0) {
 
 L2HashFamily::L2HashFamily(float w, int d) : w_(w), d_(d) {
     // engine_ = std::default_random_engine(seed_gen_());
-    engine_ = mt19937(seed_gen_());
-    gauss_  = normal_distribution<float>(0.0, 1.0);
+    engine_  = mt19937(seed_gen_());
+    gauss_   = normal_distribution<>(0.0, 1.0);
+    uniform_ = uniform_real_distribution<>(0.0, w_);
 }
 
 L2HashFamily::~L2HashFamily() {
@@ -28,11 +29,10 @@ vector<float> L2HashFamily::RandVec() {
 }
 
 float L2HashFamily::RandOffset() {
-    uniform_ = uniform_real_distribution<float>(0.0, w_);
     return uniform_(engine_);
 }
 
-string L2HashFamily::Combine(vector<int> hashes) {
+string L2HashFamily::Combine(vector<int> &hashes) {
     string key;
     key = "[";
     for (auto &&i : hashes) {
