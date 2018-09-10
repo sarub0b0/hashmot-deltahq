@@ -2,6 +2,7 @@
 #define L2HASH_H
 
 #include <vector>
+#include <array>
 
 #include "point.hh"
 #include <global.hh>
@@ -10,7 +11,7 @@ namespace neighbor_search {
 
 class L2Hash {
    public:
-    L2Hash(vector<float> rand, float offset, float w);
+    L2Hash(array<float, 2> rand, float offset, float w);
     // L2Hash(const L2Hash &l2hash);
     ~L2Hash();
 

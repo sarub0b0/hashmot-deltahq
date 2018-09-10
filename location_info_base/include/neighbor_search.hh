@@ -20,8 +20,9 @@ class NeighborSearch {
     virtual void Update(const Value &json) {
         fprintf(stderr, "NeighborSearch Update\n");
     };
-    virtual void GetNeighbor(const Value &json) {
+    virtual vector<int> GetNeighbor(const Value &json) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
+        return vector<int>();
     };
     virtual void SendDeltaHQ(vector<int> &neighbor,
                              const Value &json,

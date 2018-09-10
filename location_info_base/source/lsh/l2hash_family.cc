@@ -1,6 +1,7 @@
+#include <array>
 #include <cmath>
 
-#include <l2hash_family.hh>
+#include <lsh/l2hash_family.hh>
 
 namespace neighbor_search {
 
@@ -19,10 +20,10 @@ L2HashFamily::~L2HashFamily() {
 L2Hash L2HashFamily::CreateHashFunc() {
     return L2Hash(RandVec(), RandOffset(), w_);
 }
-vector<float> L2HashFamily::RandVec() {
-    vector<float> rand_vec;
-    for (int i = 0; i < d_; i++) {
-        rand_vec.push_back(gauss_(engine_));
+array<float, 2> L2HashFamily::RandVec() {
+    array<float, 2> rand_vec;
+    for (int i = 0; i < 2; i++) {
+        rand_vec[i] = gauss_(engine_);
     }
 
     return rand_vec;

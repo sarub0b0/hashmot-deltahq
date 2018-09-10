@@ -1,12 +1,13 @@
 #ifndef LSH_INDEX_H
 #define LSH_INDEX_H
 
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <list>
 
 #include <global.hh>
-#include <l2hash_family.hh>
+#include "l2hash_family.hh"
 
 namespace neighbor_search {
 
@@ -22,12 +23,11 @@ class LSHIndex {
 
     void Resize(int L);
 
-    string Hash(vector<L2Hash> &g, vector<float> &v);
+    string Hash(vector<L2Hash> &g, array<float, 2> &v);
 
-    void Index(vector<vector<float>> &points);
-    void Update(int id, vector<float> &point);
-
-    vector<int> Query(vector<float> &q);
+    void Index(vector<array<float, 2>> &points);
+    void Update(int id, array<float, 2> &point);
+    vector<int> Query(array<float, 2> &q);
 
     bool IsSameRadius(int radius);
 
@@ -39,7 +39,7 @@ class LSHIndex {
     int L_;
     int radius_;
 
-    vector<vector<float>> points_;
+    vector<array<float, 2>> points_;
 
     vector<Table> hash_table_;
 };

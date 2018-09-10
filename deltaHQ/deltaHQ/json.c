@@ -282,7 +282,8 @@ int json_init_scenario(struct scenario_class *scenario,
             first_object = json_object_get(root, "finish");
             if (first_object) {
                 // print_json(first_object);
-                fprintf(stdout, "received finish json\n");
+                fprintf(stdout,
+                        "------------ received finish json ------------\n");
                 json_decref(first_object);
                 json_decref(root);
                 first_object = NULL;
@@ -371,9 +372,10 @@ int json_init_scenario(struct scenario_class *scenario,
 
 int update_neighbors(struct scenario_class *scenario,
                      struct connection_class **neighbors,
-                     int *center_ids,
+                     int *center_id,
                      int **neighbor_ids,
-                     input_buffer_t *ibuf) {
+                     input_buffer_t *ibuf,
+                     int type) {
 
     json_t *root = NULL;
     json_t *json = NULL;
@@ -384,14 +386,18 @@ int update_neighbors(struct scenario_class *scenario,
         return -1;
     }
 
-    json = json_object_get(root, key_update);
+    if (type == 0) {
+        json = json_object_get(root, key_init);
+    } else {
+        json = json_object_get(root, key_update);
+    }
     if (!json) {
         WARNING("json_object_get");
         return -1;
     }
     // printf("load success\n");
 
-    json_t *node_object;
+    // json_t *node_object;
     json_t *center;
     json_t *neighbor;
 
@@ -400,8 +406,7 @@ int update_neighbors(struct scenario_class *scenario,
     int own_id;
 
     int node_id;
-    int center_id;
-    int nodes_array_len;
+    // int nodes_array_len;
     int neighbor_array_len;
 
     int neighbor_number;
@@ -426,101 +431,89 @@ int update_neighbors(struct scenario_class *scenario,
     update_json = json_object_get(json, "neighbors");
 
     if (!update_json) {
+        WARNING("json_object_get");
         return -1;
     }
+    // nodes_array_len = json_array_size(update_json);
+
+    // for (int i = 0; i < nodes_array_len; i++) {
+    // node_object = json_object_get(update_json, i);
+
+    // node_object = json_array_get(nodes_array, 0);
+    center = json_object_get(update_json, "center");
+
+    *center_id = json_integer_value(json_object_get(center, "id"));
+    printf("center_id=%d\n", *center_id);
+
+    node = &nodes[*center_id];
+
+    node->position.c[0] = json_number_value(json_object_get(center, "x"));
+    node->position.c[1] = json_number_value(json_object_get(center, "y"));
+
+    json_decref(center);
+    center = NULL;
+    // }
+
+    neighbor = json_object_get(update_json, "neighbor");
+
+    neighbor_array_len = json_array_size(neighbor);
+
     json_t *nei;
-    json_t *obj;
 
-    nodes_array_len = json_array_size(update_json);
+    nn = 0;
+    for (int j = 0; j < neighbor_array_len; j++) {
+        nei     = json_array_get(neighbor, j);
+        node_id = json_integer_value(nei);
 
-    for (int i = 0; i < nodes_array_len; i++) {
-        node_object = json_array_get(update_json, i);
+        neighbor_ids[*center_id][nn++] = node_id;
 
-        // node_object = json_array_get(nodes_array, 0);
-        center = json_object_get(node_object, "center");
-
-        center_ids[i] = json_integer_value(json_object_get(center, "id"));
-
-        node = &nodes[center_ids[i]];
-
-        node->position.c[0] = json_number_value(json_object_get(center, "x"));
-        node->position.c[1] = json_number_value(json_object_get(center, "y"));
-
-        json_decref(center);
-        center = NULL;
+        json_decref(nei);
+        nei = NULL;
     }
 
-    center_ids[nodes_array_len] = -1;
+    json_decref(neighbor);
+    neighbor    = NULL;
+    // json_decref(node_object);
+    // node_object = NULL;
 
-    for (int i = 0; i < nodes_array_len; i++) {
-        center_id   = center_ids[i];
-        node_object = json_array_get(update_json, i);
+    neighbor_ids[*center_id][neighbor_array_len] = -1;
 
-        neighbor = json_object_get(node_object, "neighbor");
-
-        neighbor_array_len = json_array_size(neighbor);
-
-        nn = 0;
-        for (int j = 0; j < neighbor_array_len; j++) {
-            nei     = json_array_get(neighbor, j);
-            obj     = json_object_get(nei, "id");
-            node_id = json_integer_value(obj);
-
-            neighbor_ids[center_id][nn++] = node_id;
-
-            json_decref(obj);
-            json_decref(nei);
-            obj = NULL;
-            nei = NULL;
+    for (int j = 0; j < nn; j++) {
+        same_neighbor = 0;
+        nb_id         = neighbor_ids[*center_id][j];
+        if (own_id != -1 && *center_id != own_id && nb_id != own_id) {
+            continue;
         }
 
-        json_decref(neighbor);
-        json_decref(node_object);
-        neighbor    = NULL;
-        node_object = NULL;
+        if (*center_id < nb_id) {
+            nb_id--;
+        }
+        conn_i = *center_id * (scenario->node_number - 1) + nb_id;
 
-        neighbor_ids[center_id][neighbor_array_len] = -1;
+        neighbors[ni++] = &scenario->connections[conn_i];
+        neighbor_number++;
 
-        for (int j = 0; j < nn; j++) {
-            same_neighbor = 0;
-            nb_id         = neighbor_ids[center_id][j];
-            if (own_id != -1 && center_id != own_id && nb_id != own_id) {
-                continue;
-            }
+        if (neighbor_ids[*center_id][j] == *center_id) {
+            same_neighbor = 1;
+            break;
+        }
+        if (neighbor_flag && !same_neighbor) {
 
-            if (center_id < nb_id) {
+            nb_id = *center_id;
+            if (neighbor_ids[*center_id][j] < nb_id) {
                 nb_id--;
             }
-            conn_i = center_id * (scenario->node_number - 1) + nb_id;
-
+            conn_i =
+                neighbor_ids[*center_id][j] * (scenario->node_number - 1) +
+                nb_id;
             neighbors[ni++] = &scenario->connections[conn_i];
             neighbor_number++;
 
-            if (1 < nodes_array_len) {
-                for (int k = 0; k < nodes_array_len; k++) {
-                    if (neighbor_ids[center_id][j] == center_ids[k]) {
-                        same_neighbor = 1;
-                        break;
-                    }
-                }
-            }
-            if (neighbor_flag && !same_neighbor) {
-
-                nb_id = center_id;
-                if (neighbor_ids[center_id][j] < nb_id) {
-                    nb_id--;
-                }
-                conn_i =
-                    neighbor_ids[center_id][j] * (scenario->node_number - 1) +
-                    nb_id;
-                neighbors[ni++] = &scenario->connections[conn_i];
-                neighbor_number++;
-
-                // connection_print(&scenario->connections[conn_i]);
-                // connection_print(neighbors[ni - 1]);
-            }
+            // connection_print(&scenario->connections[conn_i]);
+            // connection_print(neighbors[ni - 1]);
         }
     }
+    // }
 
     // json_decref(update_json);
     // json_decref(node_object);
@@ -955,7 +948,7 @@ char *send_json_message(int center_id,
     return SUCCESS;
 }
 int send_result_to_meteor(meteor_param_t *mp,
-                          int *center_ids,
+                          int center_id,
                           int node_number,
                           struct connection_class *connections,
                           int is_broadcast,
@@ -964,24 +957,18 @@ int send_result_to_meteor(meteor_param_t *mp,
     // fprintf(stdout, "%s", buf);
     // fflush(stdout);
     // strncpy(info->msg, buf, strlen(buf));
-    int center_id = 0;
-    for (int i = 0; center_ids[i] != -1; i++) {
-        center_id = center_ids[i];
 
-        if (!mp[center_id].is_change_update && !mp[center_id].is_change_add &&
-            !mp[center_id].is_change_delete)
-            continue;
+    if (mp->is_change_update || mp->is_change_add || mp->is_change_delete)
 
         for (int j = 0; j < 3; j++) {
             info->msg = send_json_message(center_id,
-                                          &mp[center_id],
+                                          mp,
                                           node_number,
                                           connections,
                                           j,
                                           is_broadcast,
                                           info);
         }
-    }
 
     return 0;
 }
@@ -1618,49 +1605,37 @@ Ignored invalid value ('%lu')",
     return SUCCESS;
 }
 
-int set_neighbor_bmp(int *center_ids,
+int set_neighbor_bmp(int center_id,
                      int **neighbor_ids,
                      int **neighbor_ids_bmp) {
 
-    int ci = 0;
     int ni = 0;
 
-    for (int i = 0; center_ids[i] != -1; i++) {
-        ci = center_ids[i];
-        for (int j = 0; neighbor_ids[ci][j] != -1; j++) {
-            ni = neighbor_ids[ci][j];
+    for (int i = 0; neighbor_ids[center_id][i] != -1; i++) {
+        ni = neighbor_ids[center_id][i];
 
-            neighbor_ids_bmp[ci][ni] = 1;
-        }
+        neighbor_ids_bmp[center_id][ni] = 1;
     }
     return 0;
 }
 
-int set_prev_neighbor_bmp(int *center_ids,
+int set_prev_neighbor_bmp(int center_id,
                           int **neighbor_ids_bmp,
                           int **prev_neighbor_ids_bmp,
                           int node_number) {
-    int ci = 0;
-    for (int i = 0; center_ids[i] != -1; i++) {
-        ci = center_ids[i];
-        for (int j = 0; j < node_number; j++) {
-            prev_neighbor_ids_bmp[ci][j] = neighbor_ids_bmp[ci][j];
-            neighbor_ids_bmp[ci][j]      = 0;
-        }
+    for (int i = 0; i < node_number; i++) {
+        prev_neighbor_ids_bmp[center_id][i] = neighbor_ids_bmp[center_id][i];
+        neighbor_ids_bmp[center_id][i]      = 0;
     }
 
     return 0;
 }
 
-int clear_neighbor_bmp(int *center_ids,
+int clear_neighbor_bmp(int center_id,
                        int **neighbor_ids_bmp,
                        int node_number) {
-    int ci = 0;
-    for (int i = 0; center_ids[i]; i++) {
-        ci = center_ids[i];
-        for (int j = 0; j < node_number; j++) {
-            neighbor_ids_bmp[ci][j] = 0;
-        }
+    for (int i = 0; i < node_number; i++) {
+        neighbor_ids_bmp[center_id][i] = 0;
     }
     return 0;
 }
@@ -1679,45 +1654,43 @@ void print_neighbor_bmp(int **neighbor_ids_bmp, int number) {
     }
 }
 
-void print_meteor_param(meteor_param_t *m, int node_number) {
-    for (int i = 0; i < node_number; i++) {
-        if (!m[i].is_change_update && !m[i].is_change_add &&
-            !m[i].is_change_delete)
-            continue;
+void print_meteor_param(int center_id, meteor_param_t *m) {
+    // if (!m->is_change_update && !m->is_change_add && !m->is_change_delete)
 
-        printf("meteor center=%d\n", i);
-        printf("\tupdate\t");
-        for (int j = 0; m[i].update[j] != -1; j++) {
-            printf("%d ", m[i].update[j]);
-        }
-        puts("");
-
-        printf("\tadd\t");
-        for (int j = 0; m[i].add[j] != -1; j++) {
-            printf("%d ", m[i].add[j]);
-        }
-        puts("");
-        printf("\tdelete\t");
-        for (int j = 0; m[i].delete[j] != -1; j++) {
-            printf("%d ", m[i].delete[j]);
-        }
-        puts("");
+    printf("-----------------------------------\n");
+    printf("meteor center=%d\n", center_id);
+    // printf("\tupdate=%d\t", m->is_change_update);
+    printf("\tupdate\t");
+    for (int j = 0; m->update[j] != -1; j++) {
+        printf("%d ", m->update[j]);
     }
+    puts("");
+
+    // printf("\tadd=%d\t", m->is_change_add);
+    printf("\tadd\t");
+    for (int j = 0; m->add[j] != -1; j++) {
+        printf("%d ", m->add[j]);
+    }
+    puts("");
+    // printf("\tdelete=%d\t", m->is_change_delete);
+    printf("\tdelete\t");
+    for (int j = 0; m->delete[j] != -1; j++) {
+        printf("%d ", m->delete[j]);
+    }
+    puts("");
 }
 
-int clear_meteor_param(meteor_param_t *mp, int node_number) {
+int clear_meteor_param(meteor_param_t *mp) {
 
-    for (int i = 0; i < node_number; i++) {
-        mp[i].add[0]           = -1;
-        mp[i].delete[0]        = -1;
-        mp[i].update[0]        = -1;
-        mp[i].add_last_idx     = 0;
-        mp[i].delete_last_idx  = 0;
-        mp[i].update_last_idx  = 0;
-        mp[i].is_change_update = 0;
-        mp[i].is_change_add    = 0;
-        mp[i].is_change_delete = 0;
-    }
+    mp->add[0]           = -1;
+    mp->delete[0]        = -1;
+    mp->update[0]        = -1;
+    mp->add_last_idx     = 0;
+    mp->delete_last_idx  = 0;
+    mp->update_last_idx  = 0;
+    mp->is_change_update = 0;
+    mp->is_change_add    = 0;
+    mp->is_change_delete = 0;
     return 0;
 }
 
@@ -1736,64 +1709,57 @@ int is_same_id(int *arr, int val) {
 int set_meteor_param(meteor_param_t *mp,
                      int **current_map,
                      int **prev_map,
-                     int *center_ids,
+                     int center_id,
                      int node_number) {
 
-    int ci = 0;
+    clear_meteor_param(mp);
 
-    clear_meteor_param(mp, node_number);
-
-    for (int i = 0; center_ids[i] != -1; i++) {
-
-        ci = center_ids[i];
-
-        for (int j = 0; j < node_number; j++) {
-            if (j == ci) {
-                continue;
+    for (int j = 0; j < node_number; j++) {
+        if (j == center_id) {
+            continue;
+        }
+        if (prev_map[center_id][j] == current_map[center_id][j] &&
+            current_map[center_id][j] == 1) {
+            if (!is_same_id(mp->update, j)) {
+                mp->update[mp->update_last_idx++] = j;
+                mp->update[mp->update_last_idx]   = -1;
             }
-            if (prev_map[ci][j] == current_map[ci][j] &&
-                current_map[ci][j] == 1) {
-                if (!is_same_id(mp[ci].update, j)) {
-                    mp[ci].update[mp[ci].update_last_idx++] = j;
-                    mp[ci].update[mp[ci].update_last_idx]   = -1;
-                }
-                // if (!is_same_id(center_ids, j) &&
-                //     !is_same_id(mp[j].update, ci)) {
-                //     mp[j].update[mp[j].update_last_idx++] = ci;
-                //     mp[j].update[mp[j].update_last_idx]   = -1;
-                // }
-                mp[ci].is_change_update = 1;
-                // mp[j].is_change_update  = 1;
-                continue;
+            // if (!is_same_id(center_ids, j) &&
+            //     !is_same_id(mp[j].update, center_id)) {
+            //     mp[j].update[mp[j].update_last_idx++] = center_id;
+            //     mp[j].update[mp[j].update_last_idx]   = -1;
+            // }
+            mp->is_change_update = 1;
+            // mp[j].is_change_update  = 1;
+            continue;
+        }
+        if (prev_map[center_id][j] < current_map[center_id][j]) {
+            if (!is_same_id(mp->add, j)) {
+                mp->add[mp->add_last_idx++] = j;
+                mp->add[mp->add_last_idx]   = -1;
             }
-            if (prev_map[ci][j] < current_map[ci][j]) {
-                if (!is_same_id(mp[ci].add, j)) {
-                    mp[ci].add[mp[ci].add_last_idx++] = j;
-                    mp[ci].add[mp[ci].add_last_idx]   = -1;
-                }
-                // if (!is_same_id(center_ids, j) &&
-                //     !is_same_id(mp[j].add, ci)) {
-                //     mp[j].add[mp[j].add_last_idx++] = ci;
-                //     mp[j].add[mp[j].add_last_idx]   = -1;
-                // }
-                mp[ci].is_change_add = 1;
-                // mp[j].is_change_add  = 1;
-                continue;
+            // if (!is_same_id(center_ids, j) &&
+            //     !is_same_id(mp[j].add, center_id)) {
+            //     mp[j].add[mp[j].add_last_idx++] = center_id;
+            //     mp[j].add[mp[j].add_last_idx]   = -1;
+            // }
+            mp->is_change_add = 1;
+            // mp[j].is_change_add  = 1;
+            continue;
+        }
+        if (current_map[center_id][j] < prev_map[center_id][j]) {
+            if (!is_same_id(mp->delete, j)) {
+                mp->delete[mp->delete_last_idx++] = j;
+                mp->delete[mp->delete_last_idx]   = -1;
             }
-            if (current_map[ci][j] < prev_map[ci][j]) {
-                if (!is_same_id(mp[ci].delete, j)) {
-                    mp[ci].delete[mp[ci].delete_last_idx++] = j;
-                    mp[ci].delete[mp[ci].delete_last_idx]   = -1;
-                }
-                // if (!is_same_id(center_ids, j) &&
-                //     !is_same_id(mp[j].delete, ci)) {
-                //     mp[j].delete[mp[j].delete_last_idx++] = ci;
-                //     mp[j].delete[mp[j].delete_last_idx]   = -1;
-                // }
-                mp[ci].is_change_delete = 1;
-                // mp[j].is_change_delete  = 1;
-                continue;
-            }
+            // if (!is_same_id(center_ids, j) &&
+            //     !is_same_id(mp[j].delete, center_id)) {
+            //     mp[j].delete[mp[j].delete_last_idx++] = center_id;
+            //     mp[j].delete[mp[j].delete_last_idx]   = -1;
+            // }
+            mp->is_change_delete = 1;
+            // mp[j].is_change_delete  = 1;
+            continue;
         }
     }
 

@@ -8,7 +8,7 @@
 
 #include "global.hh"
 #include "lsh_index.hh"
-#include "neighbor_search.hh"
+#include <neighbor_search.hh>
 
 namespace neighbor_search {
 
@@ -18,7 +18,7 @@ class LSH : public NeighborSearch {
     ~LSH();
     void Init(const Value &json);
     void Update(const Value &json);
-    void GetNeighbor(const Value &json);
+    vector<int> GetNeighbor(const Value &json);
     void SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key);
 
    private:

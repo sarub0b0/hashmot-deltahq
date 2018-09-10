@@ -1,7 +1,7 @@
 #include <set>
 
 #include <global.hh>
-#include <lsh_index.hh>
+#include <lsh/lsh_index.hh>
 
 namespace neighbor_search {
 
@@ -34,7 +34,7 @@ void LSHIndex::Resize(int L) {
     }
 }
 
-string LSHIndex::Hash(vector<L2Hash> &g, vector<float> &v) {
+string LSHIndex::Hash(vector<L2Hash> &g, array<float, 2> &v) {
     vector<int> hashes;
     for (auto &&h : g) {
         point p(v[0], v[1]);
@@ -45,7 +45,7 @@ string LSHIndex::Hash(vector<L2Hash> &g, vector<float> &v) {
     return hash_family_->Combine(hashes);
 }
 
-void LSHIndex::Index(vector<vector<float>> &points) {
+void LSHIndex::Index(vector<array<float, 2>> &points) {
     points_ = points;
     for (auto &&table : hash_table_) {
         for (unsigned int i = 0; i < points.size(); i++) {
@@ -54,7 +54,7 @@ void LSHIndex::Index(vector<vector<float>> &points) {
     }
 }
 
-void LSHIndex::Update(int id, vector<float> &point) {
+void LSHIndex::Update(int id, array<float, 2> &point) {
 
     for (auto &&table : hash_table_) {
         table.table[Hash(table.g, points_[id])].remove(id);
@@ -80,7 +80,7 @@ void LSHIndex::Update(int id, vector<float> &point) {
     }
 }
 
-vector<int> LSHIndex::Query(vector<float> &q) {
+vector<int> LSHIndex::Query(array<float, 2> &q) {
     set<int> temp_candidate;
 
     list<int> match;
@@ -89,25 +89,28 @@ vector<int> LSHIndex::Query(vector<float> &q) {
         temp_candidate.insert(match.begin(), match.end());
     }
 
-    puts("Candidate:");
-    for (auto &&i : temp_candidate) {
-        printf("%d ", i);
-    }
-    puts("");
+    // puts("Candidate:");
+    // for (auto &&i : temp_candidate) {
+    //     printf("%d ", i);
+    // }
+    // puts("");
 
-    puts("Hits:");
+    // puts("Hits:");
+
+    // TODO ソートしてからradiusで枝刈りしたほうが早いかもしれない
+    //
     vector<int> candidate;
     for (auto &&i : temp_candidate) {
         point a, b;
         a = point(q[0], q[1]);
         b = point(points_[i][0], points_[i][1]);
         if (L2Hash::Norm(a, b) <= radius_ && L2Hash::Norm(a, b) != 0.0) {
-            printf("%d ", i);
+            // printf("%d ", i);
             candidate.push_back(i);
         }
     }
 
-    puts("");
+    // puts("");
     return candidate;
 }
 

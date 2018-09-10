@@ -6,8 +6,9 @@
 
 #include <global.hh>
 #include <neighbor_search.hh>
-#include <lsh.hh>
-#include <lsh_index.hh>
+#include <lsh/lsh.hh>
+#include <lsh/lsh_index.hh>
+#include <kdtree/kdtree.hh>
 
 using namespace neighbor_search;
 
@@ -25,6 +26,7 @@ int main(int argc, char const *argv[]) {
 
     // TODO 引数で近傍探索のアルゴリズムを切り替える
     ns = new LSH(d, k, L);
+    ns = new KdTree();
 
     while (1) {
 
@@ -32,7 +34,7 @@ int main(int argc, char const *argv[]) {
         // Read stream
         ///////////////////////////////////////
         getline(cin, read);
-        printf("%s\n", read.c_str());
+        // printf("%s\n", read.c_str());
 
         Json json;
         json.Parse(read.c_str());
@@ -58,17 +60,39 @@ int main(int argc, char const *argv[]) {
             const Value &value = iter->value;
 
             if (key == "init") {
-                std::cout << key << std::endl;
+                printf("%s\n", read.c_str());
+                std::flush(std::cout);
+                // std::cout << key << std::endl;
                 ns->Init(value);
+                // TODO init send json
+
+                int id = 0;
+                for (auto &&n : value["node"].GetArray()) {
+
+                    Value node(n, json.GetAllocator());
+                    node.AddMember("id", id, json.GetAllocator());
+
+                    vector<int> neighbor;
+                    neighbor = ns->GetNeighbor(node);
+
+                    ns->SendDeltaHQ(neighbor, node, key);
+                    id++;
+                }
             }
             if (key == "update") {
-                std::cout << key << std::endl;
+                // std::cout << key << std::endl;
                 ns->Update(value);
-                ns->GetNeighbor(value);
+
+                vector<int> neighbor;
+
+                neighbor = ns->GetNeighbor(value);
+                ns->SendDeltaHQ(neighbor, value, key);
+                // TODO send json
             }
             if (key == "finish") {
-                std::cout << key << std::endl;
+                // std::cout << key << std::endl;
                 printf("{\"finish\":\"finish\"}\n");
+                std::flush(std::cout);
 
                 goto FINISH_HANDLER;
             }

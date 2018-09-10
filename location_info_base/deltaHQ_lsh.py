@@ -32,9 +32,8 @@ def update(nodes):
     global points
     id_list = []
 
-    for n in nodes:
-        points[n['id']] = [n['x'], n['y']]
-        id_list.append(n['id'])
+    points[nodes['id']] = [nodes['x'], nodes['y']]
+    id_list.append(nodes['id'])
 
     # TODO
     # radius別のテーブルに追加

@@ -7,6 +7,7 @@ A. Andoni and P. Indyk, "Near-optimal hashing algorithms for approximate nearest
 http://people.csail.mit.edu/indyk/p117-andoni.pdf
 """
 
+import pprint
 import random
 from collections import defaultdict
 
@@ -31,10 +32,12 @@ class LSHIndex:
             hash_funcs = [[
                 self.hash_family.create_hash_func() for h in range(self.k)
             ] for l in range(self.L, L)]
+
             self.hash_tables.extend(
                 [(g, defaultdict(lambda: [])) for g in hash_funcs])
 
     def hash(self, g, p):
+        #  pprint.pprint(self.hash_family.combine([h.hash(p) for h in g]))
         return self.hash_family.combine([h.hash(p) for h in g])
 
     def index(self, points):
@@ -47,18 +50,18 @@ class LSHIndex:
         self.tot_touched = 0
         self.num_queries = 0
 
-    def update(self, nodes, points):
+    def update(self, id_list, points):
         for g, table in self.hash_tables:
-            for node in nodes:
-                tbl = table[self.hash(g, self.points[node['id']])]
-                if tbl and node['id'] in tbl:
-                    tbl.remove(node['id'])
+            for i in id_list:
+                tbl = table[self.hash(g, self.points[i])]
+                if tbl and i in tbl:
+                    tbl.remove(i)
 
         self.points = points
 
         for g, table in self.hash_tables:
-            for node in nodes:
-                table[self.hash(g, self.points[node['id']])].append(node['id'])
+            for i in id_list:
+                table[self.hash(g, self.points[i])].append(i)
 
     def query(self, q, metric):
         """ find the max_results closest indexed points to q according to the supplied metric """
@@ -157,6 +160,7 @@ class L2Hash:
         self.w = w
 
     def hash(self, vec):
+        #  print(int((dot(vec, self.r) + self.b) / self.w), vec, self.r)
         return int((dot(vec, self.r) + self.b) / self.w)
 
 

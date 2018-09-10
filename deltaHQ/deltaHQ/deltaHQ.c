@@ -529,7 +529,7 @@ int main(int argc, char **argv) {
     pthread_cond_init(&ibuf_cond_write, NULL);
 
     input_buffer_t ibuf;
-    ibuf.bufs_size = 20;
+    ibuf.bufs_size = 5;
     ibuf.buf_size  = 200000;
     ibuf.read_pos  = 0;
     ibuf.write_pos = 0;
@@ -548,7 +548,7 @@ int main(int argc, char **argv) {
     struct connection_class **neighbor = NULL;
     int neighbor_number                = 0;
 
-    int *center_ids    = NULL;
+    int center_id      = -1;
     int **neighbor_ids = NULL;
 
     int **neighbor_ids_bmp      = NULL;
@@ -579,13 +579,18 @@ int main(int argc, char **argv) {
     WARNING("json_init_scenario done");
 
     // WARNING("malloc start");
-    meteor_param = (meteor_param_t *) malloc(sizeof(meteor_param_t) *
-                                             scenario->node_number);
+    meteor_param = (meteor_param_t *) malloc(sizeof(meteor_param_t));
+
+    meteor_param->add =
+        (int *) malloc(sizeof(int) * (scenario->node_number + 1));
+    meteor_param->delete =
+        (int *) malloc(sizeof(int) * (scenario->node_number + 1));
+    meteor_param->update =
+        (int *) malloc(sizeof(int) * (scenario->node_number + 1));
 
     neighbor = (struct connection_class **) malloc(
         sizeof(struct connection_class *) * scenario->connection_number);
 
-    center_ids = (int *) malloc(sizeof(int) * (scenario->node_number + 1));
     neighbor_ids =
         (int **) malloc(sizeof(int *) * (scenario->node_number + 1));
 
@@ -595,12 +600,6 @@ int main(int argc, char **argv) {
 
     // WARNING("malloc loop start");
     for (int i = 0; i < scenario->node_number; i++) {
-        meteor_param[i].add =
-            (int *) malloc(sizeof(int) * (scenario->node_number + 1));
-        meteor_param[i].delete =
-            (int *) malloc(sizeof(int) * (scenario->node_number + 1));
-        meteor_param[i].update =
-            (int *) malloc(sizeof(int) * (scenario->node_number + 1));
 
         neighbor_ids[i] =
             (int *) malloc(sizeof(int) * (scenario->node_number + 1));
@@ -617,21 +616,28 @@ int main(int argc, char **argv) {
     }
     // WARNING("malloc done");
 
-    // WARNING("update_neighbors");
-    neighbor_number =
-        update_neighbors(scenario, neighbor, center_ids, neighbor_ids, &ibuf);
+    WARNING("update_neighbors");
+    for (int i = 0; i < scenario->node_number; i++) {
+        neighbor_number = update_neighbors(
+            scenario, neighbor, &center_id, neighbor_ids, &ibuf, 0);
 
-    if (neighbor_number < 0) {
-        goto ERROR_HANDLE;
+        printf("neighbor_ids(%d)=", i);
+        for (int j = 0; neighbor_ids[i][j] != -1; j++) {
+            printf("%d ", neighbor_ids[i][j]);
+        }
+        puts("");
+        if (neighbor_number < 0) {
+            goto ERROR_HANDLE;
+        }
+
+        set_neighbor_bmp(center_id, neighbor_ids, neighbor_ids_bmp);
     }
 
-    set_neighbor_bmp(center_ids, neighbor_ids, neighbor_ids_bmp);
-
-    set_meteor_param(meteor_param,
-                     neighbor_ids_bmp,
-                     prev_neighbor_ids_bmp,
-                     center_ids,
-                     scenario->node_number);
+    // set_meteor_param(meteor_param,
+    //                  neighbor_ids_bmp,
+    //                  prev_neighbor_ids_bmp,
+    //                  center_id,
+    //                  scenario->node_number);
 
     scenario_print(scenario);
     // socket initialize
@@ -873,36 +879,33 @@ int main(int argc, char **argv) {
         }
     }
 
-    // puts("loop start");
-    int loop_exit = FALSE;
-    int is_init   = 1;
-
-    while (loop_exit == FALSE) {
+    //
+    // send init json
+    //
+    for (int i = 0; i < scenario->node_number; i++) {
 
         set_meteor_param(meteor_param,
                          neighbor_ids_bmp,
                          prev_neighbor_ids_bmp,
-                         center_ids,
+                         i,
                          scenario->node_number);
 
-        print_meteor_param(meteor_param, scenario->node_number);
-
-        if (is_init) {
-            // sort_neighbor_list(neighbor,
-            //                    neighbor_number,
-            //                    prev_neighbor,
-            //                    prev_neighbor_number);
-        }
-        is_init = 0;
+        print_meteor_param(i, meteor_param);
 
         if (send_result_to_meteor(meteor_param,
-                                  center_ids,
+                                  i,
                                   scenario->node_number,
                                   scenario->connections,
                                   is_broadcast,
                                   &info) == ERROR) {
             WARNING("send_result_to_meteor");
         }
+    }
+
+    // puts("loop start");
+    int loop_exit = FALSE;
+
+    while (loop_exit == FALSE) {
 
         // sleep(1);
 
@@ -928,27 +931,12 @@ int main(int argc, char **argv) {
         // ------------------------------------
         // get neighbor node id from stdin
         // ------------------------------------
-
-        // prev_neighbor_number = neighbor_number;
-
-        set_prev_neighbor_bmp(center_ids,
-                              neighbor_ids_bmp,
-                              prev_neighbor_ids_bmp,
-                              scenario->node_number);
-
         neighbor_number = update_neighbors(scenario,
                                            deltaQ_class->neighbor,
-                                           center_ids,
+                                           &center_id,
                                            neighbor_ids,
-                                           &ibuf);
-
-        set_neighbor_bmp(center_ids, neighbor_ids, neighbor_ids_bmp);
-
-        printf("-------------- prev --------------\n");
-        print_neighbor_bmp(prev_neighbor_ids_bmp, scenario->node_number);
-
-        printf("\n-------------- current --------------\n");
-        print_neighbor_bmp(neighbor_ids_bmp, scenario->node_number);
+                                           &ibuf,
+                                           1);
 
         if (neighbor_number < 0) {
             WARNING("finish message or read error");
@@ -982,11 +970,41 @@ int main(int argc, char **argv) {
 
         TCHK_END(scenario_deltaQ);
 
-        // test
-        // test_idx++;
-        // if (10 < test_idx) {
-        //     loop_exit = TRUE;
-        // }
+        // ------------------------------------
+        // set bitmap
+        // ------------------------------------
+        set_prev_neighbor_bmp(center_id,
+                              neighbor_ids_bmp,
+                              prev_neighbor_ids_bmp,
+                              scenario->node_number);
+
+        set_neighbor_bmp(center_id, neighbor_ids, neighbor_ids_bmp);
+
+        printf("-------------- prev --------------\n");
+        print_neighbor_bmp(prev_neighbor_ids_bmp, scenario->node_number);
+
+        printf("\n-------------- current --------------\n");
+        print_neighbor_bmp(neighbor_ids_bmp, scenario->node_number);
+
+        //
+        // send json message
+        //
+        set_meteor_param(meteor_param,
+                         neighbor_ids_bmp,
+                         prev_neighbor_ids_bmp,
+                         center_id,
+                         scenario->node_number);
+
+        print_meteor_param(center_id, meteor_param);
+
+        if (send_result_to_meteor(meteor_param,
+                                  center_id,
+                                  scenario->node_number,
+                                  scenario->connections,
+                                  is_broadcast,
+                                  &info) == ERROR) {
+            WARNING("send_result_to_meteor");
+        }
     }
 
     DEBUG2("br_assign");
@@ -999,14 +1017,14 @@ int main(int argc, char **argv) {
     pthread_join(pt_input_buf, NULL);
 
     // FINISH:
-    if (send_result_to_meteor(meteor_param,
-                              center_ids,
-                              scenario->node_number,
-                              scenario->connections,
-                              is_broadcast,
-                              &info) == ERROR) {
-        WARNING("send_result_to_meteor");
-    }
+    // if (send_result_to_meteor(meteor_param,
+    //                           center_id,
+    //                           scenario->node_number,
+    //                           scenario->connections,
+    //                           is_broadcast,
+    //                           &info) == ERROR) {
+    //     WARNING("send_result_to_meteor");
+    // }
 
     TCHK_END(deltaQ);
 
@@ -1036,17 +1054,19 @@ FINAL_HANDLE:
         exit(1);
     }
 
+    if (meteor_param->add) free(meteor_param->add);
+    if (meteor_param->delete) free(meteor_param->delete);
+    if (meteor_param->update) free(meteor_param->update);
+
+    meteor_param->add    = NULL;
+    meteor_param->delete = NULL;
+    meteor_param->update = NULL;
+
     for (int i = 0; i < scenario->node_number; i++) {
-        if (meteor_param[i].add) free(meteor_param[i].add);
-        if (meteor_param[i].delete) free(meteor_param[i].delete);
-        if (meteor_param[i].update) free(meteor_param[i].update);
         if (neighbor_ids[i]) free(neighbor_ids[i]);
         if (neighbor_ids_bmp[i]) free(neighbor_ids_bmp[i]);
         if (prev_neighbor_ids_bmp[i]) free(prev_neighbor_ids_bmp[i]);
 
-        meteor_param[i].add      = NULL;
-        meteor_param[i].delete   = NULL;
-        meteor_param[i].update   = NULL;
         neighbor_ids[i]          = NULL;
         neighbor_ids_bmp[i]      = NULL;
         prev_neighbor_ids_bmp[i] = NULL;
@@ -1081,9 +1101,6 @@ FINAL_HANDLE:
 
     if (neighbor) free(neighbor);
     neighbor = NULL;
-
-    if (center_ids) free(center_ids);
-    center_ids = NULL;
 
     if (neighbor_ids) free(neighbor_ids);
     neighbor_ids = NULL;

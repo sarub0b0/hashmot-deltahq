@@ -1,10 +1,11 @@
+#include <array>
 #include <cmath>
 
-#include <l2hash.hh>
+#include <lsh/l2hash.hh>
 
 namespace neighbor_search {
 
-L2Hash::L2Hash(vector<float> rand, float offset, float w)
+L2Hash::L2Hash(array<float, 2> rand, float offset, float w)
     : rand_(point(rand[0], rand[1])), b_(offset), w_(w) {
 }
 

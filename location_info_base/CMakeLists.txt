@@ -33,10 +33,10 @@ include_directories(include)
 
 set(libs m)
 
-set(sources_dir source)
-set(headers_dir include)
-file(GLOB sources RELATIVE ${PROJECT_SOURCE_DIR} ${sources_dir}/*.cc)
-file(GLOB headers RELATIVE ${PROJECT_SOURCE_DIR} ${headers_dir}/*.hh)
+set(sources source)
+set(includes include)
+file(GLOB sources RELATIVE ${PROJECT_SOURCE_DIR} ${sources}/*.cc ${sources}/lsh/*.cc ${sources}/kdtree/*.cc)
+file(GLOB headers RELATIVE ${PROJECT_SOURCE_DIR} ${includes}/*.hh)
 
 
 add_executable(${PROJECT_NAME} ${sources})

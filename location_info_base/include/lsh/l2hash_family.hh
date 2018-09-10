@@ -3,6 +3,7 @@
 
 // #include <vector>
 // #include <string>
+#include <array>
 #include <random>
 
 #include "global.hh"
@@ -17,7 +18,7 @@ class L2HashFamily {
     L2HashFamily(const L2HashFamily &l2hash_family);
     ~L2HashFamily();
     L2Hash CreateHashFunc();
-    vector<float> RandVec();
+    array<float, 2> RandVec();
     float RandOffset();
     string Combine(vector<int> &hashes);
 

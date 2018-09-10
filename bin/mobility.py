@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import random
 import time
 import json
@@ -19,7 +20,7 @@ if __name__ == '__main__':
 
     #  sys.exit()
 
-    time.sleep(1)
+    time.sleep(0.5)
 
     if 2 < len(sys.argv):
         loop_max = int(sys.argv[2])
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     loop_count = 0
     while True:
         if 0 < loop_max:
-            if loop_max < loop_count:
+            if loop_max <= loop_count:
                 sys.stdout.write('{"finish":"finish"}')
                 sys.stdout.write("\n")
                 sys.stdout.flush()
