@@ -3,6 +3,9 @@ import random
 import json
 import sys
 
+if len(sys.argv) < 4:
+    print("arg: node_number, max_number(x, y), radius\n")
+
 node_num = int(sys.argv[1])
 
 root = json.loads('{}')
@@ -10,18 +13,21 @@ root['init'] = {}
 root['init']['node'] = []
 root['init']['connection'] = []
 
+max_num = int(sys.argv[2])
+radius = int(sys.argv[3])
+
 for i in range(node_num):
     root['init']['node'].append({
         'name': 'node00' + str(i),
         'type': 'regular',
         'connection': 'infrastructure',
         'adapter': 'orinoco',
-        'x': round(random.uniform(0, 100), 2),
-        'y': round(random.uniform(0, 100), 2),
-        'z': round(random.uniform(0, 100), 2),
+        'x': round(random.uniform(0, max_num), 2),
+        'y': round(random.uniform(0, max_num), 2),
+        'z': round(random.uniform(0, max_num), 2),
         'Pt': 20,
         'internal_delay': 1,
-        'radius': 243,
+        'radius': radius,
     })
 
     print(root["init"]["node"][-1]['x'], root["init"]["node"][-1]['y'])
