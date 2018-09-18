@@ -5,7 +5,7 @@
 #include <array>
 
 #include "point.hh"
-#include <global.hh>
+#include <using.hh>
 
 namespace neighbor_search {
 

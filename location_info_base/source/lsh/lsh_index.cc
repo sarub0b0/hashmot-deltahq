@@ -1,6 +1,6 @@
 #include <set>
 
-#include <global.hh>
+#include <using.hh>
 #include <lsh/lsh_index.hh>
 
 namespace neighbor_search {

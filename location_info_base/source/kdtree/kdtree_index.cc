@@ -1,7 +1,10 @@
+#include <list>
 #include <iostream>
+#include <cfloat>
+#include <cmath>
 
+#include <using.hh>
 #include <kdtree/kdtree_index.hh>
-#include <kdtree/tree.hh>
 
 namespace neighbor_search {
 
@@ -45,55 +48,226 @@ KdTreeIndex::~KdTreeIndex() {
 }
 
 void KdTreeIndex::Index(vector<Point> &points) {
-    // tree_ = MakeTree(points, 0, points.size(), 0);
-    tree_ = MakeTree(points, 0);
+    tree_ = MakeTree(points, 0, points.size(), 0);
 
-    printf("-----------------------------------------\n\n");
-    printTree(tree_, nullptr, false);
+    points_.resize(points.size());
+    copy(points.begin(), points.end(), points_.begin());
+
+    points_ = Sort(points_);
+
+    id_sorted_points_.resize(points_.size());
+    copy(points_.begin(), points_.end(), id_sorted_points_.begin());
+
+    // printf("---------------------- Init -------------------\n\n");
+    // printTree(tree_, nullptr, false);
 }
 
 void KdTreeIndex::Update(Point &point) {
+
+    // printf("search: %d\n", point.id);
+
+    Node *node = nullptr;
+
+    // Remove
+    // Rebuild
+    node  = ReMakeTree(tree_, id_sorted_points_[point.id]);
+    tree_ = node;
+
+    if (node != nullptr) {
+        // printf("find: %d\n", node->point.id);
+
+        // printf("---------------------- Remake -------------------\n\n");
+
+    } else {
+        printf("Can't find id=%d\n", point.id);
+    }
+
+    // printTree(tree_, nullptr, false);
+
+    // Add
+    id_sorted_points_[point.id].pos = point.pos;
+    AddIndex(tree_, point);
+    // printTree(tree_, nullptr, false);
 }
-void KdTreeIndex::Query(array<float, 2> &q) {
+
+void KdTreeIndex::AddIndex(Node *node, Point &point) {
+    if (node == nullptr) {
+        return;
+    }
+    int axis     = node->axis;
+    bool is_left = false;
+    Node *next   = nullptr;
+
+    if (point.pos[axis] < node->point.pos[axis]) {
+        next    = node->left;
+        is_left = true;
+    } else {
+        next = node->right;
+    }
+
+    node->list.push_back(point.id);
+
+    if (next == nullptr) {
+        next = new Node();
+        axis = axis == 0 ? 1 : 0;
+
+        next->point = point;
+        next->axis  = axis;
+        next->list.push_back(point.id);
+
+        if (is_left) {
+            node->left = next;
+        } else {
+            node->right = next;
+        }
+
+        return;
+    } else {
+        AddIndex(next, point);
+    }
+    return;
 }
 
-// Node *KdTreeIndex::MakeTree(vector<Point> &points,
-//                             int begin,
-//                             int end,
-//                             int axis) {
-//     if (end - begin == 1) {
-//         return nullptr;
-//     }
+Node *KdTreeIndex::Search(Node *node, Point &point) {
+    return nullptr;
+}
 
-//     int median = -1;
-//     int idx    = -1;
+Node *KdTreeIndex::ReMakeTree(Node *node, Point &point) {
+    if (node == nullptr) return nullptr;
 
-//     axis = axis == 0 ? 1 : 0;
+    int axis;
 
-//     points = Tree::Sort(points, begin, end, axis);
+    axis = node->axis;
 
-//     median = (end - begin) / 2;
+    Node *next;
 
-//     idx = median + begin;
+    bool is_left = false;
+    if (point.pos[axis] < node->point.pos[axis]) {
+        next    = node->left;
+        is_left = true;
+    } else {
+        next = node->right;
+    }
 
-//     printf("begin=%d \tend=%d\tmedian=%d\tidx=%d\tid=%d\t(%.2f, %.2f)\n",
-//            begin,
-//            end,
-//            median,
-//            idx,
-//            points[idx].id,
-//            points[idx].point[0],
-//            points[idx].point[1]);
+    for (list<int>::iterator itr = node->list.begin();
+         itr != node->list.end();
+         itr++) {
 
-//     Node *node = new Node();
+        if (*itr == point.id) {
+            node->list.erase(itr);
+            break;
+        }
+    }
 
-//     node->point = points[idx];
-//     node->axis  = axis;
-//     node->left  = MakeTree(points, begin, idx, axis);
-//     node->right = MakeTree(points, idx, end, axis);
+    if (node->point.id == point.id ||
+        (next != nullptr && next->point.id == point.id)) {
+        // printf("remake: %d\n", node->point.id);
+        // remove point from points_
+        // printf("list_size=%lu range[%d, %d]\n",
+        //        node->list.size(),
+        //        node->range[0],
+        //        node->range[1]);
 
-//     return node;
-// }
+        // printf("reamke list: ");
+
+        int idx = 0;
+
+        vector<Point> list(node->list.size());
+
+        for (auto &&i : node->list) {
+            list[idx] = id_sorted_points_[i];
+            // printf("%d ", list[idx].id);
+            idx++;
+        }
+
+        // puts("");
+
+        ClearTree(node->left);
+        ClearTree(node->right);
+
+        node = MakeTree(list, 0, list.size(), node->axis);
+
+        return node;
+    } else {
+        Node *new_tree;
+        new_tree = ReMakeTree(next, point);
+        if (is_left) {
+            node->left = new_tree;
+        } else {
+            node->right = new_tree;
+        }
+    }
+
+    return node;
+}
+
+void KdTreeIndex::ClearTree(Node *node) {
+    if (node == nullptr) {
+        return;
+    }
+
+    if (node->left != nullptr) {
+        ClearTree(node->left);
+    }
+    if (node->right != nullptr) {
+        ClearTree(node->right);
+    }
+    delete node;
+    node = nullptr;
+    return;
+}
+
+Node *KdTreeIndex::MakeTree(vector<Point> &points,
+                            int begin,
+                            int end,
+                            int axis) {
+    int points_size = -1;
+    points_size     = end - begin;
+    if (points_size == 0) {
+        return nullptr;
+    }
+
+    int median = -1;
+
+    points = Sort(points, begin, end, axis);
+
+    median = points_size / 2;
+
+    int median_idx = -1;
+
+    median_idx = median + begin;
+
+    // printf("median=%d\tid=%d\t(%.2f, %.2f) axis=%d [%d, %d]\n",
+    //        median,
+    //        points[median_idx].id,
+    //        points[median_idx].pos[0],
+    //        points[median_idx].pos[1],
+    //        axis,
+    //        begin,
+    //        end);
+
+    Node *node = new Node();
+
+    node->point    = points[median_idx];
+    node->axis     = axis;
+    node->range[0] = begin;
+    node->range[1] = end;
+
+    // printf("node list(%d): ", node->point.id);
+    int idx = 0;
+    for (int i = begin; i < end; i++) {
+        node->list.push_back(points[i].id);
+        // printf("%d ", points[i].id);
+        idx++;
+    }
+    // puts("");
+
+    axis        = axis == 0 ? 1 : 0;
+    node->left  = MakeTree(points, begin, median_idx, axis);
+    node->right = MakeTree(points, median_idx + 1, end, axis);
+
+    return node;
+}
 Node *KdTreeIndex::MakeTree(vector<Point> &points, int axis) {
     int points_size = -1;
     points_size     = points.size();
@@ -103,15 +277,15 @@ Node *KdTreeIndex::MakeTree(vector<Point> &points, int axis) {
 
     int median = -1;
 
-    points = Tree::Sort(points, axis);
+    points = Sort(points, axis);
 
     median = points_size / 2;
 
     printf("median=%d\tid=%d\t(%.2f, %.2f) axis=%d\n",
            median,
            points[median].id,
-           points[median].point[0],
-           points[median].point[1],
+           points[median].pos[0],
+           points[median].pos[1],
            axis);
 
     int left_size  = -1;
@@ -126,32 +300,94 @@ Node *KdTreeIndex::MakeTree(vector<Point> &points, int axis) {
     copy(points.begin(), points.begin() + left_size, left.begin());
     copy(points.begin() + left_size + 1, points.end(), right.begin());
 
-    // printf("poits_size=%d\n", points_size);
-    // printf("left_size=%lu\n", left.size());
-    // for (auto &&p : left) {
-    //     printf("%d ", p.id);
-    // }
-    // puts("");
-    // printf("right_size=%lu\n", right.size());
-    // for (auto &&p : right) {
-    //     printf("%d ", p.id);
-    // }
-    // puts("");
-
-    axis = axis == 0 ? 1 : 0;
-
-    Node *node = new Node();
-
+    Node *node  = new Node();
     node->point = points[median];
     node->axis  = axis;
+
+    axis        = axis == 0 ? 1 : 0;
     node->left  = MakeTree(left, axis);
     node->right = MakeTree(right, axis);
 
     return node;
 }
 
-vector<int> KdTreeIndex::RangeSearch(array<float, 2> &query, int radius) {
-    vector<int> neighbor;
-    return neighbor;
+vector<int> KdTreeIndex::Query(Point &query, int radius) {
+    neighbor_.clear();
+    RangeSearch(tree_, query, radius);
+
+    return neighbor_;
+}
+void KdTreeIndex::RangeSearch(Node *node, Point &query, int radius) {
+
+    if (node == nullptr) return;
+
+    array<float, 2> &point = node->point.pos;
+
+    float dist = Distance(query.pos, point);
+
+    // TODO queryと同じidはネイバーに入れない処理を追加
+    if (dist < radius && query.id != node->point.id) {
+        neighbor_.push_back(node->point.id);
+    }
+
+    // printf("search: %d %.2f\n", node->point.id, dist);
+
+    int axis;
+    axis = node->axis;
+
+    Node *next, *nnext;
+
+    if (query.pos[axis] < point[axis]) {
+        next  = node->left;
+        nnext = node->right;
+    } else {
+        next  = node->right;
+        nnext = node->left;
+    }
+
+    RangeSearch(next, query, radius);
+
+    float diff = fabs(query.pos[axis] - point[axis]);
+
+    if (diff < radius) RangeSearch(nnext, query, radius);
+    return;
+}
+
+float KdTreeIndex::Distance(array<float, 2> &a, array<float, 2> &b) {
+    return sqrt(pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2));
+}
+
+int KdTreeIndex::Median(vector<Point> &points, int begin, int end) {
+    return (end - begin) / 2;
+}
+vector<Point> &KdTreeIndex::Sort(vector<Point> &points,
+                                 int begin,
+                                 int end,
+                                 int axis) {
+
+    sort(points.begin() + begin,
+         points.begin() + end,
+         [&](const Point &x, const Point &y) {
+             return x.pos[axis] < y.pos[axis];
+         });
+    return points;
+}
+vector<Point> &KdTreeIndex::Sort(vector<Point> &points, int axis) {
+
+    sort(points.begin(), points.end(), [&](const Point &x, const Point &y) {
+        return x.pos[axis] < y.pos[axis];
+    });
+    return points;
+}
+
+vector<Point> &KdTreeIndex::Sort(vector<Point> &points) {
+    sort(points.begin(), points.end(), [](const Point &x, const Point &y) {
+        return x.id < y.id;
+    });
+    return points;
+}
+
+void KdTreeIndex::Clear() {
+    ClearTree(tree_);
 }
 } // namespace neighbor_search

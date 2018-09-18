@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <list>
 
-#include <global.hh>
+#include <using.hh>
 #include "l2hash_family.hh"
 
 namespace neighbor_search {

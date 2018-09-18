@@ -6,7 +6,7 @@
 
 #include <rapidjson/document.h>
 
-#include "global.hh"
+#include "using.hh"
 #include "lsh_index.hh"
 #include <neighbor_search.hh>
 

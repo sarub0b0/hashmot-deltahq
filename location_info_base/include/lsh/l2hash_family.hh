@@ -6,7 +6,7 @@
 #include <array>
 #include <random>
 
-#include "global.hh"
+#include "using.hh"
 #include "l2hash.hh"
 
 namespace neighbor_search {

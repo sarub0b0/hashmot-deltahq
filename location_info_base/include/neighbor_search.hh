@@ -3,15 +3,15 @@
 
 #include <cstdio>
 
-#include <global.hh>
+#include <using.hh>
 
 namespace neighbor_search {
 
 class NeighborSearch {
    public:
     // NeighborSearch();
-    virtual ~NeighborSearch() {
-        fprintf(stderr, "NeighborSearch Destructor\n");
+    virtual ~NeighborSearch(){
+        // fprintf(stderr, "NeighborSearch Destructor\n");
     };
 
     virtual void Init(const Value &json) {

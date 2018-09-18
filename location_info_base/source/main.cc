@@ -4,13 +4,19 @@
 #include <rapidjson/pointer.h>
 #include <rapidjson/error/en.h>
 
-#include <global.hh>
+#include <using.hh>
 #include <neighbor_search.hh>
 #include <lsh/lsh.hh>
 #include <lsh/lsh_index.hh>
 #include <kdtree/kdtree.hh>
 
 using namespace neighbor_search;
+
+void usage(void) {
+    fprintf(stderr, "arg: Set neighbor search algrothm ! \n");
+    fprintf(stderr, "\tl: LSH\n");
+    fprintf(stderr, "\tk: kd-tree\n");
+}
 
 int main(int argc, char const *argv[]) {
     cin.tie(0);
@@ -24,9 +30,23 @@ int main(int argc, char const *argv[]) {
 
     NeighborSearch *ns;
 
+    if (argc < 2 || 2 < argc) {
+        usage();
+        exit(1);
+    }
+
     // TODO 引数で近傍探索のアルゴリズムを切り替える
-    ns = new LSH(d, k, L);
-    ns = new KdTree();
+    switch (argv[1][0]) {
+        case 'l':
+            ns = new LSH(d, k, L);
+            break;
+        case 'k':
+            ns = new KdTree();
+            break;
+        default:
+            usage();
+            exit(1);
+    }
 
     while (1) {
 
@@ -64,7 +84,6 @@ int main(int argc, char const *argv[]) {
                 std::flush(std::cout);
                 // std::cout << key << std::endl;
                 ns->Init(value);
-                // TODO init send json
 
                 int id = 0;
                 for (auto &&n : value["node"].GetArray()) {
@@ -75,7 +94,9 @@ int main(int argc, char const *argv[]) {
                     vector<int> neighbor;
                     neighbor = ns->GetNeighbor(node);
 
-                    ns->SendDeltaHQ(neighbor, node, key);
+                    if (0 < neighbor.size()) {
+                        ns->SendDeltaHQ(neighbor, node, key);
+                    }
                     id++;
                 }
             }
@@ -86,8 +107,10 @@ int main(int argc, char const *argv[]) {
                 vector<int> neighbor;
 
                 neighbor = ns->GetNeighbor(value);
-                ns->SendDeltaHQ(neighbor, value, key);
-                // TODO send json
+                if (0 < neighbor.size()) {
+                    ns->SendDeltaHQ(neighbor, value, key);
+                    // TODO send json
+                }
             }
             if (key == "finish") {
                 // std::cout << key << std::endl;
@@ -100,6 +123,7 @@ int main(int argc, char const *argv[]) {
     }
 
 FINISH_HANDLER:
+    delete ns;
 
     return 0;
 }

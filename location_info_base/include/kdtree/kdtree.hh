@@ -1,9 +1,11 @@
 #ifndef KDTREE_H
 #define KDTREE_H
 
+#include <array>
+
 #include <rapidjson/document.h>
 
-#include <global.hh>
+#include <using.hh>
 #include <neighbor_search.hh>
 #include "kdtree_index.hh"
 
@@ -21,7 +23,7 @@ class KdTree : public NeighborSearch {
 
    private:
     KdTreeIndex kdtree_;
-
+    vector<Point> points_;
 };
 
 } // namespace neighbor_search

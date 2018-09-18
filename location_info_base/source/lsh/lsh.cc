@@ -5,7 +5,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include <global.hh>
+#include <using.hh>
 #include <lsh/lsh.hh>
 
 namespace neighbor_search {
@@ -80,11 +80,6 @@ vector<int> LSH::GetNeighbor(const Value &json) {
         }
     }
 
-    // printf("neighbor: ");
-    // for (auto &&n : neighbor) {
-    //     printf("%d ", n);
-    // }
-    // puts("");
     return neighbor;
 }
 void LSH::SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key) {

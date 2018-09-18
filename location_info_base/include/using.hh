@@ -7,6 +7,6 @@ namespace neighbor_search {
 
 using namespace std;
 using namespace rapidjson;
-using Json = rapidjson::Document;
+using Json  = rapidjson::Document;
 
 } // namespace neighbor_search
