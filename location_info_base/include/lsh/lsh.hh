@@ -17,9 +17,14 @@ class LSH : public NeighborSearch {
     LSH(int d, int k, int L);
     ~LSH();
     void Init(const Value &json);
+    void Init(const vector<NodeParam> &nodes);
     void Update(const Value &json);
     vector<int> GetNeighbor(const Value &json);
+    vector<int> GetNeighbor(const NodeParam &nodes);
     void SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key);
+    void SendDeltaHQ(vector<int> &neighbor,
+                     const NodeParam &node,
+                     string &key);
 
    private:
     int d_;
@@ -28,6 +33,8 @@ class LSH : public NeighborSearch {
     set<int> radius_;
 
     vector<LSHIndex *> lsh_;
+
+    vector<NodeParam> nodes_;
 };
 
 } // namespace neighbor_search

@@ -79,4 +79,4 @@ for i in range(node_num):
 
     write_file(fd, root)
 
-
+fd.write("{\"init\":\"finish\"}\n")

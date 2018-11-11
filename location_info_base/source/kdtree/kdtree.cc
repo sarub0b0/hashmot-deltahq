@@ -36,7 +36,19 @@ void KdTree::Init(const Value &json) {
 
     kdtree_.Index(points_);
 }
+void KdTree::Init(const vector<NodeParam> &nodes) {
 
+    nodes_ = nodes;
+
+    for (auto &&n : nodes) {
+        Point p;
+        p.id  = n.id;
+        p.pos = array<float, 2>{n.x, n.y};
+        points_.push_back(p);
+    }
+
+    kdtree_.Index(points_);
+}
 void KdTree::Update(const Value &json) {
     int id;
     float x, y;
@@ -95,11 +107,22 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     return neighbor;
 }
 
+vector<int> KdTree::GetNeighbor(const NodeParam &node) {
+    vector<int> neighbor;
+    array<float, 2> pos{node.x, node.y};
+
+    Point query(node.id, pos);
+
+    neighbor = kdtree_.Query(query, node.radius);
+
+    return neighbor;
+}
+
 void KdTree::SendDeltaHQ(vector<int> &neighbor,
                          const Value &json,
                          string &key) {
 
-    Document root;
+    Json root;
 
     root.SetObject();
 
@@ -134,8 +157,57 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     if (key == "update") {
         root.AddMember("update", update_object, root.GetAllocator());
     }
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    writer.SetMaxDecimalPlaces(6);
+
+    root.Accept(writer);
+    printf("%s\n", buffer.GetString());
+    std::flush(std::cout);
+}
+
+void KdTree::SendDeltaHQ(vector<int> &neighbor,
+                         const NodeParam &node,
+                         string &key) {
+
+    Json root;
+
+    root.SetObject();
+
+    Value neighbor_object(kObjectType);
+    Value neighbor_array(kArrayType);
+    Value center_object(kObjectType);
+    Value neighbors_object(kObjectType);
+    Value update_object(kObjectType);
+    Value node_object(kObjectType);
+
+    node_object.AddMember("id", node.id, root.GetAllocator());
+    node_object.AddMember("x", node.x, root.GetAllocator());
+    node_object.AddMember("y", node.y, root.GetAllocator());
+
+    neighbors_object.AddMember("center", node_object, root.GetAllocator());
+
+    for (auto &&i : neighbor) {
+        Value n(kObjectType);
+        neighbor_array.PushBack(i, root.GetAllocator());
+    }
+
+    neighbors_object.AddMember(
+        "neighbor", neighbor_array, root.GetAllocator());
+
+    update_object.AddMember(
+        "neighbors", neighbors_object, root.GetAllocator());
+
+    if (key == "init") {
+        root.AddMember("init", update_object, root.GetAllocator());
+    }
+
+    if (key == "update") {
+        root.AddMember("update", update_object, root.GetAllocator());
+    }
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    writer.SetMaxDecimalPlaces(6);
 
     root.Accept(writer);
     printf("%s\n", buffer.GetString());

@@ -31,7 +31,7 @@ if __name__ == '__main__':
             node.append(n)
 
 
-        sys.stdout.write(json.dumps(j))
+        sys.stdout.write(json.dumps(j, separators=(',' ':')))
         sys.stdout.write("\n")
         sys.stdout.flush()
         line = f.readline()
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
         #  print(json.dumps(update))
 
-        sys.stdout.write(json.dumps(update))
+        sys.stdout.write(json.dumps(update, separators=(',' ':')))
         sys.stdout.write("\n")
         sys.stdout.flush()
 

@@ -10,6 +10,8 @@
 #include <lsh/lsh_index.hh>
 #include <kdtree/kdtree.hh>
 
+#define FLOAT(x) static_cast<float>(x)
+
 using namespace neighbor_search;
 
 void usage(void) {
@@ -48,6 +50,9 @@ int main(int argc, char const *argv[]) {
             exit(1);
     }
 
+    vector<NodeParam> init_nodes;
+
+    int id = 0;
     while (1) {
 
         ///////////////////////////////////////
@@ -83,22 +88,61 @@ int main(int argc, char const *argv[]) {
                 printf("%s\n", read.c_str());
                 std::flush(std::cout);
                 // std::cout << key << std::endl;
-                ns->Init(value);
 
-                int id = 0;
-                for (auto &&n : value["node"].GetArray()) {
-
-                    Value node(n, json.GetAllocator());
-                    node.AddMember("id", id, json.GetAllocator());
-
-                    vector<int> neighbor;
-                    neighbor = ns->GetNeighbor(node);
-
-                    if (0 < neighbor.size()) {
-                        ns->SendDeltaHQ(neighbor, node, key);
+                bool is_finish = false;
+                if (value.IsString()) {
+                    string str = value.GetString();
+                    if (str.compare("finish") == 0) {
+                        is_finish = true;
                     }
+                }
+
+                if (is_finish) {
+                    ns->Init(init_nodes);
+
+                    for (auto &&n : init_nodes) {
+                        vector<int> neighbor;
+                        neighbor = ns->GetNeighbor(n);
+
+                        if (0 < neighbor.size()) {
+                            ns->SendDeltaHQ(neighbor, n, key);
+                        }
+                    }
+                    break;
+                }
+
+                if (value.HasMember("node")) {
+
+                    const Value &node = value["node"];
+
+                    // node = init["node"].GetObject();
+                    double x, y;
+                    int radius;
+                    x      = node["x"].GetDouble();
+                    y      = node["y"].GetDouble();
+                    radius = node["radius"].GetInt();
+                    NodeParam n{id, FLOAT(x), FLOAT(y), radius};
+                    init_nodes.push_back(n);
                     id++;
                 }
+
+                // for (auto &&n : value["node"].GetArray()) {
+
+                // }
+
+                // for (auto &&n : value["node"].GetArray()) {
+
+                //     Value node(n, json.GetAllocator());
+                //     node.AddMember("id", id, json.GetAllocator());
+
+                //     vector<int> neighbor;
+                //     neighbor = ns->GetNeighbor(node);
+
+                //     if (0 < neighbor.size()) {
+                //         ns->SendDeltaHQ(neighbor, node, key);
+                //     }
+                //     id++;
+                // }
             }
             if (key == "update") {
                 // std::cout << key << std::endl;
