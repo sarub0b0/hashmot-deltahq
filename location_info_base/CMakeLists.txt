@@ -14,6 +14,7 @@ endif(APPLE)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+# set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING -DMULTILINE_JSON")
 set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
@@ -35,7 +36,7 @@ set(libs m)
 
 set(sources source)
 set(includes include)
-file(GLOB sources RELATIVE ${PROJECT_SOURCE_DIR} ${sources}/*.cc ${sources}/lsh/*.cc ${sources}/kdtree/*.cc)
+file(GLOB sources RELATIVE ${PROJECT_SOURCE_DIR} ${sources}/*.cc ${sources}/*/*.cc)
 file(GLOB headers RELATIVE ${PROJECT_SOURCE_DIR} ${includes}/*.hh)
 
 

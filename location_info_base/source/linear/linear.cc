@@ -1,121 +1,98 @@
-#include <iostream>
-#include <set>
 
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <array>
+
+#include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
 #include <using.hh>
-#include <lsh/lsh.hh>
+#include <linear/linear.hh>
 
 namespace neighbor_search {
 
-LSH::LSH(int d, int k, int L) : d_(d), k_(k), L_(L) {
+Linear::Linear() {
 }
-
-LSH::~LSH() {
+Linear::~Linear() {
 }
-void LSH::Init(const Value &json) {
-    // fprintf(stderr, "LSH Init\n");
+void Linear::Init(const Value &json) {
 
-    vector<array<float, 2>> points;
-
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-
-    json.Accept(writer);
-
-    // printf("%s\n", buffer.GetString());
-
+    int id = 0;
     for (auto &&n : json["node"].GetArray()) {
-        assert(n["radius"].IsNumber());
-        radius_.insert(n["radius"].GetInt());
 
-        array<float, 2> p{static_cast<float>(n["x"].GetDouble()),
-                          static_cast<float>(n["y"].GetDouble())};
-        points.push_back(p);
+        Node p;
+        p.id  = id;
+        p.pos = array<float, 2>{static_cast<float>(n["x"].GetDouble()),
+                                static_cast<float>(n["y"].GetDouble())};
+        nodes_.push_back(p);
+        id++;
     }
 
-    for (auto &&r : radius_) {
-        lsh_.push_back(new LSHIndex(r * 1.05, d_, k_, L_, r));
-        lsh_[lsh_.size() - 1]->Index(points);
-    }
+    linear_.Index(nodes_);
 }
-void LSH::Init(const vector<Node> &nodes) {
-
+void Linear::Init(const vector<Node> &nodes) {
     nodes_ = nodes;
 
-    vector<array<float, 2>> points;
-
     for (auto &&n : nodes) {
-        radius_.insert(n.radius);
-
-        array<float, 2> p = n.pos;
-        points.push_back(p);
+        Node p;
+        p.id  = n.id;
+        p.pos = n.pos;
+        nodes_.push_back(p);
     }
-    for (auto &&r : radius_) {
-        lsh_.push_back(new LSHIndex(r * 1.05, d_, k_, L_, r));
-        lsh_[lsh_.size() - 1]->Index(points);
-    }
+    linear_.Index(nodes_);
 }
-void LSH::Update(const Value &json) {
-    int id, r;
-    float x, y;
-    id = json["id"].GetInt();
-    x  = json["x"].GetDouble();
-    y  = json["y"].GetDouble();
-    r  = json["r"].GetInt();
-
-    for (auto &&lsh : lsh_) {
-        if (lsh->IsSameRadius(r)) {
-            array<float, 2> point{x, y};
-
-            lsh->Update(id, point);
-        }
-    }
-}
-
-vector<int> LSH::GetNeighbor(const Value &json) {
-    int id, r;
+void Linear::Update(const Value &json) {
+    int id;
     float x, y;
     id = json["id"].GetInt();
     x  = json["x"].GetDouble();
     y  = json["y"].GetDouble();
 
+    array<float, 2> pos{x, y};
+    Node p(id, pos);
+    nodes_[id] = p;
+
+    linear_.Update(p);
+}
+
+vector<int> Linear::GetNeighbor(const Value &json) {
+    vector<int> neighbor;
+    int id, r;
+    float x, y;
+    id = json["id"].GetInt();
+    x  = json["x"].GetDouble();
+    y  = json["y"].GetDouble();
     if (json.FindMember("r") != json.MemberEnd()) {
         r = json["r"].GetInt();
     } else {
         r = json["radius"].GetInt();
     }
 
-    vector<int> neighbor;
-    for (auto &&lsh : lsh_) {
-        if (lsh->IsSameRadius(r)) {
-            array<float, 2> point{x, y};
+    array<float, 2> pos{x, y};
+    Node query(id, pos);
 
-            neighbor = lsh->Query(point);
-        }
-    }
+    neighbor = linear_.Query(query, r);
+    return neighbor;
+}
+
+vector<int> Linear::GetNeighbor(const Node &node) {
+    vector<int> neighbor;
+
+    Node query(node.id, node.pos);
+
+    neighbor = linear_.Query(query, node.radius);
 
     return neighbor;
 }
 
-vector<int> LSH::GetNeighbor(const Node &node) {
-    vector<int> neighbor;
+void Linear::SendDeltaHQ(vector<int> &neighbor,
+                         const Value &json,
+                         string &key) {
 
-    for (auto &&lsh : lsh_) {
-        if (lsh->IsSameRadius(node.radius)) {
-            array<float, 2> p = node.pos;
-
-            neighbor = lsh->Query(p);
-        }
-    }
-
-    return neighbor;
-}
-
-void LSH::SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key) {
-    Document root;
+    Json root;
 
     root.SetObject();
 
@@ -150,8 +127,8 @@ void LSH::SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key) {
     if (key == "update") {
         root.AddMember("update", update_object, root.GetAllocator());
     }
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
     writer.SetMaxDecimalPlaces(4);
 
     root.Accept(writer);
@@ -159,7 +136,9 @@ void LSH::SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key) {
     std::flush(std::cout);
 }
 
-void LSH::SendDeltaHQ(vector<int> &neighbor, const Node &node, string &key) {
+void Linear::SendDeltaHQ(vector<int> &neighbor,
+                         const Node &node,
+                         string &key) {
 
     Json root;
 

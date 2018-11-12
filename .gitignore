@@ -13,4 +13,5 @@ core
 core.*
 *.a
 log
+*.json
 

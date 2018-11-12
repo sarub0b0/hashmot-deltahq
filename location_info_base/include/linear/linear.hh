@@ -1,23 +1,24 @@
-#ifndef LSH_H
-#define LSH_H
+#ifndef LINEAR_H
+#define LINEAR_H
 
-#include <vector>
-#include <set>
+#include <array>
 
 #include <rapidjson/document.h>
 
-#include "using.hh"
-#include "lsh_index.hh"
+#include <using.hh>
 #include <neighbor_search.hh>
+#include "linear_index.hh"
 
 namespace neighbor_search {
 
-class LSH : public NeighborSearch {
+class Linear : public NeighborSearch {
    public:
-    LSH(int d, int k, int L);
-    ~LSH();
+    Linear();
+    ~Linear();
+
     void Init(const Value &json);
     void Init(const vector<Node> &nodes);
+    // void Add(const Value &json);
     void Update(const Value &json);
     vector<int> GetNeighbor(const Value &json);
     vector<int> GetNeighbor(const Node &nodes);
@@ -25,14 +26,8 @@ class LSH : public NeighborSearch {
     void SendDeltaHQ(vector<int> &neighbor, const Node &node, string &key);
 
    private:
-    int d_;
-    int k_;
-    int L_;
-    set<int> radius_;
-
-    vector<LSHIndex *> lsh_;
-
     vector<Node> nodes_;
+    LinearIndex linear_;
 };
 
 } // namespace neighbor_search

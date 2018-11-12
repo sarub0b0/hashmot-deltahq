@@ -5,6 +5,7 @@
 #include <list>
 
 #include <using.hh>
+#include <neighbor_search.hh>
 
 namespace neighbor_search {
 
@@ -17,31 +18,19 @@ struct Trunk {
     }
 };
 
-struct Point {
-    int id;
-    array<float, 2> pos;
-    Point() : id(-1) {
-        pos = {0, 0};
-    }
-    Point(int id, array<float, 2> pos) {
-        this->id  = id;
-        this->pos = pos;
-    }
-};
-
-struct Node {
-    Point point;
-    Node *left;
-    Node *right;
+struct TreeNode {
+    Node node;
+    TreeNode *left;
+    TreeNode *right;
     int axis;
     array<int, 2> range;
     list<int> list;
-    Node() : axis(-1) {
+    TreeNode() : axis(-1) {
         left  = nullptr;
         right = nullptr;
         range = {-1, -1};
     }
-    ~Node() {
+    ~TreeNode() {
         list.clear();
         left  = nullptr;
         right = nullptr;
@@ -55,44 +44,44 @@ class KdTreeIndex {
     KdTreeIndex();
     ~KdTreeIndex();
 
-    void Index(vector<Point> &points);
-    void Update(Point &point);
-    vector<int> Query(Point &query, int radius);
+    void Index(vector<Node> &nodes);
+    void Update(Node &node);
+    vector<int> Query(Node &query, int radius);
     void Clear();
 
    private:
-    Node *tree_;
+    TreeNode *tree_;
 
-    vector<Point> points_;
-    vector<Point> id_sorted_points_;
+    vector<Node> nodes_;
+    vector<Node> id_sorted_nodes_;
     vector<int> neighbor_;
 
-    Node *MakeTree(vector<Point> &points, int begin, int end, int axis);
+    TreeNode *MakeTree(vector<Node> &nodes, int begin, int end, int axis);
 
-    Node *MakeTree(vector<Point> &points, int axis);
+    TreeNode *MakeTree(vector<Node> &nodes, int axis);
 
-    void RangeSearch(Node *node, Point &query, int radius);
+    void RangeSearch(TreeNode *tnode, Node &query, int radius);
 
-    Node *Search(Node *node, Point &point);
+    TreeNode *Search(TreeNode *tnode, Node &node);
 
-    void AddIndex(Node *node, Point &point);
+    void AddIndex(TreeNode *tnode, Node &node);
     void RemoveIndex();
-    Node *ReMakeTree(Node *node, Point &point);
-    void ClearTree(Node *node);
+    TreeNode *ReMakeTree(TreeNode *tnode, Node &node);
+    void ClearTree(TreeNode *tnode);
 
     void showTrunks(Trunk *p);
-    void printTree(Node *root, Trunk *prev, bool isLeft);
+    void printTree(TreeNode *root, Trunk *prev, bool isLeft);
 
     float Distance(array<float, 2> &a, array<float, 2> &b);
 
-    static int Median(vector<Point> &points, int begin, int end);
-    static vector<Point> &Sort(vector<Point> &points,
-                               int begin,
-                               int end,
-                               int axis);
+    static int Median(vector<Node> &nodes, int begin, int end);
+    static vector<Node> &Sort(vector<Node> &nodes,
+                              int begin,
+                              int end,
+                              int axis);
 
-    static vector<Point> &Sort(vector<Point> &points, int axis);
-    static vector<Point> &Sort(vector<Point> &points);
+    static vector<Node> &Sort(vector<Node> &nodes, int axis);
+    static vector<Node> &Sort(vector<Node> &nodes);
 };
 } // namespace neighbor_search
 

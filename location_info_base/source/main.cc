@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
@@ -9,15 +10,21 @@
 #include <lsh/lsh.hh>
 #include <lsh/lsh_index.hh>
 #include <kdtree/kdtree.hh>
+#include <linear/linear.hh>
 
 #define FLOAT(x) static_cast<float>(x)
 
 using namespace neighbor_search;
 
 void usage(void) {
-    fprintf(stderr, "arg: Set neighbor search algrothm ! \n");
-    fprintf(stderr, "\tl: LSH\n");
-    fprintf(stderr, "\tk: kd-tree\n");
+    fprintf(stderr, "arguments $1 $2\n");
+    fprintf(stderr, "$1: Set neighbor search algrothm ! \n");
+    fprintf(stderr, "\th: LSH\n");
+    fprintf(stderr, "\tt: kd-tree\n");
+    fprintf(stderr, "\tl: linear\n");
+    fprintf(stderr, "$2: Set single or multi line json\n");
+    fprintf(stderr, "\ts: single line\n");
+    fprintf(stderr, "\tm: multi line\n");
 }
 
 int main(int argc, char const *argv[]) {
@@ -32,25 +39,40 @@ int main(int argc, char const *argv[]) {
 
     NeighborSearch *ns;
 
-    if (argc < 2 || 2 < argc) {
+    if (argc < 3 || 3 < argc) {
         usage();
         exit(1);
     }
 
     // TODO 引数で近傍探索のアルゴリズムを切り替える
     switch (argv[1][0]) {
-        case 'l':
+        case 'h':
             ns = new LSH(d, k, L);
             break;
-        case 'k':
+        case 't':
             ns = new KdTree();
+            break;
+        case 'l':
+            ns = new Linear();
             break;
         default:
             usage();
             exit(1);
     }
 
-    vector<NodeParam> init_nodes;
+    bool is_multiline = false;
+    switch (argv[2][0]) {
+        case 's':
+            break;
+        case 'm':
+            is_multiline = true;
+            break;
+        default:
+            usage();
+            exit(1);
+    }
+
+    vector<Node> init_nodes;
 
     int id = 0;
     while (1) {
@@ -89,6 +111,7 @@ int main(int argc, char const *argv[]) {
                 std::flush(std::cout);
                 // std::cout << key << std::endl;
 
+                // #ifdef MULTILINE_JSON
                 bool is_finish = false;
                 if (value.IsString()) {
                     string str = value.GetString();
@@ -97,63 +120,106 @@ int main(int argc, char const *argv[]) {
                     }
                 }
 
-                if (is_finish) {
-                    ns->Init(init_nodes);
+                if (is_multiline) {
 
-                    for (auto &&n : init_nodes) {
+                    if (is_finish) {
+                        ns->Init(init_nodes);
+
+                        for (auto &&n : init_nodes) {
+                            vector<int> neighbor;
+                            neighbor = ns->GetNeighbor(n);
+
+                            if (0 < neighbor.size()) {
+                                ns->SendDeltaHQ(neighbor, n, key);
+                            }
+                        }
+                        continue;
+                    }
+
+                    if (value.HasMember("node")) {
+
+                        const Value &node = value["node"];
+
+                        // node = init["node"].GetObject();
+                        double x, y;
+                        int radius;
+                        x      = node["x"].GetDouble();
+                        y      = node["y"].GetDouble();
+                        radius = node["radius"].GetInt();
+                        Node n{
+                            id, array<float, 2>{FLOAT(x), FLOAT(y)}, radius};
+                        init_nodes.push_back(n);
+                        id++;
+                    }
+                    // #else
+
+                } else {
+                    if (is_finish) {
+                        continue;
+                    }
+
+                    ns->Init(value);
+                    for (auto &&n : value["node"].GetArray()) {
+
+                        Value node(n, json.GetAllocator());
+                        node.AddMember("id", id, json.GetAllocator());
+
                         vector<int> neighbor;
-                        neighbor = ns->GetNeighbor(n);
+                        neighbor = ns->GetNeighbor(node);
 
                         if (0 < neighbor.size()) {
-                            ns->SendDeltaHQ(neighbor, n, key);
+                            ns->SendDeltaHQ(neighbor, node, key);
                         }
+                        id++;
                     }
-                    break;
+                    // #endif
                 }
-
-                if (value.HasMember("node")) {
-
-                    const Value &node = value["node"];
-
-                    // node = init["node"].GetObject();
-                    double x, y;
-                    int radius;
-                    x      = node["x"].GetDouble();
-                    y      = node["y"].GetDouble();
-                    radius = node["radius"].GetInt();
-                    NodeParam n{id, FLOAT(x), FLOAT(y), radius};
-                    init_nodes.push_back(n);
-                    id++;
-                }
-
-                // for (auto &&n : value["node"].GetArray()) {
-
-                // }
-
-                // for (auto &&n : value["node"].GetArray()) {
-
-                //     Value node(n, json.GetAllocator());
-                //     node.AddMember("id", id, json.GetAllocator());
-
-                //     vector<int> neighbor;
-                //     neighbor = ns->GetNeighbor(node);
-
-                //     if (0 < neighbor.size()) {
-                //         ns->SendDeltaHQ(neighbor, node, key);
-                //     }
-                //     id++;
-                // }
             }
             if (key == "update") {
                 // std::cout << key << std::endl;
-                ns->Update(value);
+                if (!value.HasMember("node")) {
+                    continue;
+                }
+                chrono::high_resolution_clock::time_point begin =
+                    chrono::high_resolution_clock::now();
+
+                ns->Update(value["node"]);
+
+                chrono::high_resolution_clock::time_point end =
+                    chrono::high_resolution_clock::now();
+
+                chrono::microseconds update_elapsed =
+                    chrono::duration_cast<chrono::microseconds>(end - begin);
+
+                // fprintf(stderr, "update elapsed: %lld\n", elapsed.count());
 
                 vector<int> neighbor;
 
-                neighbor = ns->GetNeighbor(value);
+                begin = chrono::high_resolution_clock::now();
+
+                neighbor = ns->GetNeighbor(value["node"]);
+
+                end = chrono::high_resolution_clock::now();
+
+                chrono::microseconds search_elapsed =
+                    chrono::duration_cast<chrono::microseconds>(end - begin);
+
+                fprintf(stderr,
+                        "elapsed=%lld\tupdate=%lld\tsearch=%lld\n",
+                        update_elapsed.count() + search_elapsed.count(),
+                        update_elapsed.count(),
+                        search_elapsed.count());
+
                 if (0 < neighbor.size()) {
-                    ns->SendDeltaHQ(neighbor, value, key);
+                    // begin = chrono::high_resolution_clock::now();
+                    ns->SendDeltaHQ(neighbor, value["node"], key);
                     // TODO send json
+                    // end     = chrono::high_resolution_clock::now();
+                    // elapsed = chrono::duration_cast<chrono::microseconds>(
+                    // end - begin);
+
+                    // fprintf(stderr, "send elapsed: %lld\n",
+                    // elapsed.count());
                 }
             }
             if (key == "finish") {

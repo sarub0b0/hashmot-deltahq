@@ -11,6 +11,8 @@
 #include <using.hh>
 #include <kdtree/kdtree.hh>
 
+#define FLOAT(x) static_cast<float>(x)
+
 namespace neighbor_search {
 
 KdTree::KdTree() {
@@ -24,30 +26,31 @@ KdTree::~KdTree() {
 void KdTree::Init(const Value &json) {
 
     int id = 0;
-    for (auto &&n : json["node"].GetArray()) {
+    for (auto &&node : json["node"].GetArray()) {
 
-        Point p;
-        p.id  = id;
-        p.pos = array<float, 2>{static_cast<float>(n["x"].GetDouble()),
-                                static_cast<float>(n["y"].GetDouble())};
-        points_.push_back(p);
+        Node n;
+        n.id     = id;
+        n.pos[0] = static_cast<float>(node["x"].GetDouble());
+        n.pos[1] = static_cast<float>(node["y"].GetDouble());
+        n.radius = node["radius"].GetInt();
+        nodes_.push_back(n);
         id++;
     }
 
-    kdtree_.Index(points_);
+    kdtree_.Index(nodes_);
 }
-void KdTree::Init(const vector<NodeParam> &nodes) {
+void KdTree::Init(const vector<Node> &nodes) {
 
     nodes_ = nodes;
 
-    for (auto &&n : nodes) {
-        Point p;
-        p.id  = n.id;
-        p.pos = array<float, 2>{n.x, n.y};
-        points_.push_back(p);
-    }
+    // for (auto &&n : nodes) {
+    //     Node p;
+    //     p.id  = n.id;
+    //     p.pos = array<float, 2>{n.x, n.y};
+    //     points_.push_back(p);
+    // }
 
-    kdtree_.Index(points_);
+    kdtree_.Index(nodes_);
 }
 void KdTree::Update(const Value &json) {
     int id;
@@ -56,11 +59,10 @@ void KdTree::Update(const Value &json) {
     x  = json["x"].GetDouble();
     y  = json["y"].GetDouble();
 
-    array<float, 2> pos{x, y};
-    Point p(id, pos);
-    points_[id] = p;
+    Node n(id, array<float, 2>{x, y});
+    nodes_[id] = n;
 
-    kdtree_.Update(p);
+    kdtree_.Update(n);
 }
 
 vector<int> KdTree::GetNeighbor(const Value &json) {
@@ -77,7 +79,7 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     }
 
     array<float, 2> pos{x, y};
-    Point query(id, pos);
+    Node query(id, pos);
 
     neighbor = kdtree_.Query(query, r);
 
@@ -107,11 +109,11 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     return neighbor;
 }
 
-vector<int> KdTree::GetNeighbor(const NodeParam &node) {
+vector<int> KdTree::GetNeighbor(const Node &node) {
     vector<int> neighbor;
-    array<float, 2> pos{node.x, node.y};
+    array<float, 2> pos{node.pos[0], node.pos[1]};
 
-    Point query(node.id, pos);
+    Node query(node.id, pos);
 
     neighbor = kdtree_.Query(query, node.radius);
 
@@ -159,7 +161,7 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     }
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
-    writer.SetMaxDecimalPlaces(6);
+    writer.SetMaxDecimalPlaces(4);
 
     root.Accept(writer);
     printf("%s\n", buffer.GetString());
@@ -167,7 +169,7 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
 }
 
 void KdTree::SendDeltaHQ(vector<int> &neighbor,
-                         const NodeParam &node,
+                         const Node &node,
                          string &key) {
 
     Json root;
@@ -182,8 +184,8 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     Value node_object(kObjectType);
 
     node_object.AddMember("id", node.id, root.GetAllocator());
-    node_object.AddMember("x", node.x, root.GetAllocator());
-    node_object.AddMember("y", node.y, root.GetAllocator());
+    node_object.AddMember("x", node.pos[0], root.GetAllocator());
+    node_object.AddMember("y", node.pos[1], root.GetAllocator());
 
     neighbors_object.AddMember("center", node_object, root.GetAllocator());
 
@@ -207,7 +209,7 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     }
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
-    writer.SetMaxDecimalPlaces(6);
+    writer.SetMaxDecimalPlaces(4);
 
     root.Accept(writer);
     printf("%s\n", buffer.GetString());
