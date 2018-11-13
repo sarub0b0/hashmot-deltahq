@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>

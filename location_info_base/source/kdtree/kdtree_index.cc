@@ -3,6 +3,7 @@
 #include <cfloat>
 #include <cmath>
 #include <chrono>
+#include <algorithm>
 
 #include <using.hh>
 #include <kdtree/kdtree_index.hh>
