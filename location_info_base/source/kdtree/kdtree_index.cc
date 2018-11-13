@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cfloat>
 #include <cmath>
+#include <chrono>
 
 #include <using.hh>
 #include <kdtree/kdtree_index.hh>
@@ -48,7 +49,20 @@ KdTreeIndex::~KdTreeIndex() {
 }
 
 void KdTreeIndex::Index(vector<Node> &nodes) {
+    chrono::high_resolution_clock::time_point begin =
+        chrono::high_resolution_clock::now();
+
     tree_ = MakeTree(nodes, 0, nodes.size(), 0);
+
+    chrono::high_resolution_clock::time_point end =
+        chrono::high_resolution_clock::now();
+
+    chrono::nanoseconds make_elapsed =
+        chrono::duration_cast<chrono::nanoseconds>(end - begin);
+
+    printf("make elapsed=%lld\n", make_elapsed.count());
+
+    printTree(tree_, nullptr, false);
 
     nodes_.resize(nodes.size());
     copy(nodes.begin(), nodes.end(), nodes_.begin());
@@ -135,6 +149,11 @@ TreeNode *KdTreeIndex::Search(TreeNode *tnode, Node &node) {
 TreeNode *KdTreeIndex::ReMakeTree(TreeNode *tnode, Node &node) {
     if (tnode == nullptr) return nullptr;
 
+    // TODO 更新修正
+    // 親ノードのポインタを扱えるようにする
+    // 更新ノードに直接アクセスできるようにする
+    // ノードの位置関係が変わらなければ値のみ更新
+    //
     int axis;
 
     axis = tnode->axis;

@@ -167,6 +167,8 @@ int main(int argc, char const *argv[]) {
                         vector<int> neighbor;
                         neighbor = ns->GetNeighbor(node);
 
+                        sort(neighbor.begin(), neighbor.end());
+
                         if (0 < neighbor.size()) {
                             ns->SendDeltaHQ(neighbor, node, key);
                         }
