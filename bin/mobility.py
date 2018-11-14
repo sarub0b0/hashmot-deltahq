@@ -11,23 +11,38 @@ from signal import signal, SIGPIPE, SIG_DFL
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print("arguments:")
         print("\t$1   filename")
         print("\t$2   max loop")
         print("\t$3   delay")
-        print("\t$4   single or multi line [s, m]")
+        print("\t$4   node speed")
+        print("\t$5   single or multi line [s, m]")
 
         sys.exit(1)
 
     signal(SIGPIPE, SIG_DFL)
 
-
-
+    # filename
     f = open(sys.argv[1], 'r')
 
+    # max loop
+    if 0 < int(sys.argv[2]):
+        loop_max = int(sys.argv[2])
+    else:
+        loop_max = 0
+
+    # delay
+    delay = 0
+    if 0 < float(sys.argv[3]):
+        delay = float(sys.argv[3])
+
+    # node speed
+    speed = int(sys.argv[4])
+
+    # single or multi line
     is_single = False
-    if sys.argv[4] == "s":
+    if sys.argv[5] == "s":
         is_single = True
     else:
         is_single = False
@@ -75,17 +90,12 @@ if __name__ == '__main__':
 
     time.sleep(0.5)
 
-    if 0 < int(sys.argv[2]):
-        loop_max = int(sys.argv[2])
-    else:
-        loop_max = 0
-
-    delay = 0
-    if 0 < float(sys.argv[3]):
-        delay = float(sys.argv[3])
 
     mt = 0
+
     loop_count = 0
+
+    idx = 0
     while True:
         if 0 < loop_max:
             if loop_max <= loop_count:
@@ -98,9 +108,10 @@ if __name__ == '__main__':
 
         t0 = time.perf_counter()
 
-        idx = random.randint(0, len(node) - 1)
+        idx = idx + 1
+        idx = idx % len(node)
+        #  idx = random.randint(0, len(node) - 1)
 
-        speed = 1
         x = node[idx]['x']
         y = node[idx]['y']
         r = node[idx]['radius']

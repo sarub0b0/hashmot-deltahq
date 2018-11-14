@@ -24,8 +24,9 @@ struct Node {
         this->radius = radius;
     }
     Node(int id, array<float, 2> pos) {
-        this->id  = id;
-        this->pos = pos;
+        this->id     = id;
+        this->pos    = pos;
+        this->radius = 0;
     }
 };
 

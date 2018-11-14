@@ -73,6 +73,9 @@ int main(int argc, char const *argv[]) {
             exit(1);
     }
 
+    string init =
+        R"({"init":{"node":[{"name":"node0","type":"regular","connection":"infrastructure","adapter":"orinoco","x":1.08,"y":2.46,"z":2.11,"Pt":20,"internal_delay":1,"radius":5},{"name":"node1","type":"regular","connection":"infrastructure","adapter":"orinoco","x":5.89,"y":2.99,"z":8.17,"Pt":20,"internal_delay":1,"radius":5},{"name":"node2","type":"regular","connection":"infrastructure","adapter":"orinoco","x":1.73,"y":2.91,"z":8.11,"Pt":20,"internal_delay":1,"radius":5},{"name":"node3","type":"regular","connection":"infrastructure","adapter":"orinoco","x":4.36,"y":9.4,"z":5.31,"Pt":20,"internal_delay":1,"radius":5},{"name":"node4","type":"regular","connection":"infrastructure","adapter":"orinoco","x":7.69,"y":1.37,"z":7.58,"Pt":20,"internal_delay":1,"radius":5},{"name":"node5","type":"regular","connection":"infrastructure","adapter":"orinoco","x":0.87,"y":2.51,"z":4.37,"Pt":20,"internal_delay":1,"radius":5},{"name":"node6","type":"regular","connection":"infrastructure","adapter":"orinoco","x":1.88,"y":6.48,"z":6.29,"Pt":20,"internal_delay":1,"radius":5},{"name":"node7","type":"regular","connection":"infrastructure","adapter":"orinoco","x":8.77,"y":7.68,"z":9.99,"Pt":20,"internal_delay":1,"radius":5},{"name":"node8","type":"regular","connection":"infrastructure","adapter":"orinoco","x":5.76,"y":4.1,"z":9.52,"Pt":20,"internal_delay":1,"radius":5},{"name":"node9","type":"regular","connection":"infrastructure","adapter":"orinoco","x":6.28,"y":4.43,"z":4.27,"Pt":20,"internal_delay":1,"radius":5}],"environment":[{"name":"env_outdoor","is_dynamic":false,"alpha":3.2,"sigma":0.0,"W":0.0,"noise_power":-100.0}],"connection":[{"from_node":"node0","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node1","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node2","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node3","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node4","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node5","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node6","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node7","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node8","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false},{"from_node":"node9","to_node":"auto_connect","through_environment":"env_outdoor","standard":"802.11b","packet_size":1024,"consider_interference":false}]}})";
+
     vector<Node> init_nodes;
 
     int id = 0;
@@ -86,6 +89,7 @@ int main(int argc, char const *argv[]) {
 
         Json json;
         json.Parse(read.c_str());
+        // json.Parse(init.c_str());
 
         ///////////////////////////////////////
         // Check parse error
@@ -175,6 +179,7 @@ int main(int argc, char const *argv[]) {
                         }
                         id++;
                     }
+                    // goto FINISH_HANDLER;
                     // #endif
                 }
             }
@@ -207,11 +212,11 @@ int main(int argc, char const *argv[]) {
                 chrono::microseconds search_elapsed =
                     chrono::duration_cast<chrono::microseconds>(end - begin);
 
-                fprintf(stderr,
-                        "elapsed=%lld\tupdate=%lld\tsearch=%lld\n",
-                        update_elapsed.count() + search_elapsed.count(),
-                        update_elapsed.count(),
-                        search_elapsed.count());
+                // fprintf(stderr,
+                //         "elapsed=%lld\tupdate=%lld\tsearch=%lld\n",
+                //         update_elapsed.count() + search_elapsed.count(),
+                //         update_elapsed.count(),
+                //         search_elapsed.count());
 
                 if (0 < neighbor.size()) {
                     // begin = chrono::high_resolution_clock::now();

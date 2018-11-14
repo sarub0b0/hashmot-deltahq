@@ -20,7 +20,7 @@ KdTree::KdTree() {
 
 KdTree::~KdTree() {
     // fprintf(stderr, "KdTree Destructor\n");
-    kdtree_.Clear();
+    // kdtree_.Clear();
 }
 
 void KdTree::Init(const Value &json) {
@@ -30,8 +30,8 @@ void KdTree::Init(const Value &json) {
 
         Node n;
         n.id     = id;
-        n.pos[0] = static_cast<float>(node["x"].GetDouble());
-        n.pos[1] = static_cast<float>(node["y"].GetDouble());
+        n.pos[0] = FLOAT(node["x"].GetDouble());
+        n.pos[1] = FLOAT(node["y"].GetDouble());
         n.radius = node["radius"].GetInt();
         nodes_.push_back(n);
         id++;
@@ -53,13 +53,14 @@ void KdTree::Init(const vector<Node> &nodes) {
     kdtree_.Index(nodes_);
 }
 void KdTree::Update(const Value &json) {
-    int id;
+    int id, radius;
     float x, y;
-    id = json["id"].GetInt();
-    x  = json["x"].GetDouble();
-    y  = json["y"].GetDouble();
+    id     = json["id"].GetInt();
+    x      = json["x"].GetDouble();
+    y      = json["y"].GetDouble();
+    radius = json["r"].GetInt();
 
-    Node n(id, array<float, 2>{x, y});
+    Node n(id, array<float, 2>{x, y}, radius);
     nodes_[id] = n;
 
     kdtree_.Update(n);
@@ -79,33 +80,46 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     }
 
     array<float, 2> pos{x, y};
-    Node query(id, pos);
+    Node query(id, pos, r);
 
     neighbor = kdtree_.Query(query, r);
 
-    // printf("neighbor:\n");
-    // sort(neighbor.begin(), neighbor.end());
-    // for (auto &&i : neighbor) {
-    //     printf("%d ", i);
+    // kdtree_.Validation(nodes_);
+
+    if (neighbor.size() == 0) {
+        return neighbor;
+    }
+    printf("neighbor:\n");
+    sort(neighbor.begin(), neighbor.end());
+    for (auto &&i : neighbor) {
+        printf("%d ", i);
+    }
+    puts("");
+
+    // printf("nodes\n");
+    // for (auto &&n : nodes_) {
+    //     printf("%d ", n.id);
     // }
     // puts("");
 
-    // printf("exact:\n");
-    // vector<int> exact;
-    // for (auto &&p : points_) {
-    //     if (id == p.id) {
-    //         continue;
-    //     }
-    //     if (sqrt(pow(p.pos[0] - pos[0], 2) + pow(p.pos[1] - pos[1], 2)) <
-    //     r) {
-    //         exact.push_back(p.id);
-    //     }
-    // }
-    // sort(exact.begin(), exact.end());
-    // for (auto &&i : exact) {
-    //     printf("%d ", i);
-    // }
-    // puts("");
+    printf("exact:\n");
+    vector<int> exact;
+    for (auto &&n : nodes_) {
+        if (id == n.id) {
+            continue;
+        }
+        if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) < r) {
+            exact.push_back(n.id);
+        }
+    }
+    sort(exact.begin(), exact.end());
+    for (auto &&i : exact) {
+        printf("%d ", i);
+    }
+    puts("");
+
+    printf("Query %d\n", id);
+    assert(exact.size() == neighbor.size());
     return neighbor;
 }
 

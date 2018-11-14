@@ -20,20 +20,23 @@ struct Trunk {
 
 struct TreeNode {
     Node node;
+    TreeNode *parent;
     TreeNode *left;
     TreeNode *right;
     int axis;
     array<int, 2> range;
     list<int> list;
+    int own_idx;
     TreeNode() : axis(-1) {
-        left  = nullptr;
-        right = nullptr;
-        range = {-1, -1};
+        this->left    = nullptr;
+        this->right   = nullptr;
+        this->range   = {-1, -1};
+        this->own_idx = -1;
     }
     ~TreeNode() {
-        list.clear();
-        left  = nullptr;
-        right = nullptr;
+        this->list.clear();
+        this->left  = nullptr;
+        this->right = nullptr;
     }
     // TODO なんかのリストか宛先を持つと早くなる？
     // 隣のノード？
@@ -49,13 +52,18 @@ class KdTreeIndex {
     vector<int> Query(Node &query, int radius);
     void Clear();
 
+    void Validation(vector<Node> &nodes);
+
    private:
     TreeNode *tree_;
 
+    vector<TreeNode *> tnodes_;
     vector<Node> nodes_;
-    vector<Node> id_sorted_nodes_;
+    // vector<Node> id_sorted_nodes_;
     vector<int> neighbor_;
 
+    TreeNode *MakeTree(
+        TreeNode *parent, vector<Node> &nodes, int begin, int end, int axis);
     TreeNode *MakeTree(vector<Node> &nodes, int begin, int end, int axis);
 
     TreeNode *MakeTree(vector<Node> &nodes, int axis);
@@ -64,8 +72,12 @@ class KdTreeIndex {
 
     TreeNode *Search(TreeNode *tnode, Node &node);
 
+    bool IsRemakeTree(TreeNode *tnode, const Node &node);
+
     void AddIndex(TreeNode *tnode, Node &node);
+
     void RemoveIndex();
+
     TreeNode *ReMakeTree(TreeNode *tnode, Node &node);
     void ClearTree(TreeNode *tnode);
 
