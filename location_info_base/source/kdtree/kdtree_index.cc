@@ -15,7 +15,8 @@ namespace neighbor_search {
 void KdTreeIndex::showTrunks(Trunk *p) {
     if (p == nullptr) return;
     showTrunks(p->prev);
-    cout << p->str;
+    printf("%s", p->str.c_str());
+    // cout << p->str;
 }
 
 // Recursive function to print binary tree. It uses inorder traversal
@@ -38,7 +39,8 @@ void KdTreeIndex::printTree(TreeNode *root, Trunk *prev, bool isLeft) {
     }
 
     showTrunks(trunk);
-    cout << root->node.id << endl;
+    // cout << root->node.id << endl;
+    printf("%d\n", root->node.id);
     if (prev) prev->str = prev_str;
 
     trunk->str = "    |";
@@ -77,7 +79,7 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     chrono::nanoseconds make_elapsed =
         chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-    // printf("make elapsed=%lld\n", make_elapsed.count());
+    printf("make elapsed=%lld\n", make_elapsed.count());
 
     // printTree(tree_, nullptr, false);
 
@@ -137,7 +139,6 @@ void KdTreeIndex::Update(Node &node) {
     // Remove
     // Rebuild
     if (!IsRemakeTree(tnodes_[node.id], node)) {
-
         tnodes_[node.id]->node = node;
         // printTree(tree_, nullptr, false);
         return;
@@ -171,76 +172,90 @@ void KdTreeIndex::AddIndex(TreeNode *tnode, Node &node) {
         return;
     }
 
-    int axis       = tnode->axis;
+    // int axis       = tnode->axis;
+    // bool is_left   = false;
+    // TreeNode *next = nullptr;
+
+    int axis;
     bool is_left   = false;
     TreeNode *next = nullptr;
 
-    if (node.pos[axis] < tnode->node.pos[axis]) {
-        next    = tnode->left;
-        is_left = true;
-    } else {
-        next = tnode->right;
-    }
+    while (true) {
 
-    tnode->list.push_back(node.id);
+        axis    = tnode->axis;
+        is_left = false;
+        next    = nullptr;
 
-    // if (tnode->left) assert(tnode->left != tnode);
-    // if (tnode->right) assert(tnode->right != tnode);
-    // printf("node=%d\n", tnode->node.id);
+        // float diff = fabs(tnode->node.pos[axis] - node.pos[axis]);
 
-    // printf("parent=%p current=%p left=%p right=%p\n",
-    //        tnode->parent,
-    //        tnode,
-    //        tnode->left,
-    //        tnode->right);
-    if (next == nullptr) {
-        // next = new TreeNode();
-        axis = axis == 0 ? 1 : 0;
-
-        next         = tnodes_[node.id];
-        next->node   = node;
-        next->axis   = axis;
-        next->parent = tnode;
-
-        // next->left  = nullptr;
-        // next->right = nullptr;
-
-        next->list.clear();
-        next->list.push_back(node.id);
-
-        TreeNode *parent = tnode;
-
-        // printf("parent=%d ", parent->node.id);
-        // if (parent->left) {
-        //     printf("left=%d ", parent->left->node.id);
-        //     if (parent->left->left)
-        //         printf("lleft=%d ", parent->left->left->node.id);
-        //     if (parent->left->right)
-        //         printf("rleft=%d ", parent->left->right->node.id);
-        // }
-        // if (parent->right) {
-        //     printf("right=%d ", parent->right->node.id);
-        //     if (parent->right->left)
-        //         printf("lright=%d ", parent->right->left->node.id);
-        //     if (parent->right->right)
-        //         printf("rright=%d ", parent->right->right->node.id);
-        // }
-        // puts("");
-
-        if (is_left) {
-            tnode->left = next;
+        if (node.pos[axis] < tnode->node.pos[axis]) {
+            next    = tnode->left;
+            is_left = true;
         } else {
-            tnode->right = next;
+            next = tnode->right;
         }
+
+        tnode->list.push_back(node.id);
 
         // if (tnode->left) assert(tnode->left != tnode);
         // if (tnode->right) assert(tnode->right != tnode);
+        // printf("node=%d\n", tnode->node.id);
 
-        return;
-    } else {
-        AddIndex(next, node);
+        // printf("parent=%p current=%p left=%p right=%p\n",
+        //        tnode->parent,
+        //        tnode,
+        //        tnode->left,
+        //        tnode->right);
+        if (!next) {
+            // next = new TreeNode();
+            // axis = axis == 0 ? 1 : 0;
+
+            next         = tnodes_[node.id];
+            next->node   = node;
+            next->axis   = axis == 0 ? 1 : 0;
+            next->parent = tnode;
+
+            // next->left  = nullptr;
+            // next->right = nullptr;
+
+            next->list.clear();
+            next->list.push_back(node.id);
+
+            // printf("parent=%d ", parent->node.id);
+            // if (parent->left) {
+            //     printf("left=%d ", parent->left->node.id);
+            //     if (parent->left->left)
+            //         printf("lleft=%d ", parent->left->left->node.id);
+            //     if (parent->left->right)
+            //         printf("rleft=%d ", parent->left->right->node.id);
+            // }
+            // if (parent->right) {
+            //     printf("right=%d ", parent->right->node.id);
+            //     if (parent->right->left)
+            //         printf("lright=%d ", parent->right->left->node.id);
+            //     if (parent->right->right)
+            //         printf("rright=%d ",
+            //         parent->right->right->node.id);
+            // }
+            // puts("");
+
+            if (is_left) {
+                tnode->left = next;
+            } else {
+                tnode->right = next;
+            }
+
+            // if (tnode->left) assert(tnode->left != tnode);
+            // if (tnode->right) assert(tnode->right != tnode);
+
+            return;
+        }
+        tnode = next;
+        // else {
+        //     AddIndex(next, node);
+        // }
+        // return;
     }
-    return;
 }
 
 TreeNode *KdTreeIndex::Search(TreeNode *tnode, Node &node) {
@@ -249,13 +264,23 @@ TreeNode *KdTreeIndex::Search(TreeNode *tnode, Node &node) {
 
 TreeNode *KdTreeIndex::ReMakeTree(TreeNode *tnode, Node &node) {
 
-    // TreeNode *parent = tnode->parent;
+    TreeNode *parent = nullptr;
 
     // printTree(tree_, nullptr, false);
 
     // if (tnode->left) tnode->left->parent = nullptr;
     // if (tnode->right) tnode->right->parent = nullptr;
+    // if (tnode->left == nullptr && tnode->right == nullptr) {
+    //     parent = tnode->parent;
+    //     if (parent->left == tnode) parent->left = nullptr;
+    //     if (parent->right == tnode) parent->right = nullptr;
 
+    //     tnode->parent = nullptr;
+    //     return nullptr;
+    // }
+
+    if (tnode->left) tnode->left->parent = nullptr;
+    if (tnode->right) tnode->right->parent = nullptr;
     tnode->left  = nullptr;
     tnode->right = nullptr;
 
@@ -295,6 +320,7 @@ TreeNode *KdTreeIndex::ReMakeTree(TreeNode *tnode, Node &node) {
         // puts("");
         tn = tn->parent;
     }
+
     vector<Node> list(tnode->list.size());
 
     // printf("after list size=%lu\n", tnode->list.size());
@@ -312,9 +338,11 @@ TreeNode *KdTreeIndex::ReMakeTree(TreeNode *tnode, Node &node) {
 
     // puts("");
 
-    TreeNode *parent = tnode->parent;
-    TreeNode *ret    = MakeTree(parent, list, 0, list.size(), tnode->axis);
-    if (!parent) {
+    parent        = tnode->parent;
+    tnode->parent = nullptr;
+
+    TreeNode *ret = MakeTree(parent, list, 0, list.size(), tnode->axis);
+    if (parent == nullptr) {
         tree_ = ret;
         return nullptr;
     }
@@ -322,8 +350,8 @@ TreeNode *KdTreeIndex::ReMakeTree(TreeNode *tnode, Node &node) {
     // TreeNode *ret;
     if (parent->left == tnode) {
         // parent->left =
-        // parent->left = MakeTree(parent, list, 0, list.size(), tnode->axis);
-        // printf("parent=%d left=%d left->parent=%d\n",
+        // parent->left = MakeTree(parent, list, 0, list.size(),
+        // tnode->axis); printf("parent=%d left=%d left->parent=%d\n",
         //        parent->node.id,
         //        ret->node.id,
         //        ret->parent->node.id);
@@ -554,7 +582,8 @@ TreeNode *KdTreeIndex::MakeTree(vector<Node> &nodes, int axis) {
     //     vector<Node> right(right_size);
 
     //     copy(nodes.begin(), nodes.begin() + left_size, left.begin());
-    //     copy(nodes.begin() + left_size + 1, nodes.end(), right.begin());
+    //     copy(nodes.begin() + left_size + 1, nodes.end(),
+    //     right.begin());
 
     TreeNode *tnode = new TreeNode();
     //     tnode->node     = nodes[median];
@@ -569,6 +598,8 @@ TreeNode *KdTreeIndex::MakeTree(vector<Node> &nodes, int axis) {
 
 vector<int> KdTreeIndex::Query(Node &query, int radius) {
     neighbor_.clear();
+    // printTree(tree_, nullptr, false);
+
     RangeSearch(tree_, query, radius);
 
     return neighbor_;
@@ -577,22 +608,31 @@ void KdTreeIndex::RangeSearch(TreeNode *tnode, Node &query, int radius) {
 
     if (tnode == nullptr) return;
 
-    array<float, 2> &node = tnode->node.pos;
+    const array<float, 2> &node = tnode->node.pos;
+    const array<float, 2> &q    = query.pos;
 
-    float dist = Distance(query.pos, node);
+    float dist = Distance(q, node);
 
     if (dist < radius && query.id != tnode->node.id) {
         neighbor_.push_back(tnode->node.id);
     }
 
-    // printf("search: %d %.2f\n", tnode->node.id, dist);
+    if (!tnode->left && !tnode->right) {
+        return;
+    }
 
     int axis;
     axis = tnode->axis;
+    // printf("% 2d (%.2f, %.2f) axis=%d r=%d\n",
+    //        tnode->node.id,
+    //        node[0],
+    //        node[1],
+    //        axis,
+    //        radius);
 
     TreeNode *next, *nnext;
 
-    if (query.pos[axis] < node[axis]) {
+    if (q[axis] < node[axis]) {
         next  = tnode->left;
         nnext = tnode->right;
     } else {
@@ -600,17 +640,18 @@ void KdTreeIndex::RangeSearch(TreeNode *tnode, Node &query, int radius) {
         nnext = tnode->left;
     }
 
-    if (tnode->left) assert(tnode->left != tnode);
-    if (tnode->right) assert(tnode->right != tnode);
+    // if (tnode->left) assert(tnode->left != tnode);
+    // if (tnode->right) assert(tnode->right != tnode);
     RangeSearch(next, query, radius);
 
-    float diff = query.pos[axis] - node[axis];
+    float diff = fabs(q[axis] - node[axis]);
 
-    if (fabs(diff) < radius) RangeSearch(nnext, query, radius);
+    if (diff <= radius) RangeSearch(nnext, query, radius);
     return;
 }
 
-float KdTreeIndex::Distance(array<float, 2> &a, array<float, 2> &b) {
+float KdTreeIndex::Distance(const array<float, 2> &a,
+                            const array<float, 2> &b) {
     return sqrt(pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2));
 }
 
@@ -664,4 +705,19 @@ void KdTreeIndex::Validation(vector<Node> &nodes) {
         assert(a.radius == b.radius);
     }
 }
+
+void KdTreeIndex::PrintBack(int id) {
+
+    TreeNode *tn = tnodes_[id];
+    while (tn != tree_) {
+        printf("%d (%.2f, %.2f)\n",
+               tn->node.id,
+               tn->node.pos[0],
+               tn->node.pos[1]);
+        printf("parent%d\n", tn->parent->node.id);
+        tn = tn->parent;
+        id = tn->node.id;
+    }
+}
+
 } // namespace neighbor_search

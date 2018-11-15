@@ -54,6 +54,8 @@ class KdTreeIndex {
 
     void Validation(vector<Node> &nodes);
 
+    void PrintBack(int id);
+
    private:
     TreeNode *tree_;
 
@@ -84,7 +86,7 @@ class KdTreeIndex {
     void showTrunks(Trunk *p);
     void printTree(TreeNode *root, Trunk *prev, bool isLeft);
 
-    float Distance(array<float, 2> &a, array<float, 2> &b);
+    float Distance(const array<float, 2> &a, const array<float, 2> &b);
 
     static int Median(vector<Node> &nodes, int begin, int end);
     static vector<Node> &Sort(vector<Node> &nodes,

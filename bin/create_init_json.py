@@ -121,3 +121,5 @@ else:
             })
     write_file(fd, root)
 fd.write("{\"init\":\"finish\"}\n")
+#  fd.write("{\"finish\":\"finish\"}\n")
+fd.close()

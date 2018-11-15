@@ -80,6 +80,9 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     }
 
     array<float, 2> pos{x, y};
+
+    // printf(
+    //     " ========= Query % d (%.2f, %.2f)========= \n", id, pos[0], pos[1]);
     Node query(id, pos, r);
 
     neighbor = kdtree_.Query(query, r);
@@ -89,12 +92,12 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     if (neighbor.size() == 0) {
         return neighbor;
     }
-    printf("neighbor:\n");
-    sort(neighbor.begin(), neighbor.end());
-    for (auto &&i : neighbor) {
-        printf("%d ", i);
-    }
-    puts("");
+    // printf("neighbor:\n");
+    // sort(neighbor.begin(), neighbor.end());
+    // for (auto &&i : neighbor) {
+    //     printf("%d ", i);
+    // }
+    // puts("");
 
     // printf("nodes\n");
     // for (auto &&n : nodes_) {
@@ -102,26 +105,43 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     // }
     // puts("");
 
-    printf("exact:\n");
-    vector<int> exact;
-    for (auto &&n : nodes_) {
-        if (id == n.id) {
-            continue;
-        }
-        if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) < r) {
-            exact.push_back(n.id);
-        }
-    }
-    sort(exact.begin(), exact.end());
-    for (auto &&i : exact) {
-        printf("%d ", i);
-    }
-    puts("");
+    // printf("exact:\n");
+    // vector<int> exact;
+    // for (auto &&n : nodes_) {
+    //     if (id == n.id) {
+    //         continue;
+    //     }
+    //     if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) < r) {
+    //         exact.push_back(n.id);
+    //     }
+    // }
 
-    printf("Query %d\n", id);
-    assert(exact.size() == neighbor.size());
+    // sort(exact.begin(), exact.end());
+    // for (auto &&i : exact) {
+    //     printf("%d ", i);
+    // }
+    // puts("");
+    // printf("miss:\n");
+    // bool is_same = false;
+    // if (exact.size()) {
+    //     for (auto &&exa : exact) {
+    //         is_same = false;
+    //         for (auto &&nei : neighbor) {
+    //             if (nei == exa) {
+    //                 is_same = true;
+    //                 break;
+    //             }
+    //         }
+
+    //         if (!is_same) {
+    //             kdtree_.PrintBack(exa);
+    //         }
+    //     }
+    // }
+
+    // assert(exact.size() == neighbor.size());
     return neighbor;
-}
+} // namespace neighbor_search
 
 vector<int> KdTree::GetNeighbor(const Node &node) {
     vector<int> neighbor;
