@@ -14,4 +14,4 @@ core.*
 *.a
 log
 bin/*.json
-
+!remake.sh

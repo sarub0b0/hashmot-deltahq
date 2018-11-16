@@ -222,77 +222,73 @@ connection.\n",
                         MAX_STRING - 1);
 
                 // check if we can still add a connection
-                if (scenario->connection_number < MAX_CONNECTIONS) {
-                    count++;
+                // if (scenario->connection_number < MAX_CONNECTIONS) {
+                count++;
 
-                    // if a connection can be successfully added, we also need
-                    // to
-                    // create and add an environment for this connection;
-                    // the name is built from the name of the environment
-                    // provided in the connection and of type 'is_dynamic'
+                // if a connection can be successfully added, we also need
+                // to
+                // create and add an environment for this connection;
+                // the name is built from the name of the environment
+                // provided in the connection and of type 'is_dynamic'
 
-                    if (connection->through_environment_index ==
-                        INVALID_INDEX) {
-                        snprintf(connection->through_environment,
-                                 MAX_STRING - 1,
-                                 "%s(%s->%s)",
-                                 environment_base_name,
-                                 connection->from_node,
-                                 connection->to_node);
+                if (connection->through_environment_index == INVALID_INDEX) {
+                    snprintf(connection->through_environment,
+                             MAX_STRING - 1,
+                             "%s(%s->%s)",
+                             environment_base_name,
+                             connection->from_node,
+                             connection->to_node);
 
-                        strncpy(environment.name,
-                                connection->through_environment,
-                                MAX_STRING - 1);
-                        environment.name_hash = string_hash(
-                            environment.name, strlen(environment.name));
+                    strncpy(environment.name,
+                            connection->through_environment,
+                            MAX_STRING - 1);
+                    environment.name_hash = string_hash(
+                        environment.name, strlen(environment.name));
 
-                        environment.is_dynamic = TRUE;
-                    }
+                    environment.is_dynamic = TRUE;
+                }
 
-                    DEBUG(
-                        "Generating connection from '%s' to '%s' through "
-                        "'%s'",
-                        connection->from_node,
-                        connection->to_node,
-                        connection->through_environment);
+                DEBUG(
+                    "Generating connection from '%s' to '%s' through "
+                    "'%s'",
+                    connection->from_node,
+                    connection->to_node,
+                    connection->through_environment);
 
-                    // only need to add environment if it was not previously
-                    // found
-                    if (connection->through_environment_index ==
-                        INVALID_INDEX)
-                        add_env_result =
-                            scenario_add_environment(scenario, &environment);
+                // only need to add environment if it was not previously
+                // found
+                if (connection->through_environment_index == INVALID_INDEX)
+                    add_env_result =
+                        scenario_add_environment(scenario, &environment);
 
-                    // try to add the generated environment
-                    if (add_env_result != NULL ||
-                        connection->through_environment_index !=
-                            INVALID_INDEX) {
-                        connection_copy(
-                            &(scenario
-                                  ->connections[scenario->connection_number]),
-                            connection);
-                        return_value =
-                            &(scenario
-                                  ->connections[scenario->connection_number]);
-                        scenario->connection_number++;
+                // try to add the generated environment
+                if (add_env_result != NULL ||
+                    connection->through_environment_index != INVALID_INDEX) {
+                    connection_copy(
+                        &(scenario->connections[scenario->connection_number]),
+                        connection);
+                    return_value =
+                        &(scenario->connections[scenario->connection_number]);
+                    scenario->connection_number++;
 #ifdef MESSAGE_DEBUG
-                        scenario_print(scenario);
+                    scenario_print(scenario);
 #endif
-                    } else {
-                        WARNING(
-                            "Could not add generated environment or \
-incorrect environment index initialization");
-                        return_value = NULL;
-                        break;
-                    }
                 } else {
                     WARNING(
-                        "Maximum number of connections in scenario \
-reached (%d)!",
-                        MAX_CONNECTIONS);
+                        "Could not add generated environment or \
+incorrect environment index initialization");
                     return_value = NULL;
                     break;
                 }
+                //                 } else {
+                //                     WARNING(
+                //                         "Maximum number of connections in
+                //                         scenario \
+// reached (%d)!",
+                //                         MAX_CONNECTIONS);
+                //                     return_value = NULL;
+                //                     break;
+                //                 }
             }
     }
     // check to see if multiple to_node names are given

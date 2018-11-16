@@ -268,49 +268,49 @@ int json_init_scenario(struct scenario_class *scenario,
     }
 
     json_error_t error;
-    while (1) {
-        json_t *first_object = NULL;
+    // while (1) {
+    json_t *first_object = NULL;
 
-        // printf("%p %s", line, line);
-        root = json_loads(line, 0, &error);
-        // assert(malloc_zone_check(NULL));
-        // print_json(root);
-        // printf("%p %s", line, line);
+    // printf("%p %s", line, line);
+    root = json_loads(line, 0, &error);
+    // assert(malloc_zone_check(NULL));
+    // print_json(root);
+    // printf("%p %s", line, line);
 
-        // allowed_write_buffer(ibuf);
-        if (!root) {
+    // allowed_write_buffer(ibuf);
+    if (!root) {
 
-            // first_object = json_object_get(root, "finish");
-            // if (first_object) {
-            //     // print_json(first_object);
-            //     fprintf(stdout,
-            //             "------------ received finish json
-            //             ------------\n");
-            //     json_decref(first_object);
-            //     json_decref(root);
-            //     first_object = NULL;
-            //     root         = NULL;
-            //     return 0;
-            // } else {
-            //     json_decref(first_object);
-            //     // free_read_string();
-            //     // return root;
-            //     break;
-            // }
-            // } else {
-            fprintf(stderr,
-                    "json error on line %d (col %d): %s\n",
-                    error.line,
-                    error.column,
-                    error.text);
-            fprintf(stderr, "%d\n%s\n", error.position, error.source);
-            // fprintf(stderr, "len=%ld %s\n", strlen(line), line);
-            json_decref(first_object);
-            json_decref(root);
-            first_object = NULL;
-            root         = NULL;
-        }
+        // first_object = json_object_get(root, "finish");
+        // if (first_object) {
+        //     // print_json(first_object);
+        //     fprintf(stdout,
+        //             "------------ received finish json
+        //             ------------\n");
+        //     json_decref(first_object);
+        //     json_decref(root);
+        //     first_object = NULL;
+        //     root         = NULL;
+        //     return 0;
+        // } else {
+        //     json_decref(first_object);
+        //     // free_read_string();
+        //     // return root;
+        //     break;
+        // }
+        // } else {
+        fprintf(stderr,
+                "json error on line %d (col %d): %s\n",
+                error.line,
+                error.column,
+                error.text);
+        fprintf(stderr, "%d\n%s\n", error.position, error.source);
+        // fprintf(stderr, "len=%ld %s\n", strlen(line), line);
+        json_decref(first_object);
+        json_decref(root);
+        first_object = NULL;
+        root         = NULL;
     }
+    // }
 
     // root = read_json(ibuf);
 
@@ -363,14 +363,17 @@ int json_init_scenario(struct scenario_class *scenario,
     // WARNING("init success");
     // printf("j_nodes->refcount=%zu\n", j_nodes->refcount);
     // printf("j_conns->refcount=%zu\n", j_conns->refcount);
-    json_decref(j_nodes);
-    json_decref(j_envs);
-    json_decref(j_conns);
+    //
+    // json_decref(j_nodes);
+    // json_decref(j_envs);
+    // json_decref(j_conns);
+
     // assert(malloc_zone_check(NULL));
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
-    json_decref(json);
-    json_decref(root);
+    //
+    // json_decref(json);
+    // json_decref(root);
     // assert(malloc_zone_check(NULL));
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
@@ -490,7 +493,7 @@ int update_neighbors(struct scenario_class *scenario,
         nei = NULL;
     }
 
-    json_decref(neighbor);
+    // json_decref(neighbor);
     neighbor = NULL;
     // json_decref(node_object);
     // node_object = NULL;
@@ -544,9 +547,9 @@ int update_neighbors(struct scenario_class *scenario,
     // printf("update->refcount=%zu\n", update_json->refcount);
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
-    json_decref(update_json);
-    json_decref(json);
-    json_decref(root);
+    // json_decref(update_json);
+    // json_decref(json);
+    // json_decref(root);
     // printf("update->refcount=%zu\n", update_json->refcount);
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
@@ -1196,7 +1199,7 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
             json_decref(j);
         }
 
-        json_decref(jn);
+        // json_decref(jn);
     }
 
     return SUCCESS;
@@ -1293,7 +1296,7 @@ int parse_environment(struct scenario_class *scenario, json_t *json) {
             }
         }
 
-        json_decref(je);
+        // json_decref(je);
         if (name_provided == FALSE) {
             return ERROR;
         }
@@ -1725,7 +1728,7 @@ Ignored invalid value ('%lu')",
         if (scenario_add_connection(scenario, &c) == NULL) {
             return ERROR;
         }
-        json_decref(jc);
+        // json_decref(jc);
     }
 
     return SUCCESS;

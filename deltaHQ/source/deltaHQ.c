@@ -528,8 +528,8 @@ int main(int argc, char **argv) {
     pthread_cond_init(&ibuf_cond_write, NULL);
 
     input_buffer_t ibuf;
-    ibuf.bufs_size = 5;
-    ibuf.buf_size  = 500000000;
+    ibuf.bufs_size = 3;
+    ibuf.buf_size  = 4000000;
     ibuf.read_pos  = 0;
     ibuf.write_pos = 0;
     ibuf.buf_count = 0;
