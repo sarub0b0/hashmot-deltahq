@@ -5,18 +5,15 @@ project(${PROJECT_NAME} C)
 
 set(CMAKE_C_COMPILER_NAME clang)
 
-if(UNIX)
-# set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE string "clang compiler" FORCE)
-endif(UNIX)
-if(APPLE)
-# set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang" CACHE string "clang compiler" FORCE)
-endif(APPLE)
+set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE string "clang compiler" FORCE)
 
 set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_C_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
-# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fPIE")
-set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
+# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0")
+# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=address")
+# set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
 set(CMAKE_C_FLAGS_RELEASE "-O0 -s -DMESSAGE_WARNING")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g3 -Og -pg")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
@@ -28,7 +25,7 @@ include_directories(include)
 
 set(libs m c pthread expat jansson)
 
-set(sources_dir deltaHQ)
+set(sources_dir source)
 set(headers_dir include)
 file(GLOB sources RELATIVE ${PROJECT_SOURCE_DIR} ${sources_dir}/*.c)
 file(GLOB headers RELATIVE ${PROJECT_SOURCE_DIR} ${headers_dir}/*.h)

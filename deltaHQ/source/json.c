@@ -76,6 +76,7 @@ char send_json_buf[SEND_JSON_MAXLEN];
 void print_json_aux(json_t *element, int indent);
 
 int parse_node();
+int parse_environment();
 int parse_connection();
 
 void _node_print(struct node_class *node) {
@@ -205,7 +206,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     }
 
     json_error_t error;
-    while (1) {
+    // while (1) {
         json_t *root         = NULL;
         json_t *first_object = NULL;
 
@@ -245,7 +246,7 @@ json_t *read_json(input_buffer_t *ibuf) {
             first_object = NULL;
             root         = NULL;
         }
-    }
+    // }
 
     // FINAL_HANDLE:
     // free_read_string();
@@ -267,35 +268,36 @@ int json_init_scenario(struct scenario_class *scenario,
     }
 
     json_error_t error;
-    while (1) {
-        json_t *first_object = NULL;
+    // while (1) {
+    json_t *first_object = NULL;
 
-        // printf("%p %s", line, line);
-        root = json_loads(line, 0, &error);
-        // assert(malloc_zone_check(NULL));
-        // print_json(root);
-        // printf("%p %s", line, line);
+    // printf("%p %s", line, line);
+    root = json_loads(line, 0, &error);
+    // assert(malloc_zone_check(NULL));
+    // print_json(root);
+    // printf("%p %s", line, line);
 
-        // allowed_write_buffer(ibuf);
-        if (root) {
+    // allowed_write_buffer(ibuf);
+    if (!root) {
 
-            first_object = json_object_get(root, "finish");
-            if (first_object) {
-                // print_json(first_object);
-                fprintf(stdout,
-                        "------------ received finish json ------------\n");
-                json_decref(first_object);
-                json_decref(root);
-                first_object = NULL;
-                root         = NULL;
-                return 0;
-            } else {
-                json_decref(first_object);
-                // free_read_string();
-                // return root;
-                break;
-            }
-        } else {
+        // first_object = json_object_get(root, "finish");
+        // if (first_object) {
+        //     // print_json(first_object);
+        //     fprintf(stdout,
+        //             "------------ received finish json ------------\n");
+        //     json_decref(first_object);
+        //     json_decref(root);
+        //     first_object = NULL;
+        //     root         = NULL;
+        //     return 0;
+        // } else {
+        //     json_decref(first_object);
+        //     // free_read_string();
+        //     // return root;
+        //     break;
+        // }
+        // } else {
+        {
             fprintf(stderr,
                     "json error on line %d (col %d): %s\n",
                     error.line,
@@ -324,6 +326,7 @@ int json_init_scenario(struct scenario_class *scenario,
     }
 
     json_t *j_nodes;
+    json_t *j_envs;
     json_t *j_conns;
 
     j_nodes = json_object_get(json, "node");
@@ -336,6 +339,17 @@ int json_init_scenario(struct scenario_class *scenario,
         WARNING("parse_node");
         return ERROR;
     }
+
+    j_envs = json_object_get(json, "environment");
+    if (!j_envs) {
+        WARNING("json_object_get environment");
+        return ERROR;
+    }
+    if (parse_environment(scenario, j_envs) == ERROR) {
+        WARNING("parse_connection");
+        return ERROR;
+    }
+
     j_conns = json_object_get(json, "connection");
     if (!j_conns) {
         WARNING("json_object_get connection");
@@ -350,6 +364,7 @@ int json_init_scenario(struct scenario_class *scenario,
     // printf("j_nodes->refcount=%zu\n", j_nodes->refcount);
     // printf("j_conns->refcount=%zu\n", j_conns->refcount);
     json_decref(j_nodes);
+    json_decref(j_envs);
     json_decref(j_conns);
     // assert(malloc_zone_check(NULL));
     // printf("json->refcount=%zu\n", json->refcount);
@@ -472,7 +487,7 @@ int update_neighbors(struct scenario_class *scenario,
     }
 
     json_decref(neighbor);
-    neighbor    = NULL;
+    neighbor = NULL;
     // json_decref(node_object);
     // node_object = NULL;
 
@@ -1177,6 +1192,107 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
     return SUCCESS;
 }
 
+int parse_environment(struct scenario_class *scenario, json_t *json) {
+    json_t *je;
+    json_t *j;
+
+    scenario->environment_number = json_array_size(json);
+    // printf("env number=%d\n", scenario->environment_number);
+
+    scenario->environments = (struct environment_class *) malloc(
+        sizeof(struct environment_class) * scenario->environment_number);
+
+    int name_provided = FALSE;
+
+    struct environment_class *e;
+    for (int i = 0; i < scenario->environment_number; i++) {
+        e = &scenario->environments[i];
+        environment_init(e,
+                         DEFAULT_ENVIRONMENT_NAME,
+                         DEFAULT_ENVIRONMENT_TYPE,
+                         DEFAULT_ENVIRONMENT_ALPHA,
+                         DEFAULT_ENVIRONMENT_SIGMA,
+                         DEFAULT_ENVIRONMENT_WALL_ATTENUATION,
+                         DEFAULT_ENVIRONMENT_NOISE_POWER);
+
+        je = json_array_get(json, i);
+        if (!je) {
+            WARNING("json_array_get");
+            return ERROR;
+        }
+
+        j = json_object_get(je, ENVIRONMENT_NAME_STRING);
+        if (j) {
+            const char *name;
+            name = json_string_value(j);
+            strncpy(e->name, name, strlen(name));
+            e->name_hash  = string_hash(e->name, strlen(e->name));
+            name_provided = TRUE;
+            json_decref(j);
+        }
+
+        SET_STRING_OBJECT(je, e->type, ENVIRONMENT_TYPE_STRING);
+
+        j = json_object_get(je, ENVIRONMENT_IS_DYNAMIC_STRING);
+        if (j) {
+            if (j == json_true()) {
+                e->is_dynamic = TRUE;
+            }
+            if (j == json_false()) {
+                e->is_dynamic = FALSE;
+            }
+            // const char *type;
+            // type = json_string_value(j);
+            // if (strncmp(type, TRUE_STRING, strlen(type)) == 0) {
+            //     e->is_dynamic = TRUE;
+            // }
+            // if (strncmp(type, FALSE_STRING, strlen(type)) == 0) {
+            //     e->is_dynamic = TRUE;
+            // }
+            json_decref(j);
+        }
+
+        SET_DOUBLE_OBJECT(je, e->alpha[0], ENVIRONMENT_ALPHA_STRING);
+        if (e->alpha[0] < 0) {
+            e->alpha[0] = 0;
+        }
+        SET_DOUBLE_OBJECT(je, e->sigma[0], ENVIRONMENT_SIGMA_STRING);
+        if (e->sigma[0] < 0) {
+            e->sigma[0] = 0;
+        }
+        SET_DOUBLE_OBJECT(je, e->W[0], ENVIRONMENT_W_STRING);
+        if (e->W[0] < 0) {
+            e->W[0] = 0;
+        }
+        SET_DOUBLE_OBJECT(
+            je, e->noise_power[0], ENVIRONMENT_NOISE_POWER_STRING);
+
+        j = json_object_get(je, ENVIRONMENT_FADING_STRING);
+        if (j) {
+            const char *fading;
+            fading = json_string_value(j);
+            if (strncmp(fading,
+                        ENVIRONMENT_FADING_AWGN_STRING,
+                        strlen(ENVIRONMENT_FADING_AWGN_STRING)) == 0) {
+                e->fading = AWGN_FADING;
+            }
+            if (strncmp(fading,
+                        ENVIRONMENT_FADING_RAYLEIGH_STRING,
+                        strlen(ENVIRONMENT_FADING_RAYLEIGH_STRING)) == 0) {
+                e->fading = RAYLEIGH_FADING;
+            }
+        }
+
+        if (name_provided == FALSE) {
+            return ERROR;
+        }
+    }
+
+    printf("Creating the following environment:\n");
+    environment_print(&scenario->environments[0]);
+    return SUCCESS;
+}
+
 int parse_connection(struct scenario_class *scenario, json_t *json) {
 
     json_t *jc;
@@ -1655,7 +1771,8 @@ void print_neighbor_bmp(int **neighbor_ids_bmp, int number) {
 }
 
 void print_meteor_param(int center_id, meteor_param_t *m) {
-    // if (!m->is_change_update && !m->is_change_add && !m->is_change_delete)
+    // if (!m->is_change_update && !m->is_change_add &&
+    // !m->is_change_delete)
 
     printf("-----------------------------------\n");
     printf("meteor center=%d\n", center_id);

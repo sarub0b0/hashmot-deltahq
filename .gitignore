@@ -7,7 +7,7 @@ GTAGS
 *.out
 *.log
 .style.yapf
-__pycache__
+__pycache__/
 *.bak
 core
 core.*

@@ -295,7 +295,7 @@ static struct option long_options[] = {{"help", 0, 0, 'h'},
 
 // structure holding name of short options;
 // should match the 'long_options' structure above
-static char *short_options = "hi:vl:p:t:a:";
+static char short_options[13] = "hi:vl:p:t:a:";
 
 ///////////////////////////////////////////////////
 // main function
@@ -318,10 +318,10 @@ int main(int argc, char **argv) {
     FILE *scenario_file = NULL; // scenario file pointer
 
     // file name related strings
-    char scenario_filename[MAX_STRING];
+    // char scenario_filename[MAX_STRING];
 
     // revision related variables
-    long int svn_revision;
+    // long int svn_revision;
     char svn_revision_str[MAX_STRING];
     char qomet_name[MAX_STRING];
     char c;
@@ -333,26 +333,26 @@ int main(int argc, char **argv) {
     ////////////////////////////////////////////////////////////
     // initialization
 
-#ifndef SVN_REVISION
-    DEBUG("SVN_REVISION not defined.");
-    svn_revision = ERROR;
-#else
-    if ((strcmp(SVN_REVISION, "exported") == 0) ||
-        (strlen(SVN_REVISION) == 0)) {
-        DEBUG("SVN_REVISION defined but equal to 'exported' or ''.");
-        svn_revision = ERROR;
-    } else {
-        DEBUG("SVN_REVISION defined.");
-        svn_revision = parse_svn_revision(SVN_REVISION);
-    }
-#endif
+    // #ifndef SVN_REVISION
+    //     DEBUG("SVN_REVISION not defined.");
+    //     svn_revision = ERROR;
+    // #else
+    //     if ((strcmp(SVN_REVISION, "exported") == 0) ||
+    //         (strlen(SVN_REVISION) == 0)) {
+    //         DEBUG("SVN_REVISION defined but equal to 'exported' or ''.");
+    //         svn_revision = ERROR;
+    //     } else {
+    //         DEBUG("SVN_REVISION defined.");
+    //         svn_revision = parse_svn_revision(SVN_REVISION);
+    //     }
+    // #endif
 
-    if (svn_revision == ERROR) {
-        WARNING("Could not identify revision number.");
-        sprintf(svn_revision_str, "N/A");
-    } else {
-        sprintf(svn_revision_str, "%ld", svn_revision);
-    }
+    //     if (svn_revision == ERROR) {
+    //         WARNING("Could not identify revision number.");
+    //         sprintf(svn_revision_str, "N/A");
+    //     } else {
+    //         sprintf(svn_revision_str, "%ld", svn_revision);
+    //     }
 
     snprintf(qomet_name,
              MAX_STRING,
@@ -433,12 +433,11 @@ int main(int argc, char **argv) {
     // optind represents the index where option parsing stopped
     // and where non-option arguments parsing can start;
     // check whether non-option arguments are present
-    if (argc == optind) {
-        WARNING("No scenario configuration file was provided.");
-        printf("\n%s: A versatile wireless network emulator.\n", qomet_name);
-        usage(stdout);
-        exit(1);
-    }
+    // if (argc == optind) {
+    //     WARNING("No scenario configuration file was provided.");
+    //     printf("\n%s: A versatile wireless network emulator.\n",
+    //     qomet_name); usage(stdout); exit(1);
+    // }
 
     ////////////////////////////////////////////////////////////
     // more initialization
@@ -480,31 +479,31 @@ int main(int argc, char **argv) {
     ////////////////////////////////////////////////////////////
     // scenario parsing phase
     ////////////////////////////////////////////////////////////
-    INFO("\n-- QOMET Emulator: Scenario Parsing --\n");
-    if (strlen(argv[optind]) > MAX_STRING) {
-        WARNING("Input file name '%s' longer than %d characters!",
-                argv[optind],
-                MAX_STRING);
-        goto ERROR_HANDLE;
-    } else {
-        strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
-    }
+    // INFO("\n-- QOMET Emulator: Scenario Parsing --\n");
+    // if (strlen(argv[optind]) > MAX_STRING) {
+    //     WARNING("Input file name '%s' longer than %d characters!",
+    //             argv[optind],
+    //             MAX_STRING);
+    //     goto ERROR_HANDLE;
+    // } else {
+    //     strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
+    // }
 
     // open scenario file
-    scenario_file = fopen(scenario_filename, "r");
-    if (scenario_file == NULL) {
-        WARNING("Cannot open scenario file '%s'!", scenario_filename);
-        goto ERROR_HANDLE;
-    }
+    // scenario_file = fopen(scenario_filename, "r");
+    // if (scenario_file == NULL) {
+    //     WARNING("Cannot open scenario file '%s'!", scenario_filename);
+    //     goto ERROR_HANDLE;
+    // }
 
     // parse scenario file
-    if (xml_scenario_parse(scenario_file, xml_scenario) == ERROR) {
-        WARNING("Cannot parse scenario file '%s'!", scenario_filename);
-        goto ERROR_HANDLE;
-    }
+    // if (xml_scenario_parse(scenario_file, xml_scenario) == ERROR) {
+    //     WARNING("Cannot parse scenario file '%s'!", scenario_filename);
+    //     goto ERROR_HANDLE;
+    // }
 
     // print parse summary
-    INFO("Scenario file '%s' parsed.", scenario_filename);
+    // INFO("Scenario file '%s' parsed.", scenario_filename);
 #ifdef MESSAGE_DEBUG
     DEBUG("Loaded scenario file summary:");
     xml_scenario_print(xml_scenario);
@@ -530,7 +529,7 @@ int main(int argc, char **argv) {
 
     input_buffer_t ibuf;
     ibuf.bufs_size = 5;
-    ibuf.buf_size  = 200000;
+    ibuf.buf_size  = 3000000;
     ibuf.read_pos  = 0;
     ibuf.write_pos = 0;
     ibuf.buf_count = 0;
@@ -572,6 +571,7 @@ int main(int argc, char **argv) {
 
     pthread_create(&pt_input_buf, NULL, thread_buffer_write, &ibuf);
 
+    WARNING("json_init_scenario start");
     if (json_init_scenario(scenario, &ibuf) == ERROR) {
         WARNING("json_init_scenario");
         goto ERROR_HANDLE;
@@ -905,6 +905,12 @@ int main(int argc, char **argv) {
     // puts("loop start");
     int loop_exit = FALSE;
 
+    neighbor_number = update_neighbors(
+        scenario, deltaQ_class->neighbor, &center_id, neighbor_ids, &ibuf, 0);
+
+    if (neighbor_number < 0) {
+        WARNING("init finish");
+    }
     while (loop_exit == FALSE) {
 
         // sleep(1);

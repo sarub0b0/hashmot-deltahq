@@ -71,15 +71,15 @@ struct scenario_class {
     int node_number;
 
     // topology objects in scenario, and their number
-    struct object_class objects[MAX_OBJECTS];
+    struct object_class *objects;
     int object_number;
 
     // environments in scenario, and their number
-    struct environment_class environments[MAX_ENVIRONMENTS];
+    struct environment_class *environments;
     int environment_number;
 
     // motions in scenario, and their number
-    struct motion_class motions[MAX_MOTIONS];
+    struct motion_class *motions;
     int motion_number;
 
     // connections in scenario, and their number

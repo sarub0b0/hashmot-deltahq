@@ -79,7 +79,7 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     chrono::nanoseconds make_elapsed =
         chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-    printf("make elapsed=%lld\n", make_elapsed.count());
+    // printf("make elapsed=%lld\n", make_elapsed.count());
 
     // printTree(tree_, nullptr, false);
 
