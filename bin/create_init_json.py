@@ -120,6 +120,6 @@ else:
                 'noise_power': -100.0
             })
     write_file(fd, root)
-fd.write("{\"init\":\"finish\"}\n")
+#  fd.write("{\"init\":\"finish\"}\n")
 #  fd.write("{\"finish\":\"finish\"}\n")
 fd.close()

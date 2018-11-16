@@ -57,11 +57,11 @@ if __name__ == '__main__':
 
         node = j["init"]["node"]
 
-        line = f.readline()
-        j = json.loads(line)
-        sys.stdout.write(json.dumps(j, separators=(',' ':')))
-        sys.stdout.write("\n")
-        sys.stdout.flush()
+        #  line = f.readline()
+        #  j = json.loads(line)
+        #  sys.stdout.write(json.dumps(j, separators=(',' ':')))
+        #  sys.stdout.write("\n")
+        #  sys.stdout.flush()
 
 
     else:

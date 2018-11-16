@@ -176,6 +176,9 @@ int main(int argc, char const *argv[]) {
 
                         if (0 < neighbor.size()) {
                             ns->SendDeltaHQ(neighbor, node, key);
+                        } else {
+                            neighbor.push_back(-1);
+                            ns->SendDeltaHQ(neighbor, node, key);
                         }
                         id++;
                     }

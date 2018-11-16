@@ -207,45 +207,45 @@ json_t *read_json(input_buffer_t *ibuf) {
 
     json_error_t error;
     // while (1) {
-        json_t *root         = NULL;
-        json_t *first_object = NULL;
+    json_t *root         = NULL;
+    json_t *first_object = NULL;
 
-        // printf("%p %s", line, line);
-        root = json_loads(line, 0, &error);
-        // assert(malloc_zone_check(NULL));
-        // print_json(root);
-        // printf("%p %s", line, line);
+    // printf("%p %s", line, line);
+    root = json_loads(line, 0, &error);
+    // assert(malloc_zone_check(NULL));
+    // print_json(root);
+    // printf("%p %s", line, line);
 
-        // allowed_write_buffer(ibuf);
-        if (root) {
+    // allowed_write_buffer(ibuf);
+    if (root) {
 
-            first_object = json_object_get(root, "finish");
-            if (first_object) {
-                // print_json(first_object);
-                fprintf(stdout, "received finish json\n");
-                json_decref(first_object);
-                json_decref(root);
-                first_object = NULL;
-                root         = NULL;
-                return 0;
-            } else {
-                json_decref(first_object);
-                // free_read_string();
-                return root;
-            }
-        } else {
-            fprintf(stderr,
-                    "json error on line %d (col %d): %s\n",
-                    error.line,
-                    error.column,
-                    error.text);
-            fprintf(stderr, "%d\n%s\n", error.position, error.source);
-            // fprintf(stderr, "len=%ld %s\n", strlen(line), line);
+        first_object = json_object_get(root, "finish");
+        if (first_object) {
+            // print_json(first_object);
+            fprintf(stdout, "received finish json\n");
             json_decref(first_object);
             json_decref(root);
             first_object = NULL;
             root         = NULL;
+            return 0;
+        } else {
+            json_decref(first_object);
+            // free_read_string();
+            return root;
         }
+    } else {
+        fprintf(stderr,
+                "json error on line %d (col %d): %s\n",
+                error.line,
+                error.column,
+                error.text);
+        fprintf(stderr, "%d\n%s\n", error.position, error.source);
+        // fprintf(stderr, "len=%ld %s\n", strlen(line), line);
+        json_decref(first_object);
+        json_decref(root);
+        first_object = NULL;
+        root         = NULL;
+    }
     // }
 
     // FINAL_HANDLE:
@@ -268,36 +268,36 @@ int json_init_scenario(struct scenario_class *scenario,
     }
 
     json_error_t error;
-    // while (1) {
-    json_t *first_object = NULL;
+    while (1) {
+        json_t *first_object = NULL;
 
-    // printf("%p %s", line, line);
-    root = json_loads(line, 0, &error);
-    // assert(malloc_zone_check(NULL));
-    // print_json(root);
-    // printf("%p %s", line, line);
+        // printf("%p %s", line, line);
+        root = json_loads(line, 0, &error);
+        // assert(malloc_zone_check(NULL));
+        // print_json(root);
+        // printf("%p %s", line, line);
 
-    // allowed_write_buffer(ibuf);
-    if (!root) {
+        // allowed_write_buffer(ibuf);
+        if (!root) {
 
-        // first_object = json_object_get(root, "finish");
-        // if (first_object) {
-        //     // print_json(first_object);
-        //     fprintf(stdout,
-        //             "------------ received finish json ------------\n");
-        //     json_decref(first_object);
-        //     json_decref(root);
-        //     first_object = NULL;
-        //     root         = NULL;
-        //     return 0;
-        // } else {
-        //     json_decref(first_object);
-        //     // free_read_string();
-        //     // return root;
-        //     break;
-        // }
-        // } else {
-        {
+            // first_object = json_object_get(root, "finish");
+            // if (first_object) {
+            //     // print_json(first_object);
+            //     fprintf(stdout,
+            //             "------------ received finish json
+            //             ------------\n");
+            //     json_decref(first_object);
+            //     json_decref(root);
+            //     first_object = NULL;
+            //     root         = NULL;
+            //     return 0;
+            // } else {
+            //     json_decref(first_object);
+            //     // free_read_string();
+            //     // return root;
+            //     break;
+            // }
+            // } else {
             fprintf(stderr,
                     "json error on line %d (col %d): %s\n",
                     error.line,
@@ -480,6 +480,10 @@ int update_neighbors(struct scenario_class *scenario,
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
 
+        if (node_id < 0) {
+            break;
+        }
+
         neighbor_ids[*center_id][nn++] = node_id;
 
         json_decref(nei);
@@ -631,9 +635,10 @@ int send_update_json(int center_id,
         rx->delay               = round(rx->delay * 1e6) / 1e6;
 
         // json_object_set(from, "from_id",
-        // json_integer(tx->from_node_index)); json_object_set(from, "to_id",
-        // json_integer(tx->to_node_index)); json_object_set(from, "fer",
-        // json_real(tx->frame_error_rate)); json_object_set(from, "num_retr",
+        // json_integer(tx->from_node_index)); json_object_set(from,
+        // "to_id", json_integer(tx->to_node_index));
+        // json_object_set(from, "fer", json_real(tx->frame_error_rate));
+        // json_object_set(from, "num_retr",
         // json_real(tx->num_retransmissions)); json_object_set(from,
         // "standard", json_integer(tx->standard)); json_object_set(
         //     from, "op_rate",
@@ -642,12 +647,13 @@ int send_update_json(int center_id,
         // json_object_set(from, "loss_rate", json_real(tx->loss_rate));
         // json_object_set(from, "delay", json_real(tx->delay));
 
-        // json_object_set(to, "from_id", json_integer(rx->from_node_index));
-        // json_object_set(to, "to_id", json_integer(rx->to_node_index));
-        // json_object_set(to, "fer", json_real(rx->frame_error_rate));
-        // json_object_set(to, "num_retr",
-        // json_real(rx->num_retransmissions)); json_object_set(to,
-        // "standard", json_integer(rx->standard)); json_object_set(
+        // json_object_set(to, "from_id",
+        // json_integer(rx->from_node_index)); json_object_set(to,
+        // "to_id", json_integer(rx->to_node_index)); json_object_set(to,
+        // "fer", json_real(rx->frame_error_rate)); json_object_set(to,
+        // "num_retr", json_real(rx->num_retransmissions));
+        // json_object_set(to, "standard", json_integer(rx->standard));
+        // json_object_set(
         //     to, "op_rate",
         //     json_integer(connection_get_operating_rate(rx)));
         // json_object_set(to, "bandwidth", json_real(rx->bandwidth));
@@ -770,9 +776,10 @@ int send_add_json(int center_id,
         rx->delay               = round(rx->delay * 1e6) / 1e6;
 
         // json_object_set(from, "from_id",
-        // json_integer(tx->from_node_index)); json_object_set(from, "to_id",
-        // json_integer(tx->to_node_index)); json_object_set(from, "fer",
-        // json_real(tx->frame_error_rate)); json_object_set(from, "num_retr",
+        // json_integer(tx->from_node_index)); json_object_set(from,
+        // "to_id", json_integer(tx->to_node_index));
+        // json_object_set(from, "fer", json_real(tx->frame_error_rate));
+        // json_object_set(from, "num_retr",
         // json_real(tx->num_retransmissions)); json_object_set(from,
         // "standard", json_integer(tx->standard)); json_object_set(
         //     from, "op_rate",
@@ -781,12 +788,13 @@ int send_add_json(int center_id,
         // json_object_set(from, "loss_rate", json_real(tx->loss_rate));
         // json_object_set(from, "delay", json_real(tx->delay));
 
-        // json_object_set(to, "from_id", json_integer(rx->from_node_index));
-        // json_object_set(to, "to_id", json_integer(rx->to_node_index));
-        // json_object_set(to, "fer", json_real(rx->frame_error_rate));
-        // json_object_set(to, "num_retr",
-        // json_real(rx->num_retransmissions)); json_object_set(to,
-        // "standard", json_integer(rx->standard)); json_object_set(
+        // json_object_set(to, "from_id",
+        // json_integer(rx->from_node_index)); json_object_set(to,
+        // "to_id", json_integer(rx->to_node_index)); json_object_set(to,
+        // "fer", json_real(rx->frame_error_rate)); json_object_set(to,
+        // "num_retr", json_real(rx->num_retransmissions));
+        // json_object_set(to, "standard", json_integer(rx->standard));
+        // json_object_set(
         //     to, "op_rate",
         //     json_integer(connection_get_operating_rate(rx)));
         // json_object_set(to, "bandwidth", json_real(rx->bandwidth));
@@ -1187,6 +1195,8 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
                 jn, s_n->interfaces[0].Pt, INTERFACE_PT_STRING);
             json_decref(j);
         }
+
+        json_decref(jn);
     }
 
     return SUCCESS;
@@ -1283,13 +1293,14 @@ int parse_environment(struct scenario_class *scenario, json_t *json) {
             }
         }
 
+        json_decref(je);
         if (name_provided == FALSE) {
             return ERROR;
         }
     }
 
-    printf("Creating the following environment:\n");
-    environment_print(&scenario->environments[0]);
+    // printf("Creating the following environment:\n");
+    // environment_print(&scenario->environments[0]);
     return SUCCESS;
 }
 
@@ -1714,7 +1725,6 @@ Ignored invalid value ('%lu')",
         if (scenario_add_connection(scenario, &c) == NULL) {
             return ERROR;
         }
-
         json_decref(jc);
     }
 

@@ -9,7 +9,7 @@ typedef struct input_buffer {
     int write_pos;
     int read_pos;
     int bufs_size;
-    int buf_size;
+    long buf_size;
     int buf_count;
     // int is_writable;
     // int read_idx;
