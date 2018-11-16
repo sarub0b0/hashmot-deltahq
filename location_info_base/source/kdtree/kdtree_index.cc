@@ -50,6 +50,12 @@ void KdTreeIndex::printTree(TreeNode *root, Trunk *prev, bool isLeft) {
 KdTreeIndex::KdTreeIndex() {
 }
 KdTreeIndex::~KdTreeIndex() {
+    tree_ = nullptr;
+    nodes_.clear();
+
+    for (auto &&tn : tnodes_) {
+        delete tn;
+    }
 }
 
 void KdTreeIndex::Index(vector<Node> &nodes) {
