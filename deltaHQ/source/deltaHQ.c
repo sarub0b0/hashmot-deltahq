@@ -373,6 +373,11 @@ int main(int argc, char **argv) {
     // option parsing error printing
     // opterr = 0;
 
+    if (argc == 1) {
+        usage(stdout);
+        exit(1);
+    }
+
     // parse options
     while ((c = getopt_long(argc, argv, short_options, long_options, NULL)) !=
            -1) {
