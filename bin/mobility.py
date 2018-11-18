@@ -11,13 +11,14 @@ from signal import signal, SIGPIPE, SIG_DFL
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 6:
+    if len(sys.argv) < 7:
         print("arguments:")
         print("\t$1   filename")
         print("\t$2   max loop")
         print("\t$3   delay")
         print("\t$4   node speed")
-        print("\t$5   single or multi line [s, m]")
+        print("\t$5   update random or linear[r, l]")
+        print("\t$6   single or multi line [s, m]")
 
         sys.exit(1)
 
@@ -40,9 +41,16 @@ if __name__ == '__main__':
     # node speed
     speed = int(sys.argv[4])
 
+    # update random or linear
+    is_random = False
+    if sys.argv[5] == "r":
+        is_random = True
+    else:
+        is_random = False
+
     # single or multi line
     is_single = False
-    if sys.argv[5] == "s":
+    if sys.argv[6] == "s":
         is_single = True
     else:
         is_single = False
@@ -108,8 +116,10 @@ if __name__ == '__main__':
 
         t0 = time.perf_counter()
 
-        idx = idx % len(node)
-        #  idx = random.randint(0, len(node) - 1)
+        if is_random:
+            idx = random.randint(0, len(node) - 1)
+        else:
+            idx = idx % len(node)
 
         x = node[idx]['x']
         y = node[idx]['y']
