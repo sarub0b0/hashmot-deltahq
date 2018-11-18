@@ -83,12 +83,12 @@ if __name__ == '__main__':
 
     node = np.array(node)
 
+    time.sleep(0.2)
     #  sys.exit()
 
     #  print(json.dumps(node))
     #  print("node length: %d" % len(node))
 
-    time.sleep(0.5)
 
 
     mt = 0
@@ -108,7 +108,6 @@ if __name__ == '__main__':
 
         t0 = time.perf_counter()
 
-        idx = idx + 1
         idx = idx % len(node)
         #  idx = random.randint(0, len(node) - 1)
 
@@ -164,6 +163,8 @@ if __name__ == '__main__':
         mt = mt + (t1 - t0)
 
         #  print("%04d elapsed: %f" % (idx, (t1 - t0)))
+
+        idx = idx + 1
 
         time.sleep(delay)
         #  sys.exit()

@@ -15,3 +15,6 @@ core.*
 log
 bin/*.json
 !remake.sh
+Session.vim
+deltaHQ
+location_info_base

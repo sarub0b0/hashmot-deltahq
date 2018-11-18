@@ -177,4 +177,7 @@ int scenario_merge_objects(struct scenario_class *scenario,
 // return SUCCESS on success, ERROR on error
 int scenario_remove_object(struct scenario_class *scenario, int object_i);
 
+int scenario_sort_connections(struct connection_class *connections,
+                              int connection_number,
+                              int own_id);
 #endif

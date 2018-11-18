@@ -209,10 +209,13 @@ connection.\n",
             environment.num_segments = 1;
         }
 
+        int own_id = scenario->own_id;
+
         for (node_i = 0; node_i < scenario->node_number; node_i++)
             // check if potential to_node is different from from_node
             if (strcmp(connection->from_node,
                        (scenario->nodes[node_i]).name) != 0) {
+
                 DEBUG("Connecting '%s' to '%s'...",
                       connection->from_node,
                       (scenario->nodes[node_i]).name);
@@ -220,6 +223,15 @@ connection.\n",
                 strncpy(connection->to_node,
                         (scenario->nodes[node_i]).name,
                         MAX_STRING - 1);
+
+                if (0 <= own_id) {
+                    if (strcmp(connection->from_node,
+                               scenario->nodes[own_id].name) != 0) {
+                        if (node_i != own_id) {
+                            continue;
+                        }
+                    }
+                }
 
                 // check if we can still add a connection
                 // if (scenario->connection_number < MAX_CONNECTIONS) {
@@ -1031,4 +1043,73 @@ int scenario_remove_object(struct scenario_class *scenario, int object_i) {
     }
 
     return TRUE;
+}
+
+// TODO パスリストの順番を並び替える
+// own_id - 0
+// 0 - own_id
+// own_id - 1
+// 1 - own_id
+// みたいな感じ
+int scenario_sort_connections(struct connection_class *connections,
+                              int connection_number,
+                              int own_id) {
+
+    int hit_index     = 0;
+    int current_index = 0;
+    int swap_index    = 0;
+    int current_id    = 0;
+    struct connection_class temp_conn;
+    struct connection_class curr_conn;
+
+    for (int i = 0; i < connection_number; i += 2) {
+        if (own_id == current_id) {
+            ++current_id;
+        }
+
+        // swap_index = i;
+        for (int j = swap_index; j < connection_number; ++j) {
+
+            curr_conn = connections[j];
+
+            connection_print(&curr_conn);
+
+            // from == own
+            // own -> to 0 search
+            if (curr_conn.from_node_index == own_id &&
+                curr_conn.to_node_index == current_id) {
+                hit_index = j;
+
+                temp_conn = connections[swap_index];
+
+                connections[swap_index] = curr_conn;
+
+                connections[hit_index] = temp_conn;
+
+                ++swap_index;
+
+                for (int k = swap_index; k < connection_number; ++k) {
+
+                    curr_conn = connections[k];
+
+                    connection_print(&curr_conn);
+                    if (curr_conn.from_node_index == current_id &&
+                        curr_conn.to_node_index == own_id) {
+                        hit_index = k;
+
+                        temp_conn = connections[swap_index];
+
+                        connections[swap_index] = curr_conn;
+
+                        connections[hit_index] = temp_conn;
+
+                        ++swap_index;
+                    }
+                }
+            }
+        }
+        ++current_id;
+    }
+
+    return SUCCESS;
 }
