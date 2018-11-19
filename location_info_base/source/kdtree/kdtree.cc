@@ -4,7 +4,7 @@
 #include <array>
 
 #include <rapidjson/document.h>
-#include <rapidjson/pointer.h>
+// #include <rapidjson/pointer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
