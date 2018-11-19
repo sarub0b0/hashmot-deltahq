@@ -1056,7 +1056,6 @@ int scenario_sort_connections(struct connection_class *connections,
                               int own_id) {
 
     int hit_index     = 0;
-    int current_index = 0;
     int swap_index    = 0;
     int current_id    = 0;
     struct connection_class temp_conn;
@@ -1072,7 +1071,7 @@ int scenario_sort_connections(struct connection_class *connections,
 
             curr_conn = connections[j];
 
-            connection_print(&curr_conn);
+            // connection_print(&curr_conn);
 
             // from == own
             // own -> to 0 search

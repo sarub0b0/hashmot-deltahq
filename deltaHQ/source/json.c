@@ -579,6 +579,8 @@ int update_neighbors(struct scenario_class *scenario,
                      int own_id,
                      int *neighbor_ids,
                      input_buffer_t *ibuf,
+                     int *is_other_update,
+                     int *received_center_id,
                      int type) {
 
     json_t *root = NULL;
@@ -649,25 +651,14 @@ int update_neighbors(struct scenario_class *scenario,
     center_id = json_integer_value(json_object_get(center, "id"));
     // printf("center_id=%d\n", *center_id);
 
-    if (center_id != own_id) {
-        json_decref(update_json);
-        json_decref(json);
-        json_decref(root);
-        update_json = NULL;
-        json        = NULL;
-        root        = NULL;
-        if (type == 0) {
-            return -1;
-        }
-        return update_neighbors(
-            scenario, neighbors, own_id, neighbor_ids, ibuf, type);
-    }
     // else {
     //     printf("match %d\n", center_id);
     // }
 
-    node = &nodes[own_id];
-
+    // =====================================================
+    // ノードの位置更新
+    // =====================================================
+    node                = &nodes[center_id];
     node->position.c[0] = json_number_value(json_object_get(center, "x"));
     node->position.c[1] = json_number_value(json_object_get(center, "y"));
 
@@ -681,42 +672,92 @@ int update_neighbors(struct scenario_class *scenario,
 
     json_t *nei;
 
+    // =====================================================
+    // neighbor_idsにneigborをセット
+    // =====================================================
     nn = 0;
     for (int j = 0; j < neighbor_array_len; ++j) {
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
 
-        if (node_id < 0) {
-            break;
-        }
+        // if (node_id < 0) {
+        //     break;
+        // }
 
         neighbor_ids[nn++] = node_id;
 
         json_decref(nei);
         nei = NULL;
     }
+    neighbor_ids[neighbor_array_len] = -1;
 
     json_decref(neighbor);
     neighbor = NULL;
     // json_decref(node_object);
     // node_object = NULL;
 
-    neighbor_ids[neighbor_array_len] = -1;
+    // =====================================================
+    // center_idかneighbor_idsにown_idが含まれれば
+    // neighborsに対象のconnectionポインタをセット
+    // =====================================================
 
-    for (int i = 0; i < nn; ++i) {
-        nb_id = neighbor_ids[i];
+    // center_idがown_idならば
+    // neighbor_idsのconnectionをセット
+    *is_other_update = 0;
+    if (center_id == own_id) {
+        *received_center_id = -1;
+        for (int i = 0; i < nn; ++i) {
+            nb_id = neighbor_ids[i];
 
-        if (own_id < nb_id) {
-            --nb_id;
+            if (own_id < nb_id) {
+                --nb_id;
+            }
+
+            conn_i = nb_id;
+
+            printf("conn_i=%d\n", conn_i);
+
+            neighbors[ni++] = &scenario->connections[conn_i];
+            // neighbors[ni++] = &scenario->connections[conn_i + 1];
+            neighbor_number++;
         }
+    } else {
+        *is_other_update    = 1;
+        *received_center_id = center_id;
+        // for (int i = 0; i < nn; i++) {
+        //     nb_id = neighbor_ids[i];
+        //     if (own_id == nb_id) {
+        //         nb_id = center_id;
+        //         if (own_id < nb_id) {
+        //             --nb_id;
+        //         }
+        //         conn_i = nb_id;
+        //         printf("conn_i=%d\n", conn_i);
 
-        conn_i = nb_id * 2;
+        //         neighbors[ni++] = &scenario->connections[conn_i];
+        //         // neighbors[ni++] = &scenario->connections[conn_i + 1];
+        //         neighbor_number++;
+        //         break;
+        //     }
+        // }
+        for (int i = 0; i < nn; i++) {
+            nb_id = neighbor_ids[i];
+            if (own_id == nb_id) {
+                nb_id = center_id;
+                if (own_id < nb_id) {
+                    --nb_id;
+                }
+                conn_i = nb_id;
+                printf("conn_i=%d\n", conn_i);
 
-        printf("conn_i=%d\n", conn_i);
-
-        neighbors[ni++] = &scenario->connections[conn_i];
-        neighbors[ni++] = &scenario->connections[conn_i + 1];
-        neighbor_number += 2;
+                neighbors[ni++] = &scenario->connections[conn_i];
+                // neighbors[ni++] = &scenario->connections[conn_i + 1];
+                neighbor_number++;
+                // break;
+                neighbor_ids[0] = center_id;
+                neighbor_ids[1] = -1;
+            }
+        }
     }
     // for (int j = 0; j < nn; j++) {
     //     same_neighbor = 0;
@@ -972,20 +1013,29 @@ int send_update_json(int own_id,
                      int is_broadcast,
                      bc_info_t *info) {
 
-    struct connection_class *conn_pair[2];
-    struct connection_class *rx;
+    // struct connection_class *conn_pair[2];
+    // struct connection_class *rx;
     struct connection_class *tx;
 
     int from_id;
     int to_id;
+    int conn_i;
 
     from_id = own_id;
+    conn_i  = from_id;
     for (int i = 0; mp->update[i] != -1; i++) {
-        to_id = mp->update[i];
-        search_connection(conn_pair, from_id, to_id, connections);
+        to_id  = mp->update[i];
+        conn_i = to_id;
+        // search_connection(conn_pair, from_id, to_id, connections);
 
-        tx = conn_pair[0];
-        rx = conn_pair[1];
+        // tx = conn_pair[0];
+        // rx = conn_pair[1];
+
+        if (from_id < to_id) {
+            --conn_i;
+        }
+
+        tx = &connections[conn_i];
 
         tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         tx->num_retransmissions = round(tx->num_retransmissions * 1e6) / 1e6;
@@ -993,21 +1043,45 @@ int send_update_json(int own_id,
         tx->loss_rate           = round(tx->loss_rate * 1e6) / 1e6;
         tx->delay               = round(tx->delay * 1e6) / 1e6;
 
-        rx->frame_error_rate    = round(rx->frame_error_rate * 1e6) / 1e6;
-        rx->num_retransmissions = round(rx->num_retransmissions * 1e6) / 1e6;
-        rx->bandwidth           = round(rx->bandwidth * 1e6) / 1e6;
-        rx->loss_rate           = round(rx->loss_rate * 1e6) / 1e6;
-        rx->delay               = round(rx->delay * 1e6) / 1e6;
+        // rx->frame_error_rate    = round(rx->frame_error_rate * 1e6) / 1e6;
+        // rx->num_retransmissions = round(rx->num_retransmissions * 1e6) /
+        // 1e6; rx->bandwidth           = round(rx->bandwidth * 1e6) / 1e6;
+        // rx->loss_rate           = round(rx->loss_rate * 1e6) / 1e6;
+        // rx->delay               = round(rx->delay * 1e6) / 1e6;
 
+        // snprintf(
+        //     send_json_buf,
+        //     SEND_JSON_MAXLEN,
+        //     "{\"meteor\":{\"update\":[{\"from_id\":%d,\"to_id\":%d,"
+        //     "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
+        //     "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f},{"
+        //     "\"from_id\":%d,\"to_id\":%d,\"fer\":%.6f,\"num_retr\":%.6f,"
+        //     "\"standard\":%d,\"op_rate\":%.6f,\"bandwidth\":%.6f,\"loss_"
+        //     "rate\":%.6f,\"delay\":%.6f}]}}",
+        //     tx->from_node_index,
+        //     tx->to_node_index,
+        //     tx->frame_error_rate,
+        //     tx->num_retransmissions,
+        //     tx->standard,
+        //     connection_get_operating_rate(tx),
+        //     tx->bandwidth,
+        //     tx->loss_rate,
+        //     tx->delay,
+        //     rx->from_node_index,
+        //     rx->to_node_index,
+        //     rx->frame_error_rate,
+        //     rx->num_retransmissions,
+        //     rx->standard,
+        //     connection_get_operating_rate(rx),
+        //     rx->bandwidth,
+        //     rx->loss_rate,
+        //     rx->delay);
         snprintf(
             send_json_buf,
             SEND_JSON_MAXLEN,
             "{\"meteor\":{\"update\":[{\"from_id\":%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
-            "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f},{"
-            "\"from_id\":%d,\"to_id\":%d,\"fer\":%.6f,\"num_retr\":%.6f,"
-            "\"standard\":%d,\"op_rate\":%.6f,\"bandwidth\":%.6f,\"loss_"
-            "rate\":%.6f,\"delay\":%.6f}]}}",
+            "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f}]}}",
             tx->from_node_index,
             tx->to_node_index,
             tx->frame_error_rate,
@@ -1016,16 +1090,7 @@ int send_update_json(int own_id,
             connection_get_operating_rate(tx),
             tx->bandwidth,
             tx->loss_rate,
-            tx->delay,
-            rx->from_node_index,
-            rx->to_node_index,
-            rx->frame_error_rate,
-            rx->num_retransmissions,
-            rx->standard,
-            connection_get_operating_rate(rx),
-            rx->bandwidth,
-            rx->loss_rate,
-            rx->delay);
+            tx->delay);
 
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
@@ -1172,21 +1237,28 @@ int send_add_json(int own_id,
                   int is_broadcast,
                   bc_info_t *info) {
 
-    struct connection_class *conn_pair[2];
-    struct connection_class *rx;
+    // struct connection_class *conn_pair[2];
+    // struct connection_class *rx;
     struct connection_class *tx;
 
     int from_id;
     int to_id;
+    int conn_i;
 
     from_id = own_id;
     for (int i = 0; mp->add[i] != -1; i++) {
 
-        to_id = mp->add[i];
-        search_connection(conn_pair, from_id, to_id, connections);
+        to_id  = mp->add[i];
+        conn_i = to_id;
+        // search_connection(conn_pair, from_id, to_id, connections);
 
-        tx = conn_pair[0];
-        rx = conn_pair[1];
+        // tx = conn_pair[0];
+        // rx = conn_pair[1];
+
+        if (from_id < to_id) {
+            --conn_i;
+        }
+        tx = &connections[conn_i];
 
         tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         tx->num_retransmissions = round(tx->num_retransmissions * 1e6) / 1e6;
@@ -1194,21 +1266,18 @@ int send_add_json(int own_id,
         tx->loss_rate           = round(tx->loss_rate * 1e6) / 1e6;
         tx->delay               = round(tx->delay * 1e6) / 1e6;
 
-        rx->frame_error_rate    = round(rx->frame_error_rate * 1e6) / 1e6;
-        rx->num_retransmissions = round(rx->num_retransmissions * 1e6) / 1e6;
-        rx->bandwidth           = round(rx->bandwidth * 1e6) / 1e6;
-        rx->loss_rate           = round(rx->loss_rate * 1e6) / 1e6;
-        rx->delay               = round(rx->delay * 1e6) / 1e6;
+        // rx->frame_error_rate    = round(rx->frame_error_rate * 1e6) / 1e6;
+        // rx->num_retransmissions = round(rx->num_retransmissions * 1e6) /
+        // 1e6; rx->bandwidth           = round(rx->bandwidth * 1e6) / 1e6;
+        // rx->loss_rate           = round(rx->loss_rate * 1e6) / 1e6;
+        // rx->delay               = round(rx->delay * 1e6) / 1e6;
 
         snprintf(
             send_json_buf,
             SEND_JSON_MAXLEN,
             "{\"meteor\":{\"add\":[{\"from_id\":%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
-            "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f},{"
-            "\"from_id\":%d,\"to_id\":%d,\"fer\":%.6f,\"num_retr\":%.6f,"
-            "\"standard\":%d,\"op_rate\":%.6f,\"bandwidth\":%.6f,\"loss_"
-            "rate\":%.6f,\"delay\":%.6f}]}}",
+            "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f}]}}",
             tx->from_node_index,
             tx->to_node_index,
             tx->frame_error_rate,
@@ -1217,16 +1286,7 @@ int send_add_json(int own_id,
             connection_get_operating_rate(tx),
             tx->bandwidth,
             tx->loss_rate,
-            tx->delay,
-            rx->from_node_index,
-            rx->to_node_index,
-            rx->frame_error_rate,
-            rx->num_retransmissions,
-            rx->standard,
-            connection_get_operating_rate(rx),
-            rx->bandwidth,
-            rx->loss_rate,
-            rx->delay);
+            tx->delay);
 
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
@@ -1281,12 +1341,9 @@ int send_delete_json(int center_id,
 
         snprintf(send_json_buf,
                  SEND_JSON_MAXLEN,
-                 "{\"meteor\":{\"delete\":[{\"from_id\":%d,\"to_id\":%d},{"
-                 "\"from_id\":%d,\"to_id\":%d}]}}",
+                 "{\"meteor\":{\"delete\":[{\"from_id\":%d,\"to_id\":%d}]}}",
                  from_id,
-                 to_id,
-                 to_id,
-                 from_id);
+                 to_id);
 
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
@@ -1515,6 +1572,8 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
                        DEFAULT_INTERFACE_IP);
 
         s_n->interface_number = 1;
+
+        node_print(s_n);
 
         // id
         s_n->id = i;
@@ -1753,12 +1812,12 @@ int parse_connection(struct scenario_class *scenario, json_t *json) {
 
     json_connection_number = json_array_size(json);
 
-    // if (0 <= scenario->own_id) {
-    // scenario->connection_number = (scenario->node_number - 1) * 2;
-    // } else {
-    scenario->connection_number =
-        scenario->node_number * (scenario->node_number - 1);
-    // }
+    if (0 <= scenario->own_id) {
+        scenario->connection_number = scenario->node_number - 1;
+    } else {
+        scenario->connection_number =
+            scenario->node_number * (scenario->node_number - 1);
+    }
 
     scenario->connections = (struct connection_class *) malloc(
         sizeof(struct connection_class) * scenario->connection_number);
@@ -1799,11 +1858,11 @@ int parse_connection(struct scenario_class *scenario, json_t *json) {
             json_decref(j);
         }
 
-        // if (0 <= scenario->own_id &&
-        //     strcmp(scenario->nodes[scenario->own_id].name, c.from_node) !=
-        //         0) {
-        //     continue;
-        // }
+        if (0 <= scenario->own_id &&
+            strcmp(scenario->nodes[scenario->own_id].name, c.from_node) !=
+                0) {
+            continue;
+        }
 
         // from_interface
         SET_STRING_OBJECT(
@@ -2196,15 +2255,24 @@ int set_all_neighbor_bmp(int center_id,
     return 0;
 }
 
-int set_neighbor_bmp(int *neighbor_ids, int *neighbor_ids_bmp) {
+int set_neighbor_bmp(int *neighbor_ids,
+                     int *neighbor_ids_bmp,
+                     int is_other_update) {
 
     int ni = 0;
+
+    if (is_other_update) {
+        ni                   = neighbor_ids[0];
+        neighbor_ids_bmp[ni] = 1;
+
+        return SUCCESS;
+    }
 
     for (int i = 0; neighbor_ids[i] != -1; ++i) {
         ni                   = neighbor_ids[i];
         neighbor_ids_bmp[ni] = 1;
     }
-    return 0;
+    return SUCCESS;
 }
 
 int set_all_prev_neighbor_bmp(int center_id,
@@ -2220,10 +2288,13 @@ int set_all_prev_neighbor_bmp(int center_id,
 }
 int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int *prev_neighbor_ids_bmp,
-                          int node_number) {
+                          int node_number,
+                          int is_other_update) {
     for (int i = 0; i < node_number; ++i) {
         prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
-        neighbor_ids_bmp[i]      = 0;
+        if (is_other_update == 0) {
+            neighbor_ids_bmp[i] = 0;
+        }
     }
 
     return 0;
@@ -2407,11 +2478,17 @@ int set_meteor_param(meteor_param_t *mp,
                      int *current_map,
                      int *prev_map,
                      int own_id,
-                     int node_number) {
+                     int node_number,
+                     int is_other_update,
+                     int received_center_id) {
 
     clear_meteor_param(mp);
 
     for (int i = 0; i < node_number; ++i) {
+        if (is_other_update) {
+            i           = received_center_id;
+            node_number = i;
+        }
         if (i == own_id) {
             continue;
         }

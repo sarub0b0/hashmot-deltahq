@@ -553,7 +553,10 @@ int main(int argc, char **argv) {
     struct connection_class **neighbor = NULL;
     int neighbor_number                = 0;
 
-    int center_id = -1;
+    int is_other_update = 0;
+
+    int center_id          = -1;
+    int received_center_id = -1;
 
     // =====================================================
     // all node calculation mode
@@ -632,9 +635,17 @@ int main(int argc, char **argv) {
         // }
         WARNING("update_neighbors");
 
+        // center_id == own_id ならset_neighbor_bmp
+        // center_id != own_id ならneighbor_bmpを触らない
         for (int i = 0; i < scenario->node_number; ++i) {
-            neighbor_number = update_neighbors(
-                scenario, neighbor, own_id, neighbor_ids, &ibuf, 0);
+            neighbor_number = update_neighbors(scenario,
+                                               neighbor,
+                                               own_id,
+                                               neighbor_ids,
+                                               &ibuf,
+                                               &is_other_update,
+                                               &received_center_id,
+                                               0);
 
             if (i != own_id) {
                 continue;
@@ -645,12 +656,9 @@ int main(int argc, char **argv) {
             }
             puts("");
 
-            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp);
-            if (neighbor_number < 0) {
-                // break;
-                // goto ERROR_HANDLE;
-            }
+            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp, is_other_update);
         }
+        is_other_update = 0;
     } else {
         // =====================================================
         // all node
@@ -804,8 +812,8 @@ int main(int argc, char **argv) {
     }
     TCHK_END(scenario_init_state);
 
-    scenario_sort_connections(
-        scenario->connections, scenario->connection_number, own_id);
+    // scenario_sort_connections(
+    // scenario->connections, scenario->connection_number, own_id);
     printf("\nconnection_number=%d\n", scenario->connection_number);
     for (int connection_i = 0; connection_i < scenario->connection_number;
          connection_i++) {
@@ -978,7 +986,9 @@ int main(int argc, char **argv) {
                          neighbor_ids_bmp,
                          prev_neighbor_ids_bmp,
                          own_id,
-                         scenario->node_number);
+                         scenario->node_number,
+                         is_other_update,
+                         received_center_id);
 
         print_meteor_param(own_id, meteor_param);
 
@@ -1057,6 +1067,8 @@ int main(int argc, char **argv) {
                                                own_id,
                                                neighbor_ids,
                                                &ibuf,
+                                               &is_other_update,
+                                               &received_center_id,
                                                1);
 
             if (neighbor_number < 0) {
@@ -1096,9 +1108,10 @@ int main(int argc, char **argv) {
             // ------------------------------------
             set_prev_neighbor_bmp(neighbor_ids_bmp,
                                   prev_neighbor_ids_bmp,
-                                  scenario->node_number);
+                                  scenario->node_number,
+                                  is_other_update);
 
-            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp);
+            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp, is_other_update);
 
             printf("-------------- prev --------------\n");
             print_neighbor_bmp(
@@ -1115,7 +1128,9 @@ int main(int argc, char **argv) {
                              neighbor_ids_bmp,
                              prev_neighbor_ids_bmp,
                              own_id,
-                             scenario->node_number);
+                             scenario->node_number,
+                             is_other_update,
+                             received_center_id);
 
             print_meteor_param(own_id, meteor_param);
 
