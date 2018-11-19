@@ -15,5 +15,9 @@ core.*
 log
 bin/*.json
 Session.vim
-deltaHQ
-location_info_base
+bin/deltaHQ
+bin/location_info_base
+/**/build/Makefile
+/**/build/CMakeFiles/
+/**/build/cmake_install.cmake
+/**/build/CMakeCache.txt
