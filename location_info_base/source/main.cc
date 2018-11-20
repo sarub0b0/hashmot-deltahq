@@ -112,8 +112,8 @@ int main(int argc, char const *argv[]) {
             const Value &value = iter->value;
 
             if (key == "init") {
-                printf("%s\n", read.c_str());
-                std::flush(std::cout);
+                // printf("%s", read.c_str());
+                // std::flush(std::cout);
                 // std::cout << key << std::endl;
 
                 // #ifdef MULTILINE_JSON
@@ -221,17 +221,19 @@ int main(int argc, char const *argv[]) {
                 //         update_elapsed.count(),
                 //         search_elapsed.count());
 
-                if (0 < neighbor.size()) {
-                    // begin = chrono::high_resolution_clock::now();
-                    ns->SendDeltaHQ(neighbor, value["node"], key);
-                    // TODO send json
-                    // end     = chrono::high_resolution_clock::now();
-                    // elapsed = chrono::duration_cast<chrono::microseconds>(
-                    // end - begin);
-
-                    // fprintf(stderr, "send elapsed: %lld\n",
-                    // elapsed.count());
+                if (neighbor.size() == 0) {
+                    neighbor.push_back(-1);
                 }
+                // begin = chrono::high_resolution_clock::now();
+                ns->SendDeltaHQ(neighbor, value["node"], key);
+                // TODO send json
+                // end     = chrono::high_resolution_clock::now();
+                // elapsed = chrono::duration_cast<chrono::microseconds>(
+                // end - begin);
+
+                // fprintf(stderr, "send elapsed: %lld\n",
+                // elapsed.count());
+                // }
             }
             if (key == "finish") {
                 // std::cout << key << std::endl;

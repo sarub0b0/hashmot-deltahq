@@ -268,7 +268,7 @@ int json_init_scenario(struct scenario_class *scenario,
     //     return 0;
     // }
 
-    // json_error_t error;
+    json_error_t error;
     // // while (1) {
     // json_t *first_object = NULL;
 
@@ -315,7 +315,9 @@ int json_init_scenario(struct scenario_class *scenario,
     // }
     // }
 
-    root = read_json(ibuf);
+    // root = read_json(ibuf);
+    FILE *fd = fopen("3node.json", "r");
+    root     = json_loadf(fd, 0, &error);
 
     if (!root) {
         WARNING("read_json");
@@ -580,6 +582,7 @@ int update_neighbors(struct scenario_class *scenario,
                      int *neighbor_ids,
                      input_buffer_t *ibuf,
                      int *is_other_update,
+                     int *is_other_delete,
                      int *received_center_id,
                      int type) {
 
@@ -701,11 +704,20 @@ int update_neighbors(struct scenario_class *scenario,
     // neighborsに対象のconnectionポインタをセット
     // =====================================================
 
+    // TODO 他のノードが追加・削除・した場合についての処理を考えること
+    //
     // center_idがown_idならば
     // neighbor_idsのconnectionをセット
     *is_other_update = 0;
+    *is_other_delete = 0;
     if (center_id == own_id) {
         *received_center_id = -1;
+        // if (neighbor_ids[0] == -1) {
+        //     *is_other_delete = 1;
+        //     neighbor_ids[0]  = center_id;
+        //     neighbor_ids[1]  = -1;
+        //     return 0;
+        // }
         for (int i = 0; i < nn; ++i) {
             nb_id = neighbor_ids[i];
 
@@ -715,8 +727,11 @@ int update_neighbors(struct scenario_class *scenario,
 
             conn_i = nb_id;
 
-            printf("conn_i=%d\n", conn_i);
+            printf("own: conn_i=%d\n", conn_i);
 
+            if (conn_i < 0) {
+                return 0;
+            }
             neighbors[ni++] = &scenario->connections[conn_i];
             // neighbors[ni++] = &scenario->connections[conn_i + 1];
             neighbor_number++;
@@ -740,6 +755,12 @@ int update_neighbors(struct scenario_class *scenario,
         //         break;
         //     }
         // }
+        if (neighbor_ids[0] == -1) {
+            *is_other_delete = 1;
+            neighbor_ids[0]  = center_id;
+            neighbor_ids[1]  = -1;
+            return 0;
+        }
         for (int i = 0; i < nn; i++) {
             nb_id = neighbor_ids[i];
             if (own_id == nb_id) {
@@ -747,8 +768,9 @@ int update_neighbors(struct scenario_class *scenario,
                 if (own_id < nb_id) {
                     --nb_id;
                 }
+
                 conn_i = nb_id;
-                printf("conn_i=%d\n", conn_i);
+                printf("other: conn_i=%d\n", conn_i);
 
                 neighbors[ni++] = &scenario->connections[conn_i];
                 // neighbors[ni++] = &scenario->connections[conn_i + 1];
@@ -2257,9 +2279,15 @@ int set_all_neighbor_bmp(int center_id,
 
 int set_neighbor_bmp(int *neighbor_ids,
                      int *neighbor_ids_bmp,
-                     int is_other_update) {
+                     int is_other_update,
+                     int is_other_delete) {
 
     int ni = 0;
+    if (is_other_delete) {
+        ni                   = neighbor_ids[0];
+        neighbor_ids_bmp[ni] = 0;
+        return SUCCESS;
+    }
 
     if (is_other_update) {
         ni                   = neighbor_ids[0];
@@ -2289,10 +2317,11 @@ int set_all_prev_neighbor_bmp(int center_id,
 int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int *prev_neighbor_ids_bmp,
                           int node_number,
-                          int is_other_update) {
+                          int is_other_update,
+                          int is_other_delete) {
     for (int i = 0; i < node_number; ++i) {
         prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
-        if (is_other_update == 0) {
+        if (is_other_update == 0 || is_other_delete == 0) {
             neighbor_ids_bmp[i] = 0;
         }
     }
@@ -2480,12 +2509,13 @@ int set_meteor_param(meteor_param_t *mp,
                      int own_id,
                      int node_number,
                      int is_other_update,
+                     int is_other_delete,
                      int received_center_id) {
 
     clear_meteor_param(mp);
 
     for (int i = 0; i < node_number; ++i) {
-        if (is_other_update) {
+        if (is_other_update || is_other_delete) {
             i           = received_center_id;
             node_number = i;
         }

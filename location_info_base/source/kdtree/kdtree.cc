@@ -246,7 +246,7 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     writer.SetMaxDecimalPlaces(4);
 
     root.Accept(writer);
-    printf("%s\n", buffer.GetString());
+    printf("%s", buffer.GetString());
     std::flush(std::cout);
 }
 

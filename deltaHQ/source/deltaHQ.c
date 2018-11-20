@@ -553,10 +553,10 @@ int main(int argc, char **argv) {
     struct connection_class **neighbor = NULL;
     int neighbor_number                = 0;
 
-    int is_other_update = 0;
-
     int center_id          = -1;
     int received_center_id = -1;
+    int is_other_update    = 0;
+    int is_other_delete    = 0;
 
     // =====================================================
     // all node calculation mode
@@ -644,6 +644,7 @@ int main(int argc, char **argv) {
                                                neighbor_ids,
                                                &ibuf,
                                                &is_other_update,
+                                               &is_other_delete,
                                                &received_center_id,
                                                0);
 
@@ -656,7 +657,10 @@ int main(int argc, char **argv) {
             }
             puts("");
 
-            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp, is_other_update);
+            set_neighbor_bmp(neighbor_ids,
+                             neighbor_ids_bmp,
+                             is_other_update,
+                             is_other_delete);
         }
         is_other_update = 0;
     } else {
@@ -988,6 +992,7 @@ int main(int argc, char **argv) {
                          own_id,
                          scenario->node_number,
                          is_other_update,
+                         is_other_delete,
                          received_center_id);
 
         print_meteor_param(own_id, meteor_param);
@@ -1068,6 +1073,7 @@ int main(int argc, char **argv) {
                                                neighbor_ids,
                                                &ibuf,
                                                &is_other_update,
+                                               &is_other_delete,
                                                &received_center_id,
                                                1);
 
@@ -1109,9 +1115,13 @@ int main(int argc, char **argv) {
             set_prev_neighbor_bmp(neighbor_ids_bmp,
                                   prev_neighbor_ids_bmp,
                                   scenario->node_number,
-                                  is_other_update);
+                                  is_other_update,
+                                  is_other_delete);
 
-            set_neighbor_bmp(neighbor_ids, neighbor_ids_bmp, is_other_update);
+            set_neighbor_bmp(neighbor_ids,
+                             neighbor_ids_bmp,
+                             is_other_update,
+                             is_other_delete);
 
             printf("-------------- prev --------------\n");
             print_neighbor_bmp(
@@ -1130,6 +1140,7 @@ int main(int argc, char **argv) {
                              own_id,
                              scenario->node_number,
                              is_other_update,
+                             is_other_delete,
                              received_center_id);
 
             print_meteor_param(own_id, meteor_param);

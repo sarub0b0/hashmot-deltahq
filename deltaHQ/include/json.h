@@ -27,12 +27,14 @@ int update_neighbors(struct scenario_class *scenario,
                      int *neighbor_ids,
                      input_buffer_t *ibuf,
                      int *is_other_update,
+                     int *is_other_delete,
                      int *received_center_id,
                      int type);
 
 int set_neighbor_bmp(int *neighbor_ids,
                      int *neighbor_ids_bmp,
-                     int is_other_update);
+                     int is_other_update,
+                     int is_other_delete);
 
 int search_connection(struct connection_class **conn_pair,
                       int from_id,
@@ -63,7 +65,8 @@ int send_result_to_meteor(meteor_param_t *mp,
 int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int *prev_neighbor_ids_bmp,
                           int node_number,
-                          int is_other_update);
+                          int is_other_update,
+                          int is_other_delete);
 
 int clear_neighbor_bmp();
 int copy_neighbor_bmp();
@@ -74,6 +77,7 @@ int set_meteor_param(meteor_param_t *meteor_param,
                      int own_id,
                      int node_number,
                      int is_other_update,
+                     int is_other_delete,
                      int received_center_id);
 
 void print_neighbor_bmp(int *neighbor_ids_bmp, int loop_number, int own_id);
