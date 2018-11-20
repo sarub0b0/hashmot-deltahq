@@ -5,8 +5,13 @@ project(${PROJECT_NAME} C)
 
 set(CMAKE_C_COMPILER_NAME clang)
 
-# set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE string "clang compiler" FORCE)
-set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang" CACHE string "clang compiler" FORCE)
+
+if(UNIX)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang" CACHE string "clang++ compiler" FORCE)
+endif(UNIX)
+if(APPLE)
+set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang" CACHE string "clang++ compiler" FORCE)
+endif(APPLE)
 
 set(CMAKE_BUILD_TYPE Debug)
 
