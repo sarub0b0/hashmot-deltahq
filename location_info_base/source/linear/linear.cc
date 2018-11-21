@@ -184,4 +184,6 @@ void Linear::SendDeltaHQ(vector<int> &neighbor,
     std::flush(std::cout);
 }
 
+void Linear::InitDGram(const string &host, const string &port) {
+}
 } // namespace neighbor_search

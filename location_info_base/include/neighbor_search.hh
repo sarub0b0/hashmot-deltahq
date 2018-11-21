@@ -71,6 +71,9 @@ class NeighborSearch {
                              string &key) {
         fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
     };
+    virtual void InitDGram(const string &host, const string &port) {
+        fprintf(stderr, "NeighborSearch InitDGram\n");
+    };
 }; // namespace neighbor_search
 }; // namespace neighbor_search
 #endif

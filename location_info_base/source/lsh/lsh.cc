@@ -204,5 +204,7 @@ void LSH::SendDeltaHQ(vector<int> &neighbor, const Node &node, string &key) {
     printf("%s\n", buffer.GetString());
     std::flush(std::cout);
 }
+void LSH::InitDGram(const string &host, const string &port) {
+}
 
 } // namespace neighbor_search

@@ -24,6 +24,7 @@ class Linear : public NeighborSearch {
     vector<int> GetNeighbor(const Node &nodes);
     void SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key);
     void SendDeltaHQ(vector<int> &neighbor, const Node &node, string &key);
+    void InitDGram(const string &host, const string &port);
 
    private:
     vector<Node> nodes_;

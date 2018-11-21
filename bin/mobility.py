@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 sys.stdout.write('{"finish":"finish"}')
                 sys.stdout.write("\n")
                 sys.stdout.flush()
-                time.sleep(2)
+                #  time.sleep(2)
 
                 sys.exit(1)
 

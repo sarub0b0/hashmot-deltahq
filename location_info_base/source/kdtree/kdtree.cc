@@ -16,6 +16,7 @@
 namespace neighbor_search {
 
 KdTree::KdTree() {
+    is_socket_ = false;
 }
 
 KdTree::~KdTree() {
@@ -82,7 +83,8 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     array<float, 2> pos{x, y};
 
     // printf(
-    //     " ========= Query % d (%.2f, %.2f)========= \n", id, pos[0], pos[1]);
+    //     " ========= Query % d (%.2f, %.2f)========= \n", id, pos[0],
+    //     pos[1]);
     Node query(id, pos, r);
 
     neighbor = kdtree_.Query(query, r);
@@ -111,7 +113,8 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     //     if (id == n.id) {
     //         continue;
     //     }
-    //     if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) < r) {
+    //     if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) <
+    //     r) {
     //         exact.push_back(n.id);
     //     }
     // }
@@ -200,54 +203,64 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     root.Accept(writer);
     printf("%s\n", buffer.GetString());
     std::flush(std::cout);
+    if (is_socket_) {
+        dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
+    }
 }
 
 void KdTree::SendDeltaHQ(vector<int> &neighbor,
                          const Node &node,
                          string &key) {
 
-    Json root;
+    //     Json root;
 
-    root.SetObject();
+    //     root.SetObject();
 
-    Value neighbor_object(kObjectType);
-    Value neighbor_array(kArrayType);
-    Value center_object(kObjectType);
-    Value neighbors_object(kObjectType);
-    Value update_object(kObjectType);
-    Value node_object(kObjectType);
+    //     Value neighbor_object(kObjectType);
+    //     Value neighbor_array(kArrayType);
+    //     Value center_object(kObjectType);
+    //     Value neighbors_object(kObjectType);
+    //     Value update_object(kObjectType);
+    //     Value node_object(kObjectType);
 
-    node_object.AddMember("id", node.id, root.GetAllocator());
-    node_object.AddMember("x", node.pos[0], root.GetAllocator());
-    node_object.AddMember("y", node.pos[1], root.GetAllocator());
+    //     node_object.AddMember("id", node.id, root.GetAllocator());
+    //     node_object.AddMember("x", node.pos[0], root.GetAllocator());
+    //     node_object.AddMember("y", node.pos[1], root.GetAllocator());
 
-    neighbors_object.AddMember("center", node_object, root.GetAllocator());
+    //     neighbors_object.AddMember("center", node_object,
+    //     root.GetAllocator());
 
-    for (auto &&i : neighbor) {
-        Value n(kObjectType);
-        neighbor_array.PushBack(i, root.GetAllocator());
-    }
+    //     for (auto &&i : neighbor) {
+    //         Value n(kObjectType);
+    //         neighbor_array.PushBack(i, root.GetAllocator());
+    //     }
 
-    neighbors_object.AddMember(
-        "neighbor", neighbor_array, root.GetAllocator());
+    //     neighbors_object.AddMember(
+    //         "neighbor", neighbor_array, root.GetAllocator());
 
-    update_object.AddMember(
-        "neighbors", neighbors_object, root.GetAllocator());
+    //     update_object.AddMember(
+    //         "neighbors", neighbors_object, root.GetAllocator());
 
-    if (key == "init") {
-        root.AddMember("init", update_object, root.GetAllocator());
-    }
+    //     if (key == "init") {
+    //         root.AddMember("init", update_object, root.GetAllocator());
+    //     }
 
-    if (key == "update") {
-        root.AddMember("update", update_object, root.GetAllocator());
-    }
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-    writer.SetMaxDecimalPlaces(4);
+    //     if (key == "update") {
+    //         root.AddMember("update", update_object, root.GetAllocator());
+    //     }
+    //     StringBuffer buffer;
+    //     Writer<StringBuffer> writer(buffer);
+    //     writer.SetMaxDecimalPlaces(4);
 
-    root.Accept(writer);
-    printf("%s", buffer.GetString());
-    std::flush(std::cout);
+    //     root.Accept(writer);
+    //     printf("%s", buffer.GetString());
+    //     std::flush(std::cout);
 }
 
+void KdTree::InitDGram(const string &host, const string &port) {
+
+    dgram_.Open("AF_INET", true);
+    dgram_.Bind(host, port);
+    is_socket_ = true;
+}
 } // namespace neighbor_search
