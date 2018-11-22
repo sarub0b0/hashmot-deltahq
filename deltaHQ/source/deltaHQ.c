@@ -699,7 +699,8 @@ int main(int argc, char **argv) {
             set_neighbor_bmp(neighbor_ids,
                              neighbor_ids_bmp,
                              is_other_update,
-                             is_other_delete);
+                             is_other_delete,
+                             scenario->node_number);
         }
         is_other_update = 0;
     } else {
@@ -1157,7 +1158,8 @@ int main(int argc, char **argv) {
             set_neighbor_bmp(neighbor_ids,
                              neighbor_ids_bmp,
                              is_other_update,
-                             is_other_delete);
+                             is_other_delete,
+                             scenario->node_number);
 
 #ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");

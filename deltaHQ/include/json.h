@@ -36,7 +36,8 @@ int update_neighbors(struct scenario_class *scenario,
 int set_neighbor_bmp(int *neighbor_ids,
                      int *neighbor_ids_bmp,
                      int is_other_update,
-                     int is_other_delete);
+                     int is_other_delete,
+                     int node_number);
 
 int search_connection(struct connection_class **conn_pair,
                       int from_id,

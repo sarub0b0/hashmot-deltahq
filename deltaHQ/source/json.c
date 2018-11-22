@@ -2230,7 +2230,8 @@ int set_all_neighbor_bmp(int center_id,
 int set_neighbor_bmp(int *neighbor_ids,
                      int *neighbor_ids_bmp,
                      int is_other_update,
-                     int is_other_delete) {
+                     int is_other_delete,
+                     int node_number) {
 
     int ni = 0;
     if (is_other_delete) {
@@ -2242,6 +2243,14 @@ int set_neighbor_bmp(int *neighbor_ids,
     if (is_other_update) {
         ni                   = neighbor_ids[0];
         neighbor_ids_bmp[ni] = 1;
+
+        return SUCCESS;
+    }
+
+    if (neighbor_ids[0] == -1) {
+        for (int i = 0; i < node_number; i++) {
+            neighbor_ids_bmp[i] = 0;
+        }
 
         return SUCCESS;
     }
