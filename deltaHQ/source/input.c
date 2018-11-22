@@ -12,6 +12,7 @@
 void *thread_buffer_write(void *arg) {
     input_buffer_t *ibuf = (input_buffer_t *) arg;
     int is_finish        = 0;
+    int recv_len         = 0;
 
     while (1) {
         if (pthread_mutex_lock(ibuf->mutex_queue) != 0) {
@@ -56,13 +57,32 @@ void *thread_buffer_write(void *arg) {
         //     WARNING("pthread_mutex_unlock error");
         //     return NULL;
         // }
-        while (fgets(ibuf->buffers[ibuf->write_pos], ibuf->buf_size, stdin) ==
-               NULL) {
+        if (ibuf->is_listen_dgram) {
+            recv_len = recv(ibuf->dgram.sock,
+                            ibuf->buffers[ibuf->write_pos],
+                            ibuf->buf_size,
+                            0);
+            if (recv_len == 0) {
+                return NULL;
+            }
+            if (recv_len == -1) {
+                perror("recv");
+                return NULL;
+            }
+            ibuf->buffers[ibuf->write_pos][recv_len] = '\0';
+            printf("%s\n", ibuf->buffers[ibuf->write_pos]);
+        } else {
+            while (fgets(ibuf->buffers[ibuf->write_pos],
+                         ibuf->buf_size,
+                         stdin) == NULL) {
+            }
+            ibuf->buffers[ibuf->write_pos]
+                         [strlen(ibuf->buffers[ibuf->write_pos])] = '\0';
         }
 
         if (strncmp(ibuf->buffers[ibuf->write_pos],
-                    "{\"finish\":\"finish\"}\n",
-                    20) == 0) {
+                    "{\"finish\":\"finish\"}",
+                    19) == 0) {
             is_finish = 1;
         }
 
@@ -71,8 +91,6 @@ void *thread_buffer_write(void *arg) {
             return NULL;
         }
 
-        ibuf->buffers[ibuf->write_pos]
-                     [strlen(ibuf->buffers[ibuf->write_pos])] = '\0';
         ibuf->write_pos = (ibuf->write_pos + 1) % ibuf->bufs_size;
         ibuf->buf_count++;
 
@@ -98,7 +116,7 @@ FINAL_HANDLE:
 
 // char *global_read = NULL;
 char *buffer_read(input_buffer_t *ibuf) {
-    char *read   = NULL;
+    char *read = NULL;
     // int read_len = 0;
 
     if (pthread_mutex_lock(ibuf->mutex_queue) != 0) {

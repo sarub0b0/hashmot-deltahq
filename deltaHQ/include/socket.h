@@ -24,4 +24,12 @@ int socket_init_state(char *ipaddr, unsigned short port, bc_info_t *info);
 void socket_finalize(bc_info_t *info);
 
 int broadcast_sendmsg(bc_info_t *info);
+
+struct dgram_info {
+    unsigned short port;
+    int sock;
+    struct sockaddr_in addr;
+} typedef dgram_info_t;
+
+int dgram_listen(struct dgram_info *dg_info);
 #endif

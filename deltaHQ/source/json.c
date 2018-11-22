@@ -206,7 +206,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     json_t *root         = NULL;
     json_t *first_object = NULL;
 
-    printf("%p %s", line, line);
+    printf("%p %s\n", line, line);
     root = json_loads(line, 0, &error);
     // assert(malloc_zone_check(NULL));
     // print_json(root);
@@ -250,74 +250,12 @@ json_t *read_json(input_buffer_t *ibuf) {
     return 0;
 }
 
-int json_init_scenario(struct scenario_class *scenario,
-                       input_buffer_t *ibuf) {
+int json_init_scenario(struct scenario_class *scenario, FILE *init_fd) {
     json_t *root = NULL;
     json_t *json = NULL;
-
-    // char *line = NULL;
-    // // int bufsize = 5000000;
-    // // line        = (char *) malloc(sizeof(char) * bufsize);
-
-    // line = buffer_read(ibuf);
-    // // if (fgets(line, bufsize, stdin) == NULL) {
-    // //     return ERROR;
-    // // }
-    // if (line == NULL) {
-    //     WARNING("buffer error");
-    //     return 0;
-    // }
-
     json_error_t error;
-    // // while (1) {
-    // json_t *first_object = NULL;
 
-    // // printf("%s", line);
-    // root = json_loads(line, 0, &error);
-
-    // // free(line);
-    // // assert(malloc_zone_check(NULL));
-    // // print_json(root);
-    // // printf("%p %s", line, line);
-
-    // // allowed_write_buffer(ibuf);
-    // if (!root) {
-
-    //     // first_object = json_object_get(root, "finish");
-    //     // if (first_object) {
-    //     //     // print_json(first_object);
-    //     //     fprintf(stdout,
-    //     //             "------------ received finish json
-    //     //             ------------\n");
-    //     //     json_decref(first_object);
-    //     //     json_decref(root);
-    //     //     first_object = NULL;
-    //     //     root         = NULL;
-    //     //     return 0;
-    //     // } else {
-    //     //     json_decref(first_object);
-    //     //     // free_read_string();
-    //     //     // return root;
-    //     //     break;
-    //     // }
-    //     // } else {
-    //     fprintf(stderr,
-    //             "json error on line %d (col %d): %s\n",
-    //             error.line,
-    //             error.column,
-    //             error.text);
-    //     fprintf(stderr, "%d\n%s\n", error.position, error.source);
-    //     // fprintf(stderr, "len=%ld %s\n", strlen(line), line);
-    //     json_decref(first_object);
-    //     json_decref(root);
-    //     first_object = NULL;
-    //     root         = NULL;
-    // }
-    // }
-
-    // root = read_json(ibuf);
-    FILE *fd = fopen("3node.json", "r");
-    root     = json_loadf(fd, 0, &error);
+    root = json_loadf(init_fd, 0, &error);
 
     if (!root) {
         WARNING("read_json");
@@ -1594,8 +1532,6 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
                        DEFAULT_INTERFACE_IP);
 
         s_n->interface_number = 1;
-
-        node_print(s_n);
 
         // id
         s_n->id = i;

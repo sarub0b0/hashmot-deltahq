@@ -193,6 +193,7 @@ static void usage(FILE *f) {
             " -a --ipaddr            - send message to ip address: port\n");
     fprintf(f,
             " -p --port              - send message to ip address: port\n");
+    fprintf(f, " -L --listen            - listen port\n");
     fprintf(f,
             " -t, --threads <number> - number of thread. default number is "
             "number of cpu cores\n");
@@ -288,6 +289,7 @@ static struct option long_options[] = {{"help", 0, 0, 'h'},
                                        {"id", 1, 0, 'i'},
                                        {"ipaddr", 1, 0, 'a'},
                                        {"port", 1, 0, 'p'},
+                                       {"listen", 1, 0, 'L'},
                                        {"version", 0, 0, 'v'},
                                        {"license", 0, 0, 'l'},
                                        {"process", 1, 0, 't'},
@@ -295,7 +297,7 @@ static struct option long_options[] = {{"help", 0, 0, 'h'},
 
 // structure holding name of short options;
 // should match the 'long_options' structure above
-static char short_options[13] = "hi:vl:p:t:a:";
+static char short_options[15] = "hi:vl:p:t:a:L:";
 
 ///////////////////////////////////////////////////
 // main function
@@ -316,9 +318,10 @@ int main(int argc, char **argv) {
 
     // file pointers
     FILE *scenario_file = NULL; // scenario file pointer
+    FILE *init_fd       = NULL; // scenario file pointer
 
     // file name related strings
-    // char scenario_filename[MAX_STRING];
+    char scenario_filename[MAX_STRING];
 
     // revision related variables
     // long int svn_revision;
@@ -326,8 +329,9 @@ int main(int argc, char **argv) {
     char qomet_name[MAX_STRING];
     char c;
 
-    int thread_number   = 0;
-    unsigned short port = 0;
+    int thread_number          = 0;
+    unsigned short port        = 0;
+    unsigned short listen_port = 0;
     char ipaddr[16];
 
     ////////////////////////////////////////////////////////////
@@ -403,7 +407,9 @@ int main(int argc, char **argv) {
             case 'p':
                 port = (unsigned short) atoi(optarg);
                 break;
-                return -1;
+            case 'L':
+                listen_port = (unsigned short) atoi(optarg);
+                break;
             case 't':
                 thread_number = atol(optarg);
                 break;
@@ -434,6 +440,22 @@ int main(int argc, char **argv) {
     int is_broadcast = 0;
     if (0 < port && ipaddr[0] != '\0') {
         is_broadcast = 1;
+    }
+
+    int is_listen_dgram = 0;
+    if (0 < listen_port) {
+        is_listen_dgram = 1;
+    }
+    // socket initialize
+    bc_info_t info;
+    if (is_broadcast) {
+        socket_init_state(ipaddr, port, &info);
+    }
+    dgram_info_t dgram;
+    if (is_listen_dgram) {
+        dgram.port = listen_port;
+
+        dgram_listen(&dgram);
     }
 
     // optind represents the index where option parsing stopped
@@ -494,6 +516,20 @@ int main(int argc, char **argv) {
     // } else {
     //     strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
     // }
+    INFO("\n-- QOMET Emulator: Init Parsing --\n");
+    if (strlen(argv[optind]) > MAX_STRING) {
+        WARNING("Input file name '%s' longer than %d characters!",
+                argv[optind],
+                MAX_STRING);
+        goto ERROR_HANDLE;
+    } else {
+        strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
+    }
+    init_fd = fopen(scenario_filename, "r");
+    if (init_fd == NULL) {
+        WARNING("Cannot open scenario file '%s'!", scenario_filename);
+        goto ERROR_HANDLE;
+    }
 
     // open scenario file
     // scenario_file = fopen(scenario_filename, "r");
@@ -534,11 +570,14 @@ int main(int argc, char **argv) {
     pthread_cond_init(&ibuf_cond_write, NULL);
 
     input_buffer_t ibuf;
-    ibuf.bufs_size = 10;
-    ibuf.buf_size  = 50000;
-    ibuf.read_pos  = 0;
-    ibuf.write_pos = 0;
-    ibuf.buf_count = 0;
+    ibuf.bufs_size       = 10000;
+    ibuf.buf_size        = 9000;
+    ibuf.read_pos        = 0;
+    ibuf.write_pos       = 0;
+    ibuf.buf_count       = 0;
+    ibuf.dgram           = dgram;
+    ibuf.is_listen_dgram = is_listen_dgram;
+
     // ibuf.is_writable        = 1;
     ibuf.mutex_value = &ibuf_mutex_value;
     ibuf.mutex_queue = &ibuf_mutex_queue;
@@ -593,7 +632,7 @@ int main(int argc, char **argv) {
     // read json and init scenario
     // =====================================================
     WARNING("json_init_scenario start");
-    if (json_init_scenario(scenario, &ibuf) == ERROR) {
+    if (json_init_scenario(scenario, init_fd) == ERROR) {
         WARNING("json_init_scenario");
         goto ERROR_HANDLE;
     }
@@ -627,9 +666,9 @@ int main(int argc, char **argv) {
         memset(neighbor_ids_bmp, 0, sizeof(int) * scenario->node_number);
         memset(prev_neighbor_ids_bmp, 0, sizeof(int) * scenario->node_number);
 
-        // printf("\nconnection_number=%d\n", scenario->connection_number);
-        // for (int connection_i = 0; connection_i <
-        // scenario->connection_number;
+        // printf("\nconnection_number=%d\n",
+        // scenario->connection_number); for (int connection_i = 0;
+        // connection_i < scenario->connection_number;
         //      connection_i++) {
         //     connection_print(&(scenario->connections[connection_i]));
         // }
@@ -699,9 +738,9 @@ int main(int argc, char **argv) {
         }
         // WARNING("malloc done");
 
-        // printf("\nconnection_number=%d\n", scenario->connection_number);
-        // for (int connection_i = 0; connection_i <
-        // scenario->connection_number;
+        // printf("\nconnection_number=%d\n",
+        // scenario->connection_number); for (int connection_i = 0;
+        // connection_i < scenario->connection_number;
         //      connection_i++) {
         //     connection_print(&(scenario->connections[connection_i]));
         // }
@@ -733,11 +772,6 @@ int main(int argc, char **argv) {
     //                  scenario->node_number);
 
     scenario_print(scenario);
-    // socket initialize
-    bc_info_t info;
-    if (is_broadcast) {
-        socket_init_state(ipaddr, port, &info);
-    }
 
     ////////////////////////////////////////////////////////////
     // computation phase
@@ -745,9 +779,9 @@ int main(int argc, char **argv) {
 
     // Latest version of expat (expat-2.0.1-11.el6_2.i686) fixed a bug
     // related to hash functions by initializing internally the random
-    // number generator seed to values obtained from the clock. This causes
-    // random values computed by us to change at each run. To fix this
-    // we initialize the random number generator seed to its default
+    // number generator seed to values obtained from the clock. This
+    // causes random values computed by us to change at each run. To fix
+    // this we initialize the random number generator seed to its default
     // value (1).
     // References:
     // [1] http://cmeerw.org/blog/759.html
@@ -818,11 +852,11 @@ int main(int argc, char **argv) {
 
     // scenario_sort_connections(
     // scenario->connections, scenario->connection_number, own_id);
-    printf("\nconnection_number=%d\n", scenario->connection_number);
-    for (int connection_i = 0; connection_i < scenario->connection_number;
-         connection_i++) {
-        connection_print(&(scenario->connections[connection_i]));
-    }
+    // printf("\nconnection_number=%d\n", scenario->connection_number);
+    // for (int connection_i = 0; connection_i < scenario->connection_number;
+    //      connection_i++) {
+    //     connection_print(&(scenario->connections[connection_i]));
+    // }
 
 #ifdef MESSAGE_DEBUG
 
@@ -955,8 +989,8 @@ int main(int argc, char **argv) {
 #endif
         //#ifdef SET_SCHED_PRIORITY
         //        param.sched_priority = priority;
-        //        if (pthread_setschedparam(pt_scenario[i], policy, &param) !=
-        //        0) {
+        //        if (pthread_setschedparam(pt_scenario[i], policy,
+        //        &param) != 0) {
         //            WARNING("pthread_setschedparam error");
         //            goto ERROR_HANDLE;
         //        }
@@ -994,8 +1028,9 @@ int main(int argc, char **argv) {
                          is_other_update,
                          is_other_delete,
                          received_center_id);
-
+#ifdef DEBUG_PRINT
         print_meteor_param(own_id, meteor_param);
+#endif
 
         if (send_result_to_meteor(meteor_param,
                                   own_id,
@@ -1013,9 +1048,9 @@ int main(int argc, char **argv) {
                                  all_prev_neighbor_ids_bmp,
                                  i,
                                  scenario->node_number);
-
+#ifdef DEBUG_PRINT
             print_all_meteor_param(i, meteor_param);
-
+#endif
             if (send_all_result_to_meteor(meteor_param,
                                           i,
                                           scenario->node_number,
@@ -1123,6 +1158,7 @@ int main(int argc, char **argv) {
                              is_other_update,
                              is_other_delete);
 
+#ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");
             print_neighbor_bmp(
                 prev_neighbor_ids_bmp, scenario->node_number, own_id);
@@ -1130,7 +1166,7 @@ int main(int argc, char **argv) {
             printf("\n-------------- current --------------\n");
             print_neighbor_bmp(
                 neighbor_ids_bmp, scenario->node_number, own_id);
-
+#endif
             //
             // send json message
             //
@@ -1143,7 +1179,9 @@ int main(int argc, char **argv) {
                              is_other_delete,
                              received_center_id);
 
+#ifdef DEBUG_PRINT
             print_meteor_param(own_id, meteor_param);
+#endif
 
             if (send_result_to_meteor(meteor_param,
                                       own_id,
@@ -1204,6 +1242,7 @@ int main(int argc, char **argv) {
             set_all_neighbor_bmp(
                 center_id, all_neighbor_ids, all_neighbor_ids_bmp);
 
+#ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");
             print_all_neighbor_bmp(all_prev_neighbor_ids_bmp,
                                    scenario->node_number);
@@ -1211,6 +1250,7 @@ int main(int argc, char **argv) {
             printf("\n-------------- current --------------\n");
             print_all_neighbor_bmp(all_neighbor_ids_bmp,
                                    scenario->node_number);
+#endif
 
             //
             // send json message
@@ -1221,7 +1261,9 @@ int main(int argc, char **argv) {
                                  center_id,
                                  scenario->node_number);
 
+#ifdef DEBUG_PRINT
             print_all_meteor_param(center_id, meteor_param);
+#endif
 
             if (send_all_result_to_meteor(meteor_param,
                                           center_id,
@@ -1279,6 +1321,15 @@ FINAL_HANDLE:
 
     if (!scenario) {
         exit(1);
+    }
+
+    if (is_broadcast) {
+        socket_finalize(&info);
+    }
+    if (is_listen_dgram) {
+        if (dgram.sock != 0) {
+            close(dgram.sock);
+        }
     }
 
     if (meteor_param->add) free(meteor_param->add);
@@ -1364,8 +1415,6 @@ FINAL_HANDLE:
     // pthread_mutex_destroy(&mut_calc);
     // pthread_cond_destroy(&cond_assign);
     // pthread_cond_destroy(&cond_calc);
-
-    // socket_finalize(&info);
 
     // close output files
     if (scenario_file != NULL) {

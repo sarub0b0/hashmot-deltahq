@@ -5,10 +5,39 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <err.h>
 
 #include <global.h>
 #include <message.h>
 #include <socket.h>
+
+int dgram_listen(struct dgram_info *dg_info) {
+    int reuse = 1;
+
+    dg_info->addr.sin_family      = AF_INET;
+    dg_info->addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    dg_info->addr.sin_port        = htons(dg_info->port);
+
+    dg_info->sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (dg_info->sock < 0) {
+        perror("socket");
+        return ERROR;
+    }
+    if (setsockopt(
+            dg_info->sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) <
+        0) {
+        perror("setsockopt");
+        return ERROR;
+    }
+    if (bind(dg_info->sock,
+             (struct sockaddr *) &dg_info->addr,
+             sizeof(struct sockaddr)) < 0) {
+        perror("bind");
+        return ERROR;
+    }
+    return SUCCESS;
+}
+
 /*!
  * @brief      ソケットの初期化
  * @param[in]  info   ブロードキャスト情報
@@ -63,7 +92,7 @@ void socket_finalize(bc_info_t *info) {
  * @return     成功ならば0、失敗ならば-1を返す。
  */
 int broadcast_sendmsg(bc_info_t *info) {
-    long sendmsg_len = 0;
+    unsigned long sendmsg_len = 0;
 
     /* ブロードキャストを送信し続ける */
     sendmsg_len = sendto(info->sd,

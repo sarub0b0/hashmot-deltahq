@@ -19,7 +19,7 @@ typedef struct meteor {
     int is_change_delete;
 } meteor_param_t;
 
-int json_init_scenario(struct scenario_class *scenario, input_buffer_t *ibuf);
+int json_init_scenario(struct scenario_class *scenario, FILE *init_fd);
 // =====================================================
 int update_neighbors(struct scenario_class *scenario,
                      struct connection_class **neighbor,

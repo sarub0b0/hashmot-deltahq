@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include "socket.h"
+
 typedef struct input_buffer {
     char **buffers;
     int write_pos;
@@ -11,6 +13,10 @@ typedef struct input_buffer {
     int bufs_size;
     long buf_size;
     int buf_count;
+    int is_listen_dgram;
+
+    dgram_info_t dgram;
+
     // int is_writable;
     // int read_idx;
     // int write_idx;
