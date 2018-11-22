@@ -6,7 +6,7 @@ project(${PROJECT_NAME} CXX)
 set(CMAKE_CXX_COMPILER_NAME clang++)
 
 if(UNIX)
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE string "clang++ compiler" FORCE)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++-6.0" CACHE string "clang++ compiler" FORCE)
 endif(UNIX)
 if(APPLE)
 set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE string "clang++ compiler" FORCE)
