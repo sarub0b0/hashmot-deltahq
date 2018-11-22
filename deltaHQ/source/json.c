@@ -592,7 +592,7 @@ int update_neighbors(struct scenario_class *scenario,
     center = json_object_get(update_json, "center");
 
     center_id = json_integer_value(json_object_get(center, "id"));
-    // printf("center_id=%d\n", *center_id);
+    fprintf(stderr, "center_id=%d\n", center_id);
 
     // else {
     //     printf("match %d\n", center_id);

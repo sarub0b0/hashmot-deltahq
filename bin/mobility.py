@@ -98,6 +98,8 @@ if __name__ == '__main__':
     #  print("node length: %d" % len(node))
 
 
+    #  print("Enter Start")
+    input()
 
     mt = 0
 

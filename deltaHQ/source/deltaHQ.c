@@ -677,6 +677,7 @@ int main(int argc, char **argv) {
         // center_id == own_id ならset_neighbor_bmp
         // center_id != own_id ならneighbor_bmpを触らない
         for (int i = 0; i < scenario->node_number; ++i) {
+            fprintf(stderr, "init number=%d\n", i);
             neighbor_number = update_neighbors(scenario,
                                                neighbor,
                                                own_id,
