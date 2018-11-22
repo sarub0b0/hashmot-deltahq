@@ -1408,6 +1408,9 @@ FINAL_HANDLE:
     if (scenario->connections) free(scenario->connections);
     scenario->connections = NULL;
 
+    if (scenario->environments) free(scenario->environments);
+    scenario->environments = NULL;
+
     if (scenario->nodes) free(scenario->nodes);
     scenario->nodes = NULL;
 
