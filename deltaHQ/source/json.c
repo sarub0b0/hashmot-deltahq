@@ -2280,9 +2280,9 @@ int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int is_other_delete) {
     for (int i = 0; i < node_number; ++i) {
         prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
-        // if (is_other_update == 0 || is_other_delete == 0) {
-        //     neighbor_ids_bmp[i] = 0;
-        // }
+        if (is_other_update == 0 && is_other_delete == 0) {
+            neighbor_ids_bmp[i] = 0;
+        }
     }
 
     return 0;
