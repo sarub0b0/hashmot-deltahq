@@ -28,6 +28,8 @@ int update_neighbors(struct scenario_class *scenario,
                      input_buffer_t *ibuf,
                      int *is_other_update,
                      int *is_other_delete,
+                     // int *is_other,
+                     // int *is_contain_other,
                      int *received_center_id,
                      int type);
 

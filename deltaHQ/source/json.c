@@ -521,6 +521,8 @@ int update_neighbors(struct scenario_class *scenario,
                      input_buffer_t *ibuf,
                      int *is_other_update,
                      int *is_other_delete,
+                     // int *is_other,
+                     // int *is_contain_other,
                      int *received_center_id,
                      int type) {
 
@@ -616,7 +618,8 @@ int update_neighbors(struct scenario_class *scenario,
     // =====================================================
     // neighbor_idsにneigborをセット
     // =====================================================
-    nn = 0;
+    nn              = 0;
+    neighbor_ids[0] = -1;
     for (int j = 0; j < neighbor_array_len; ++j) {
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
@@ -646,6 +649,8 @@ int update_neighbors(struct scenario_class *scenario,
     //
     // center_idがown_idならば
     // neighbor_idsのconnectionをセット
+    // int *is_other         = 0;
+    // int *is_contain_other = 0;
     *is_other_update = 0;
     *is_other_delete = 0;
     if (center_id == own_id) {
@@ -675,8 +680,7 @@ int update_neighbors(struct scenario_class *scenario,
             neighbor_number++;
         }
     } else {
-        *is_other_update    = 1;
-        *received_center_id = center_id;
+        // *is_other = 1;
         // for (int i = 0; i < nn; i++) {
         //     nb_id = neighbor_ids[i];
         //     if (own_id == nb_id) {
@@ -694,15 +698,20 @@ int update_neighbors(struct scenario_class *scenario,
         //     }
         // }
         if (neighbor_ids[0] == -1) {
-            *is_other_delete = 1;
-            neighbor_ids[0]  = center_id;
-            neighbor_ids[1]  = -1;
+            *is_other_delete    = 1;
+            *received_center_id = center_id;
+            // is_contain_other = 0;
+            neighbor_ids[0] = center_id;
+            neighbor_ids[1] = -1;
             return 0;
         }
         for (int i = 0; i < nn; i++) {
             nb_id = neighbor_ids[i];
             if (own_id == nb_id) {
-                nb_id = center_id;
+                // *is_contain_other   = 1;
+                *is_other_update    = 1;
+                *received_center_id = center_id;
+                nb_id               = center_id;
                 if (own_id < nb_id) {
                     --nb_id;
                 }
@@ -716,7 +725,12 @@ int update_neighbors(struct scenario_class *scenario,
                 // break;
                 neighbor_ids[0] = center_id;
                 neighbor_ids[1] = -1;
+                break;
             }
+        }
+
+        if (*is_other_update == 0) {
+            neighbor_ids[0] = -1;
         }
     }
     // for (int j = 0; j < nn; j++) {
@@ -2257,9 +2271,9 @@ int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int is_other_delete) {
     for (int i = 0; i < node_number; ++i) {
         prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
-        if (is_other_update == 0 || is_other_delete == 0) {
-            neighbor_ids_bmp[i] = 0;
-        }
+        // if (is_other_update == 0 || is_other_delete == 0) {
+        //     neighbor_ids_bmp[i] = 0;
+        // }
     }
 
     return 0;
@@ -2452,6 +2466,7 @@ int set_meteor_param(meteor_param_t *mp,
 
     for (int i = 0; i < node_number; ++i) {
         if (is_other_update || is_other_delete) {
+            printf("received_center_id=%d\n", received_center_id);
             i           = received_center_id;
             node_number = i;
         }

@@ -1102,6 +1102,7 @@ int main(int argc, char **argv) {
         // get neighbor node id from stdin
         // ------------------------------------
         if (0 <= own_id) {
+
             neighbor_number = update_neighbors(scenario,
                                                deltaQ_class->neighbor,
                                                own_id,
