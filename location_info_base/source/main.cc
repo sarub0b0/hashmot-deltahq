@@ -211,6 +211,7 @@ int main(int argc, char const *argv[]) {
                 if (neighbor.size() == 0) {
                     neighbor.push_back(-1);
                 }
+                sort(neighbor.begin(), neighbor.end());
                 // begin = chrono::high_resolution_clock::now();
                 ns->SendDeltaHQ(neighbor, value["node"], key);
                 // end     = chrono::high_resolution_clock::now();
