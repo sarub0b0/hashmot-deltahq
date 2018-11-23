@@ -1027,6 +1027,8 @@ int main(int argc, char **argv) {
     // send init json
     //
     if (0 <= own_id) {
+        is_other_update = 0;
+        is_other_delete = 0;
         set_meteor_param(meteor_param,
                          neighbor_ids_bmp,
                          prev_neighbor_ids_bmp,
@@ -1082,6 +1084,8 @@ int main(int argc, char **argv) {
     if (neighbor_number < 0) {
         WARNING("init finish");
     }
+
+    fprintf(stderr, "\n-- Scenario Loop Start:\n");
     while (loop_exit == FALSE) {
 
         // sleep(1);
