@@ -3,7 +3,7 @@ set(PROJECT_NAME location_info_base)
 
 project(${PROJECT_NAME} CXX)
 
-set(CMAKE_CXX_COMPILER_NAME clang++)
+# set(CMAKE_CXX_COMPILER_NAME clang++)
 
 if(UNIX)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++-6.0" CACHE string "clang++ compiler" FORCE)
@@ -11,8 +11,6 @@ endif(UNIX)
 if(APPLE)
 set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE string "clang++ compiler" FORCE)
 endif(APPLE)
-
-set(CMAKE_BUILD_TYPE Debug)
 
 # set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING -DMULTILINE_JSON")
 set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
