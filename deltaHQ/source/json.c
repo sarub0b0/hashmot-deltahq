@@ -206,7 +206,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     json_t *root         = NULL;
     json_t *first_object = NULL;
 
-    // printf("%p %s\n", line, line);
+    printf("read json: %s\n", line);
     root = json_loads(line, 0, &error);
     // assert(malloc_zone_check(NULL));
     // print_json(root);
@@ -719,9 +719,9 @@ int update_neighbors(struct scenario_class *scenario,
                 conn_i = nb_id;
                 // printf("other: conn_i=%d\n", conn_i);
 
-                neighbors[ni++] = &scenario->connections[conn_i];
+                neighbors[0] = &scenario->connections[conn_i];
                 // neighbors[ni++] = &scenario->connections[conn_i + 1];
-                neighbor_number++;
+                neighbor_number = 1;
                 // break;
                 neighbor_ids[0] = center_id;
                 neighbor_ids[1] = -1;
@@ -2233,7 +2233,19 @@ int set_neighbor_bmp(int *neighbor_ids,
                      int is_other_delete,
                      int node_number) {
 
+#ifdef DEBUG_PRINT
+    printf("is_other_delete=%d\nis_other_update=%d\n",
+           is_other_delete,
+           is_other_update);
+#endif
     int ni = 0;
+    if (neighbor_ids[0] == -1) {
+        for (int i = 0; i < node_number; i++) {
+            neighbor_ids_bmp[i] = 0;
+        }
+
+        return SUCCESS;
+    }
     if (is_other_delete) {
         ni                   = neighbor_ids[0];
         neighbor_ids_bmp[ni] = 0;
@@ -2243,14 +2255,6 @@ int set_neighbor_bmp(int *neighbor_ids,
     if (is_other_update) {
         ni                   = neighbor_ids[0];
         neighbor_ids_bmp[ni] = 1;
-
-        return SUCCESS;
-    }
-
-    if (neighbor_ids[0] == -1) {
-        for (int i = 0; i < node_number; i++) {
-            neighbor_ids_bmp[i] = 0;
-        }
 
         return SUCCESS;
     }
