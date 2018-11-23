@@ -70,7 +70,7 @@ void *thread_buffer_write(void *arg) {
                 return NULL;
             }
             ibuf->buffers[ibuf->write_pos][recv_len] = '\0';
-            printf("%s\n", ibuf->buffers[ibuf->write_pos]);
+            // printf("%s\n", ibuf->buffers[ibuf->write_pos]);
         } else {
             while (fgets(ibuf->buffers[ibuf->write_pos],
                          ibuf->buf_size,

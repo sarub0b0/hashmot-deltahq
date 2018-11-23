@@ -461,11 +461,12 @@ int main(int argc, char **argv) {
     // optind represents the index where option parsing stopped
     // and where non-option arguments parsing can start;
     // check whether non-option arguments are present
-    // if (argc == optind) {
-    //     WARNING("No scenario configuration file was provided.");
-    //     printf("\n%s: A versatile wireless network emulator.\n",
-    //     qomet_name); usage(stdout); exit(1);
-    // }
+    if (argc == optind) {
+        WARNING("No scenario configuration file was provided.");
+        printf("\n%s: A versatile wireless network emulator.\n", qomet_name);
+        usage(stdout);
+        exit(1);
+    }
 
     ////////////////////////////////////////////////////////////
     // more initialization
@@ -677,7 +678,7 @@ int main(int argc, char **argv) {
         // center_id == own_id ならset_neighbor_bmp
         // center_id != own_id ならneighbor_bmpを触らない
         for (int i = 0; i < scenario->node_number; ++i) {
-            fprintf(stderr, "init number=%d\n", i);
+            // fprintf(stderr, "init number=%d\n", i);
             neighbor_number = update_neighbors(scenario,
                                                neighbor,
                                                own_id,
@@ -691,11 +692,13 @@ int main(int argc, char **argv) {
             if (i != own_id) {
                 continue;
             }
+#ifdef DEBUG_PRINT
             printf("neighbor_ids(%d)=", own_id);
             for (int j = 0; neighbor_ids[j] != -1; ++j) {
                 printf("%d ", neighbor_ids[j]);
             }
             puts("");
+#endif
 
             set_neighbor_bmp(neighbor_ids,
                              neighbor_ids_bmp,
@@ -752,11 +755,13 @@ int main(int argc, char **argv) {
             neighbor_number = update_all_neighbors(
                 scenario, neighbor, &center_id, all_neighbor_ids, &ibuf, 0);
 
-            printf("neighbor_ids(%d)=", i);
+#ifdef DEBUG_PRINT
+            printf("all_neighbor_ids(%d)=", i);
             for (int j = 0; all_neighbor_ids[i][j] != -1; j++) {
                 printf("%d ", all_neighbor_ids[i][j]);
             }
             puts("");
+#endif
             if (neighbor_number < 0) {
                 goto ERROR_HANDLE;
             }
@@ -773,7 +778,7 @@ int main(int argc, char **argv) {
     //                  center_id,
     //                  scenario->node_number);
 
-    scenario_print(scenario);
+    // scenario_print(scenario);
 
     ////////////////////////////////////////////////////////////
     // computation phase

@@ -206,7 +206,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     json_t *root         = NULL;
     json_t *first_object = NULL;
 
-    printf("%p %s\n", line, line);
+    // printf("%p %s\n", line, line);
     root = json_loads(line, 0, &error);
     // assert(malloc_zone_check(NULL));
     // print_json(root);
@@ -592,7 +592,7 @@ int update_neighbors(struct scenario_class *scenario,
     center = json_object_get(update_json, "center");
 
     center_id = json_integer_value(json_object_get(center, "id"));
-    fprintf(stderr, "center_id=%d\n", center_id);
+    // fprintf(stderr, "center_id=%d\n", center_id);
 
     // else {
     //     printf("match %d\n", center_id);
@@ -670,7 +670,7 @@ int update_neighbors(struct scenario_class *scenario,
 
             conn_i = nb_id;
 
-            printf("own: conn_i=%d\n", conn_i);
+            // printf("own: conn_i=%d\n", conn_i);
 
             if (conn_i < 0) {
                 return 0;
@@ -717,7 +717,7 @@ int update_neighbors(struct scenario_class *scenario,
                 }
 
                 conn_i = nb_id;
-                printf("other: conn_i=%d\n", conn_i);
+                // printf("other: conn_i=%d\n", conn_i);
 
                 neighbors[ni++] = &scenario->connections[conn_i];
                 // neighbors[ni++] = &scenario->connections[conn_i + 1];
@@ -828,7 +828,7 @@ int search_connection(struct connection_class **conn_pair,
     int nb_id;
     nb_id = to_id;
 
-    printf("from=%d to=%d\n", from_id, to_id);
+    // printf("from=%d to=%d\n", from_id, to_id);
 
     if (from_id < nb_id) {
         nb_id--;
@@ -2475,7 +2475,7 @@ int set_meteor_param(meteor_param_t *mp,
 
     for (int i = 0; i < node_number; ++i) {
         if (is_other_update || is_other_delete) {
-            printf("received_center_id=%d\n", received_center_id);
+            // printf("received_center_id=%d\n", received_center_id);
             i           = received_center_id;
             node_number = i;
         }
@@ -2497,7 +2497,6 @@ int set_meteor_param(meteor_param_t *mp,
             continue;
         }
         if (prev_map[i] < current_map[i]) {
-            printf("add=%d\n", i);
             if (!is_same_id(mp->add, i)) {
                 mp->add[mp->add_last_idx++] = i;
                 mp->add[mp->add_last_idx]   = -1;
