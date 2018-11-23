@@ -206,7 +206,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     json_t *root         = NULL;
     json_t *first_object = NULL;
 
-    printf("read json: %s\n", line);
+    printf("read json: %s", line);
     root = json_loads(line, 0, &error);
     // assert(malloc_zone_check(NULL));
     // print_json(root);

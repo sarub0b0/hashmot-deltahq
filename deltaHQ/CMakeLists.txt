@@ -22,7 +22,7 @@ set(CMAKE_C_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
 set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=address -DDEBUG_PRINT")
 # set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -pg -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
 # set(CMAKE_C_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=address,leak -fPIE")
-set(CMAKE_C_FLAGS_RELEASE "-O0 -DMESSAGE_WARNING")
+set(CMAKE_C_FLAGS_RELEASE "-O0 -g3 -fno-omit-frame-pointer -DMESSAGE_WARNING -fsanitize=address")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g3 -Og -pg")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
 
