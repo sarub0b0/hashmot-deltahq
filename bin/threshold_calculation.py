@@ -11,11 +11,11 @@ from signal import signal, SIGPIPE, SIG_DFL
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("arguments:")
         print("\t$1   filename")
         print("\t$2   delay")
-        #  print("\t$6   single or multi line [s, m]")
+        print("\t$3   max loop (default 300)")
 
         sys.exit(1)
 
@@ -38,6 +38,11 @@ if __name__ == '__main__':
 
     loop_count = 0
 
+    max_loop = 300
+    if 4 == len(sys.argv):
+        max_loop = int(sys.argv[3])
+
+
     idx = 0
     while True:
 
@@ -47,7 +52,9 @@ if __name__ == '__main__':
         y = node[idx]['y']
         r = node[idx]['radius']
 
-        if 300 < x:
+        if max_loop < x:
+            sys.stdout.write("{\"finish\":\"finish\"}\n")
+            sys.stdout.flush()
             sys.exit(1)
             x = 1
 
