@@ -27,16 +27,23 @@ struct TreeNode {
     array<int, 2> range;
     list<int> list;
     int own_idx;
-    TreeNode() : axis(-1) {
-        this->left    = nullptr;
-        this->right   = nullptr;
-        this->range   = {-1, -1};
-        this->own_idx = -1;
+
+    int depth;
+    int remove_count;
+    TreeNode() : axis(0) {
+        this->parent       = nullptr;
+        this->left         = nullptr;
+        this->right        = nullptr;
+        this->range        = {-1, -1};
+        this->own_idx      = -1;
+        this->depth        = 0;
+        this->remove_count = 0;
     }
     ~TreeNode() {
         this->list.clear();
-        this->left  = nullptr;
-        this->right = nullptr;
+        this->parent = nullptr;
+        this->left   = nullptr;
+        this->right  = nullptr;
     }
     // TODO なんかのリストか宛先を持つと早くなる？
     // 隣のノード？
@@ -57,16 +64,30 @@ class KdTreeIndex {
     void PrintBack(int id);
 
    private:
+    int max_depth_;
+    int max_remove_count_;
+    bool should_remake_;
+
     TreeNode *tree_;
+
+    vector<TreeNode *> remove_tnodes_;
 
     vector<TreeNode *> tnodes_;
     vector<Node> nodes_;
     // vector<Node> id_sorted_nodes_;
     vector<int> neighbor_;
 
+    TreeNode *MakeTree(TreeNode *parent,
+                       vector<Node> &nodes,
+                       int begin,
+                       int end,
+                       int axis,
+                       int depth);
     TreeNode *MakeTree(
         TreeNode *parent, vector<Node> &nodes, int begin, int end, int axis);
-    TreeNode *MakeTree(vector<Node> &nodes, int begin, int end, int axis);
+    TreeNode *MakeTree(
+        TreeNode *parent, vector<int> &list, int begin, int end, int axis);
+    TreeNode *MakeTree(vector<int> &list, int begin, int end, int axis);
 
     TreeNode *MakeTree(vector<Node> &nodes, int axis);
 
@@ -74,9 +95,16 @@ class KdTreeIndex {
 
     TreeNode *Search(TreeNode *tnode, Node &node);
 
-    bool IsRemakeTree(TreeNode *tnode, const Node &node);
+    TreeNode *CheckDestroyBalance(TreeNode *tnode, Node &node);
 
-    void AddIndex(TreeNode *tnode, Node &node);
+    // bool IsRemakeTree(TreeNode *tnode, const Node &node);
+    int IsRemakeTree(TreeNode *tnode, Node &node);
+
+    void AddIndex(TreeNode *tnode, Node &add_node);
+
+    TreeNode *DeleteLeaf(TreeNode *tnode);
+
+    TreeNode *SwapRemoveNode(TreeNode *tnode);
 
     void RemoveIndex();
 

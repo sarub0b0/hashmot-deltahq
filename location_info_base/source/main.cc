@@ -139,14 +139,13 @@ int main(int argc, char const *argv[]) {
             id++;
         }
     }
-
+    fprintf(stderr, "-- Update wait --\n");
     while (1) {
 
         ///////////////////////////////////////
         // Read stream
         ///////////////////////////////////////
         getline(cin, read);
-        // printf("%s\n", read.c_str());
 
         Json json;
         json.Parse(read.c_str());
@@ -203,9 +202,9 @@ int main(int argc, char const *argv[]) {
                     chrono::duration_cast<chrono::microseconds>(end - begin);
 
                 // fprintf(stderr,
-                //         "elapsed=%lld\tupdate=%lld\tsearch=%lld\n",
-                //         update_elapsed.count() +
-                //         search_elapsed.count(), update_elapsed.count(),
+                //         "elapsed=%lld\n\tupdate=%lld\n\tsearch=%lld\n",
+                //         update_elapsed.count() + search_elapsed.count(),
+                //         update_elapsed.count(),
                 //         search_elapsed.count());
 
                 if (neighbor.size() == 0) {

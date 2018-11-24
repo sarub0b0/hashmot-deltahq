@@ -64,6 +64,12 @@ void KdTree::Update(const Value &json) {
     Node n(id, array<float, 2>{x, y}, radius);
     nodes_[id] = n;
 
+    // fprintf(stderr,
+    //         " ========= Update % d (%.2f, %.2f)========= \n",
+    //         id,
+    //         n.pos[0],
+    //         n.pos[1]);
+
     kdtree_.Update(n);
 }
 
@@ -82,49 +88,41 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
 
     array<float, 2> pos{x, y};
 
-    // printf(
-    //     " ========= Query % d (%.2f, %.2f)========= \n", id, pos[0],
-    //     pos[1]);
     Node query(id, pos, r);
 
     neighbor = kdtree_.Query(query, r);
 
     // kdtree_.Validation(nodes_);
 
-    if (neighbor.size() == 0) {
-        return neighbor;
-    }
-    // printf("neighbor:\n");
+    // if (neighbor.size() == 0) {
+    //     return neighbor;
+    // }
+    // fprintf(stderr, "neighbor:\n");
     // sort(neighbor.begin(), neighbor.end());
     // for (auto &&i : neighbor) {
-    //     printf("%d ", i);
+    //     fprintf(stderr, "%d ", i);
     // }
-    // puts("");
+    // fprintf(stderr, "\n");
 
-    // printf("nodes\n");
-    // for (auto &&n : nodes_) {
-    //     printf("%d ", n.id);
-    // }
-    // puts("");
-
-    // printf("exact:\n");
+    // fprintf(stderr, "exact:\n");
     // vector<int> exact;
+    // float dist = 0;
     // for (auto &&n : nodes_) {
     //     if (id == n.id) {
     //         continue;
     //     }
-    //     if (sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2)) <
-    //     r) {
+
+    //     dist = sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2));
+    //     if (dist <= r) {
     //         exact.push_back(n.id);
     //     }
     // }
 
     // sort(exact.begin(), exact.end());
     // for (auto &&i : exact) {
-    //     printf("%d ", i);
+    //     fprintf(stderr, "%d ", i);
     // }
-    // puts("");
-    // printf("miss:\n");
+    // fprintf(stderr, "\n");
     // bool is_same = false;
     // if (exact.size()) {
     //     for (auto &&exa : exact) {
@@ -137,6 +135,7 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
     //         }
 
     //         if (!is_same) {
+    //             fprintf(stderr, "miss:\n");
     //             kdtree_.PrintBack(exa);
     //         }
     //     }

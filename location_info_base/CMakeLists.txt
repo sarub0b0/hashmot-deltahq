@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.5)
-set(PROJECT_NAME location_info_base)
-
-project(${PROJECT_NAME} CXX)
-
-# set(CMAKE_CXX_COMPILER_NAME clang++)
 
 if(UNIX)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++-6.0" CACHE string "clang++ compiler" FORCE)
@@ -12,11 +7,18 @@ if(APPLE)
 set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE string "clang++ compiler" FORCE)
 endif(APPLE)
 
+set(PROJECT_NAME location_info_base)
+
+project(${PROJECT_NAME} CXX)
+
+set(CMAKE_CXX_COMPILER_NAME clang++)
+
+
 # set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING -DMULTILINE_JSON")
-set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -D_GNU_SOURCE -DMESSAGE_WARNING -pipe")
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=leak -fPIE")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DMESSAGE_WARNING")
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=leak")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DMESSAGE_WARNING")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g3 -Og -pg")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os")
 
