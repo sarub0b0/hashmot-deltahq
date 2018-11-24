@@ -305,6 +305,8 @@ static char short_options[15] = "hi:vl:p:t:a:L:";
 
 int main(int argc, char **argv) {
 
+    json_set_alloc_funcs(malloc, free);
+
     TCHK_START(all);
 
     int error_status = SUCCESS;
@@ -318,7 +320,7 @@ int main(int argc, char **argv) {
 
     // file pointers
     FILE *scenario_file = NULL; // scenario file pointer
-    FILE *init_fd       = NULL; // scenario file pointer
+    FILE *init_file     = NULL; // scenario file pointer
 
     // file name related strings
     char scenario_filename[MAX_STRING];
@@ -526,8 +528,8 @@ int main(int argc, char **argv) {
     } else {
         strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
     }
-    init_fd = fopen(scenario_filename, "r");
-    if (init_fd == NULL) {
+    init_file = fopen(scenario_filename, "r");
+    if (init_file == NULL) {
         WARNING("Cannot open scenario file '%s'!", scenario_filename);
         goto ERROR_HANDLE;
     }
@@ -632,12 +634,12 @@ int main(int argc, char **argv) {
     // =====================================================
     // read json and init scenario
     // =====================================================
-    WARNING("json_init_scenario start");
-    if (json_init_scenario(scenario, init_fd) == ERROR) {
+    // WARNING("json_init_scenario start");
+    if (json_init_scenario(scenario, init_file) == ERROR) {
         WARNING("json_init_scenario");
         goto ERROR_HANDLE;
     }
-    WARNING("json_init_scenario done");
+    // WARNING("json_init_scenario done");
     // WARNING("malloc start");
     meteor_param = (meteor_param_t *) malloc(sizeof(meteor_param_t));
 
@@ -673,8 +675,8 @@ int main(int argc, char **argv) {
         //      connection_i++) {
         //     connection_print(&(scenario->connections[connection_i]));
         // }
-        WARNING("update_neighbors");
 
+        fprintf(stderr, "\n-- Initial Neighbors Update:\n");
         // center_id == own_id ならset_neighbor_bmp
         // center_id != own_id ならneighbor_bmpを触らない
         for (int i = 0; i < scenario->node_number; ++i) {
@@ -1085,7 +1087,7 @@ int main(int argc, char **argv) {
         WARNING("init finish");
     }
 
-    fprintf(stderr, "\n-- Scenario Loop Start:\n");
+    fprintf(stderr, "\n-- Scenario Loop Start. Update Wait:\n");
     while (loop_exit == FALSE) {
 
         // sleep(1);
@@ -1244,8 +1246,6 @@ int main(int argc, char **argv) {
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);
 
-            TCHK_END(scenario_deltaQ);
-
             // ------------------------------------
             // set bitmap
             // ------------------------------------
@@ -1288,6 +1288,7 @@ int main(int argc, char **argv) {
                                           &info) == ERROR) {
                 WARNING("send_result_to_meteor");
             }
+            TCHK_END(scenario_deltaQ);
         }
     }
 
@@ -1442,6 +1443,10 @@ FINAL_HANDLE:
     if (xml_scenario != NULL) {
         free(xml_scenario);
         xml_scenario = NULL;
+    }
+    if (init_file != NULL) {
+        fclose(init_file);
+        init_file = NULL;
     }
     TCHK_END(all);
 
