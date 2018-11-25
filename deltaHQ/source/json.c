@@ -660,14 +660,6 @@ int update_neighbors(struct scenario_class *scenario,
         //         break;
         //     }
         // }
-        if (neighbor_ids[0] == -1) {
-            *is_other_delete    = 1;
-            *received_center_id = center_id;
-            // is_contain_other = 0;
-            neighbor_ids[0] = center_id;
-            neighbor_ids[1] = -1;
-            return 0;
-        }
         for (int i = 0; i < nn; i++) {
             nb_id = neighbor_ids[i];
             if (own_id == nb_id) {
@@ -693,7 +685,11 @@ int update_neighbors(struct scenario_class *scenario,
         }
 
         if (*is_other_update == 0) {
-            neighbor_ids[0] = -1;
+            *is_other_delete    = 1;
+            *received_center_id = center_id;
+            // is_contain_other = 0;
+            neighbor_ids[0] = center_id;
+            neighbor_ids[1] = -1;
         }
     }
     // for (int j = 0; j < nn; j++) {
@@ -935,7 +931,7 @@ int send_all_update_json(int center_id,
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
 
-        printf("%s\n", info->msg);
+        printf("-- %s\n", info->msg);
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
@@ -1032,7 +1028,7 @@ int send_update_json(int own_id,
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
 
-        printf("%s\n", info->msg);
+        printf("-- %s\n", info->msg);
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
@@ -1154,7 +1150,7 @@ int send_all_add_json(int center_id,
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
 
-        printf("%s\n", info->msg);
+        printf("-- %s\n", info->msg);
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
             return ERROR;
@@ -1228,7 +1224,7 @@ int send_add_json(int own_id,
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
 
-        printf("%s\n", info->msg);
+        printf("-- %s\n", info->msg);
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
             return ERROR;
@@ -1285,7 +1281,7 @@ int send_delete_json(int center_id,
         info->msg     = send_json_buf;
         info->msg_len = strlen(info->msg);
 
-        printf("%s\n", info->msg);
+        printf("-- %s\n", info->msg);
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
@@ -2218,9 +2214,10 @@ int set_neighbor_bmp(int *neighbor_ids,
 #endif
     int ni = 0;
     if (neighbor_ids[0] == -1) {
-        for (int i = 0; i < node_number; i++) {
-            neighbor_ids_bmp[i] = 0;
-        }
+        memset(neighbor_ids_bmp, 0, sizeof(int) * node_number);
+        // for (int i = 0; i < node_number; i++) {
+        //     neighbor_ids_bmp[i] = 0;
+        // }
 
         return SUCCESS;
     }
@@ -2260,12 +2257,19 @@ int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
                           int node_number,
                           int is_other_update,
                           int is_other_delete) {
-    for (int i = 0; i < node_number; ++i) {
-        prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
-        if (is_other_update == 0 && is_other_delete == 0) {
-            neighbor_ids_bmp[i] = 0;
-        }
+
+    memcpy(
+        prev_neighbor_ids_bmp, neighbor_ids_bmp, sizeof(int) * node_number);
+
+    if (is_other_update == 0 && is_other_delete == 0) {
+        memset(neighbor_ids_bmp, 0, sizeof(int) * node_number);
     }
+    // for (int i = 0; i < node_number; ++i) {
+    //     prev_neighbor_ids_bmp[i] = neighbor_ids_bmp[i];
+    //     if (is_other_update == 0 && is_other_delete == 0) {
+    //         neighbor_ids_bmp[i] = 0;
+    //     }
+    // }
 
     return 0;
 }

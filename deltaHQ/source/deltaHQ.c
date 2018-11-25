@@ -1157,8 +1157,9 @@ int main(int argc, char **argv) {
             pthread_barrier_wait(&br_calc);
 
             TCHK_END(scenario_deltaQ);
-            if (is_other_update != 0 || is_other_delete != 0 ||
-                neighbor_number != 0) {
+            // if (is_other_update != 0 || is_other_delete != 0 ||
+            //     neighbor_number != 0) {
+            if (1) {
 
                 // ------------------------------------
                 // set bitmap
