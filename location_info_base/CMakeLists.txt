@@ -15,7 +15,7 @@ set(CMAKE_CXX_COMPILER_NAME clang++)
 
 
 # set(CMAKE_CXX_FLAGS "-Wall -D_GNU_SOURCE -DMESSAGE_WARNING -DMULTILINE_JSON")
-set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -D_GNU_SOURCE -DMESSAGE_WARNING -pipe")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -D_GNU_SOURCE -DMESSAGE_WARNING -march=native -pipe")
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer -fsanitize=leak")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DMESSAGE_WARNING")
