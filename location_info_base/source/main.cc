@@ -201,11 +201,11 @@ int main(int argc, char const *argv[]) {
                 chrono::microseconds search_elapsed =
                     chrono::duration_cast<chrono::microseconds>(end - begin);
 
-                // fprintf(stderr,
-                //         "elapsed=%lld\n\tupdate=%lld\n\tsearch=%lld\n",
-                //         update_elapsed.count() + search_elapsed.count(),
-                //         update_elapsed.count(),
-                //         search_elapsed.count());
+                fprintf(stderr,
+                        "elapsed=%lld\n\tupdate=%lld\n\tsearch=%lld\n",
+                        update_elapsed.count() + search_elapsed.count(),
+                        update_elapsed.count(),
+                        search_elapsed.count());
 
                 if (neighbor.size() == 0) {
                     neighbor.push_back(-1);

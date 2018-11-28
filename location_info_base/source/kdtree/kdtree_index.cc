@@ -67,7 +67,7 @@ KdTreeIndex::~KdTreeIndex() {
 
 void KdTreeIndex::Index(vector<Node> &nodes) {
     max_depth_        = log2(nodes.size()) + 5;
-    max_remove_count_ = nodes.size() * 0.5;
+    max_remove_count_ = nodes.size() * 5;
 
     for (auto &&n : nodes) {
         TreeNode *tn = new TreeNode();
@@ -269,7 +269,6 @@ void KdTreeIndex::Update(Node &node) {
             delete rm;
         }
         remove_tnodes_.clear();
-
     }
     if (max_remove_count_ < remove_tn->remove_count) {
         ReMakeTree(tnode, node);
