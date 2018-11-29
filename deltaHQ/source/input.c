@@ -108,7 +108,9 @@ void *thread_buffer_write(void *arg) {
 
 FINAL_HANDLE:
 
+#ifdef DEBUG_PRINT
     fprintf(stdout, "pthread_exit thread_buffer_write\n");
+#endif
     pthread_exit(NULL);
     // pthread_detach(pthread_self());
     return NULL;

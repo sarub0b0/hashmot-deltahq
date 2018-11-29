@@ -210,14 +210,13 @@ json_t *read_json(input_buffer_t *ibuf) {
     root = json_loads(line, 0, &error);
 
     if (root) {
-
         first_object = json_object_get(root, "finish");
         if (first_object) {
-            fprintf(stdout, "received finish json\n");
+            fprintf(stdout, "\n-- Received finish json\n");
             json_decref(root);
             first_object = NULL;
             root         = NULL;
-            return 0;
+            return NULL;
         } else {
             return root;
         }
@@ -234,7 +233,7 @@ json_t *read_json(input_buffer_t *ibuf) {
         root         = NULL;
     }
 
-    return 0;
+    return NULL;
 }
 
 int json_init_scenario(struct scenario_class *scenario, FILE *init_fd) {
@@ -245,7 +244,6 @@ int json_init_scenario(struct scenario_class *scenario, FILE *init_fd) {
     root = json_loadf(init_fd, 0, &error);
 
     if (!root) {
-        WARNING("read_json");
         return -1;
     }
 
@@ -313,7 +311,6 @@ int update_all_neighbors(struct scenario_class *scenario,
 
     root = read_json(ibuf);
     if (!root) {
-        WARNING("read_json");
         return -1;
     }
 
@@ -326,7 +323,6 @@ int update_all_neighbors(struct scenario_class *scenario,
         WARNING("json_object_get");
         return -1;
     }
-    // printf("load success\n");
 
     // json_t *node_object;
     json_t *center;
@@ -337,7 +333,6 @@ int update_all_neighbors(struct scenario_class *scenario,
     int own_id;
 
     int node_id;
-    // int nodes_array_len;
     int neighbor_array_len;
 
     int neighbor_number;
@@ -500,7 +495,6 @@ int update_neighbors(struct scenario_class *scenario,
 
     root = read_json(ibuf);
     if (!root) {
-        WARNING("read_json");
         return -1;
     }
 
@@ -624,23 +618,26 @@ int update_neighbors(struct scenario_class *scenario,
         //     neighbor_ids[1]  = -1;
         //     return 0;
         // }
-        for (int i = 0; i < nn; ++i) {
-            nb_id = neighbor_ids[i];
+        if (neighbor_ids[0] != -1) {
+            for (int i = 0; i < nn; ++i) {
+                nb_id = neighbor_ids[i];
 
-            if (own_id < nb_id) {
-                --nb_id;
+                if (own_id < nb_id) {
+                    --nb_id;
+                }
+
+                conn_i = nb_id;
+
+                // printf("own: conn_i=%d\n", conn_i);
+
+                if (conn_i < 0) {
+                    WARNING("invalid neighbor");
+                    break;
+                }
+                neighbors[ni++] = &scenario->connections[conn_i];
+                // neighbors[ni++] = &scenario->connections[conn_i + 1];
+                neighbor_number++;
             }
-
-            conn_i = nb_id;
-
-            // printf("own: conn_i=%d\n", conn_i);
-
-            if (conn_i < 0) {
-                return 0;
-            }
-            neighbors[ni++] = &scenario->connections[conn_i];
-            // neighbors[ni++] = &scenario->connections[conn_i + 1];
-            neighbor_number++;
         }
     } else {
         // *is_other = 1;
@@ -2406,13 +2403,7 @@ int set_all_meteor_param(meteor_param_t *mp,
                 mp->update[mp->update_last_idx++] = j;
                 mp->update[mp->update_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].update, center_id)) {
-            //     mp[j].update[mp[j].update_last_idx++] = center_id;
-            //     mp[j].update[mp[j].update_last_idx]   = -1;
-            // }
             mp->is_change_update = 1;
-            // mp[j].is_change_update  = 1;
             continue;
         }
         if (prev_map[center_id][j] < current_map[center_id][j]) {
@@ -2420,13 +2411,7 @@ int set_all_meteor_param(meteor_param_t *mp,
                 mp->add[mp->add_last_idx++] = j;
                 mp->add[mp->add_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].add, center_id)) {
-            //     mp[j].add[mp[j].add_last_idx++] = center_id;
-            //     mp[j].add[mp[j].add_last_idx]   = -1;
-            // }
             mp->is_change_add = 1;
-            // mp[j].is_change_add  = 1;
             continue;
         }
         if (current_map[center_id][j] < prev_map[center_id][j]) {
@@ -2434,13 +2419,7 @@ int set_all_meteor_param(meteor_param_t *mp,
                 mp->delete[mp->delete_last_idx++] = j;
                 mp->delete[mp->delete_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].delete, center_id)) {
-            //     mp[j].delete[mp[j].delete_last_idx++] = center_id;
-            //     mp[j].delete[mp[j].delete_last_idx]   = -1;
-            // }
             mp->is_change_delete = 1;
-            // mp[j].is_change_delete  = 1;
             continue;
         }
     }
@@ -2473,13 +2452,7 @@ int set_meteor_param(meteor_param_t *mp,
                 mp->update[mp->update_last_idx++] = i;
                 mp->update[mp->update_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].update, center_id)) {
-            //     mp[j].update[mp[j].update_last_idx++] = center_id;
-            //     mp[j].update[mp[j].update_last_idx]   = -1;
-            // }
             mp->is_change_update = 1;
-            // mp[j].is_change_update  = 1;
             continue;
         }
         if (prev_map[i] < current_map[i]) {
@@ -2487,13 +2460,7 @@ int set_meteor_param(meteor_param_t *mp,
                 mp->add[mp->add_last_idx++] = i;
                 mp->add[mp->add_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].add, center_id)) {
-            //     mp[j].add[mp[j].add_last_idx++] = center_id;
-            //     mp[j].add[mp[j].add_last_idx]   = -1;
-            // }
             mp->is_change_add = 1;
-            // mp[j].is_change_add  = 1;
             continue;
         }
         if (current_map[i] < prev_map[i]) {
@@ -2501,13 +2468,7 @@ int set_meteor_param(meteor_param_t *mp,
                 mp->delete[mp->delete_last_idx++] = i;
                 mp->delete[mp->delete_last_idx]   = -1;
             }
-            // if (!is_same_id(center_ids, j) &&
-            //     !is_same_id(mp[j].delete, center_id)) {
-            //     mp[j].delete[mp[j].delete_last_idx++] = center_id;
-            //     mp[j].delete[mp[j].delete_last_idx]   = -1;
-            // }
             mp->is_change_delete = 1;
-            // mp[j].is_change_delete  = 1;
             continue;
         }
     }

@@ -831,7 +831,9 @@ void *scenario_deltaQ(void *arg) {
         pthread_barrier_wait(p->br_calc);
     }
 
+#ifdef DEBUG_PRINT
     fprintf(stdout, "pthread_exit scenario_deltaQ\n");
+#endif
     pthread_exit(NULL);
     // pthread_detach(pthread_self());
     return NULL;

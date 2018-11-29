@@ -497,11 +497,11 @@ int main(int argc, char **argv) {
             "MAX_CONNECTIONS)");
         goto ERROR_HANDLE;
     } else {
-        printf(
-            "MEMORY: Allocated %.2f MB (%zd bytes) for internal scenario "
-            "storage.\n",
-            sizeof(xml_cls) / 1048576.0,
-            sizeof(xml_cls));
+        // printf(
+        //     "MEMORY: Allocated %.2f MB (%zd bytes) for internal scenario "
+        //     "storage.\n",
+        //     sizeof(xml_cls) / 1048576.0,
+        //     sizeof(xml_cls));
     }
 
     // initialize the scenario object
@@ -1127,7 +1127,7 @@ int main(int argc, char **argv) {
                                                1);
 
             if (neighbor_number < 0) {
-                WARNING("finish message or read error");
+                fprintf(stderr, "finish message or read error");
                 deltaQ_class->calc_done = TRUE;
                 neighbor_number         = 0;
                 loop_exit               = TRUE;
@@ -1159,56 +1159,56 @@ int main(int argc, char **argv) {
             TCHK_END(scenario_deltaQ);
             // if (is_other_update != 0 || is_other_delete != 0 ||
             //     neighbor_number != 0) {
-            if (1) {
+            // if (1) {
 
-                // ------------------------------------
-                // set bitmap
-                // ------------------------------------
-                set_prev_neighbor_bmp(neighbor_ids_bmp,
-                                      prev_neighbor_ids_bmp,
-                                      scenario->node_number,
-                                      is_other_update,
-                                      is_other_delete);
+            // ------------------------------------
+            // set bitmap
+            // ------------------------------------
+            set_prev_neighbor_bmp(neighbor_ids_bmp,
+                                  prev_neighbor_ids_bmp,
+                                  scenario->node_number,
+                                  is_other_update,
+                                  is_other_delete);
 
-                set_neighbor_bmp(neighbor_ids,
-                                 neighbor_ids_bmp,
-                                 is_other_update,
-                                 is_other_delete,
-                                 scenario->node_number);
-
-#ifdef DEBUG_PRINT
-                printf("-------------- prev --------------\n");
-                print_neighbor_bmp(
-                    prev_neighbor_ids_bmp, scenario->node_number, own_id);
-
-                printf("\n-------------- current --------------\n");
-                print_neighbor_bmp(
-                    neighbor_ids_bmp, scenario->node_number, own_id);
-#endif
-                //
-                // send json message
-                //
-                set_meteor_param(meteor_param,
-                                 neighbor_ids_bmp,
-                                 prev_neighbor_ids_bmp,
-                                 own_id,
-                                 scenario->node_number,
-                                 is_other_update,
-                                 is_other_delete,
-                                 received_center_id);
+            set_neighbor_bmp(neighbor_ids,
+                             neighbor_ids_bmp,
+                             is_other_update,
+                             is_other_delete,
+                             scenario->node_number);
 
 #ifdef DEBUG_PRINT
-                print_meteor_param(own_id, meteor_param);
+            printf("-------------- prev --------------\n");
+            print_neighbor_bmp(
+                prev_neighbor_ids_bmp, scenario->node_number, own_id);
+
+            printf("-------------- current --------------\n");
+            print_neighbor_bmp(
+                neighbor_ids_bmp, scenario->node_number, own_id);
+#endif
+            //
+            // send json message
+            //
+            set_meteor_param(meteor_param,
+                             neighbor_ids_bmp,
+                             prev_neighbor_ids_bmp,
+                             own_id,
+                             scenario->node_number,
+                             is_other_update,
+                             is_other_delete,
+                             received_center_id);
+
+#ifdef DEBUG_PRINT
+            print_meteor_param(own_id, meteor_param);
 #endif
 
-                if (send_result_to_meteor(meteor_param,
-                                          own_id,
-                                          scenario->connections,
-                                          is_broadcast,
-                                          &info) == ERROR) {
-                    WARNING("send_result_to_meteor");
-                }
+            if (send_result_to_meteor(meteor_param,
+                                      own_id,
+                                      scenario->connections,
+                                      is_broadcast,
+                                      &info) == ERROR) {
+                WARNING("send_result_to_meteor");
             }
+            // }
         } else {
             neighbor_number = update_all_neighbors(scenario,
                                                    deltaQ_class->neighbor,

@@ -92,56 +92,58 @@ vector<int> KdTree::GetNeighbor(const Value &json) {
 
     neighbor = kdtree_.Query(query, r);
 
-    // kdtree_.Validation(nodes_);
+#ifdef QUERY_VALIDATION
+    kdtree_.Validation(nodes_);
 
-    // if (neighbor.size() == 0) {
-    //     return neighbor;
-    // }
-    // fprintf(stderr, "neighbor:\n");
-    // sort(neighbor.begin(), neighbor.end());
-    // for (auto &&i : neighbor) {
-    //     fprintf(stderr, "%d ", i);
-    // }
-    // fprintf(stderr, "\n");
+    if (neighbor.size() == 0) {
+        return neighbor;
+    }
+    fprintf(stderr, "neighbor:\n");
+    sort(neighbor.begin(), neighbor.end());
+    for (auto &&i : neighbor) {
+        fprintf(stderr, "%d ", i);
+    }
+    fprintf(stderr, "\n");
 
-    // fprintf(stderr, "exact:\n");
-    // vector<int> exact;
-    // float dist = 0;
-    // for (auto &&n : nodes_) {
-    //     if (id == n.id) {
-    //         continue;
-    //     }
+    fprintf(stderr, "exact:\n");
+    vector<int> exact;
+    float dist = 0;
+    for (auto &&n : nodes_) {
+        if (id == n.id) {
+            continue;
+        }
 
-    //     dist = sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2));
-    //     if (dist <= r) {
-    //         exact.push_back(n.id);
-    //     }
-    // }
+        dist = sqrt(pow(n.pos[0] - pos[0], 2) + pow(n.pos[1] - pos[1], 2));
+        if (dist <= r) {
+            exact.push_back(n.id);
+        }
+    }
 
-    // sort(exact.begin(), exact.end());
-    // for (auto &&i : exact) {
-    //     fprintf(stderr, "%d ", i);
-    // }
-    // fprintf(stderr, "\n");
-    // bool is_same = false;
-    // if (exact.size()) {
-    //     for (auto &&exa : exact) {
-    //         is_same = false;
-    //         for (auto &&nei : neighbor) {
-    //             if (nei == exa) {
-    //                 is_same = true;
-    //                 break;
-    //             }
-    //         }
+    sort(exact.begin(), exact.end());
+    for (auto &&i : exact) {
+        fprintf(stderr, "%d ", i);
+    }
+    fprintf(stderr, "\n");
+    bool is_same = false;
+    if (exact.size()) {
+        for (auto &&exa : exact) {
+            is_same = false;
+            for (auto &&nei : neighbor) {
+                if (nei == exa) {
+                    is_same = true;
+                    break;
+                }
+            }
 
-    //         if (!is_same) {
-    //             fprintf(stderr, "miss:\n");
-    //             kdtree_.PrintBack(exa);
-    //         }
-    //     }
-    // }
+            if (!is_same) {
+                fprintf(stderr, "miss:\n");
+                kdtree_.PrintBack(exa);
+            }
+        }
+    }
 
-    // assert(exact.size() == neighbor.size());
+    assert(exact.size() == neighbor.size());
+#endif
     return neighbor;
 } // namespace neighbor_search
 

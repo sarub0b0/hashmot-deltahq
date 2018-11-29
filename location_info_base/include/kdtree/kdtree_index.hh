@@ -73,6 +73,7 @@ class KdTreeIndex {
     vector<TreeNode *> remove_tnodes_;
 
     vector<TreeNode *> tnodes_;
+    vector<TreeNode *> sorted_tnodes_;
     vector<Node> nodes_;
     // vector<Node> id_sorted_nodes_;
     vector<int> neighbor_;
@@ -85,6 +86,12 @@ class KdTreeIndex {
                        int depth);
     TreeNode *MakeTree(
         TreeNode *parent, vector<Node> &nodes, int begin, int end, int axis);
+    TreeNode *MakeTree(TreeNode *parent,
+                       vector<TreeNode *> &nodes,
+                       int begin,
+                       int end,
+                       int axis,
+                       int depth);
     TreeNode *MakeTree(
         TreeNode *parent, vector<int> &list, int begin, int end, int axis);
     TreeNode *MakeTree(vector<int> &list, int begin, int end, int axis);
@@ -122,6 +129,10 @@ class KdTreeIndex {
                               int end,
                               int axis);
 
+    static vector<TreeNode *> &Sort(vector<TreeNode *> &tnodes,
+                                    int begin,
+                                    int end,
+                                    int axis);
     static vector<Node> &Sort(vector<Node> &nodes, int axis);
     static vector<Node> &Sort(vector<Node> &nodes);
 };

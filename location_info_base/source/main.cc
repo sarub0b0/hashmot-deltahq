@@ -139,7 +139,7 @@ int main(int argc, char const *argv[]) {
             id++;
         }
     }
-    fprintf(stderr, "-- Update wait --\n");
+    fprintf(stderr, "\n-- Update wait --\n");
     while (1) {
 
         ///////////////////////////////////////
@@ -176,43 +176,60 @@ int main(int argc, char const *argv[]) {
                 if (!value.HasMember("node")) {
                     continue;
                 }
+#ifdef TCHK_ELAPSED
                 chrono::high_resolution_clock::time_point begin =
+
                     chrono::high_resolution_clock::now();
 
+#endif
                 ns->Update(value["node"]);
 
+#ifdef TCHK_ELAPSED
                 chrono::high_resolution_clock::time_point end =
                     chrono::high_resolution_clock::now();
 
-                chrono::microseconds update_elapsed =
-                    chrono::duration_cast<chrono::microseconds>(end - begin);
+                chrono::nanoseconds update_elapsed =
+                    chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
                 // fprintf(stderr, "update elapsed: %lld\n",
                 // elapsed.count());
+#endif
 
-                vector<int> neighbor;
-
+#ifdef TCHK_ELAPSED
                 begin = chrono::high_resolution_clock::now();
-
+#endif
+                vector<int> neighbor;
                 neighbor = ns->GetNeighbor(value["node"]);
 
+#ifdef TCHK_ELAPSED
                 end = chrono::high_resolution_clock::now();
 
-                chrono::microseconds search_elapsed =
-                    chrono::duration_cast<chrono::microseconds>(end - begin);
+                chrono::nanoseconds search_elapsed =
+                    chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
                 fprintf(stderr,
-                        "elapsed=%lld\n\tupdate=%lld\n\tsearch=%lld\n",
-                        update_elapsed.count() + search_elapsed.count(),
-                        update_elapsed.count(),
-                        search_elapsed.count());
+                        "elapsed=%lld.%09lld\n"
+                        "\tupdate=%lld.%09lld\n"
+                        "\tsearch=%lld.%09lld\n",
+                        (update_elapsed.count() + search_elapsed.count()) /
+                            1000000000,
+                        (update_elapsed.count() + search_elapsed.count()) %
+                            1000000000,
+                        update_elapsed.count() / 1000000000,
+                        update_elapsed.count() % 1000000000,
+                        search_elapsed.count() / 1000000000,
+                        search_elapsed.count() % 1000000000);
+#endif
 
                 if (neighbor.size() == 0) {
                     neighbor.push_back(-1);
                 }
+
                 sort(neighbor.begin(), neighbor.end());
+
                 // begin = chrono::high_resolution_clock::now();
                 ns->SendDeltaHQ(neighbor, value["node"], key);
+
                 // end     = chrono::high_resolution_clock::now();
                 // elapsed = chrono::duration_cast<chrono::microseconds>(
                 // end - begin);
