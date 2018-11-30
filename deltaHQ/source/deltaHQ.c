@@ -30,6 +30,7 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include <deltaQ.h> // include file of deltaQ library
 #include <message.h>
