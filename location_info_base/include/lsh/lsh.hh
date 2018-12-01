@@ -8,6 +8,7 @@
 
 #include "using.hh"
 #include "lsh_index.hh"
+#include <dgram.hh>
 #include <neighbor_search.hh>
 
 namespace neighbor_search {
@@ -17,12 +18,13 @@ class LSH : public NeighborSearch {
     LSH(int d, int k, int L);
     ~LSH();
     void Init(const Value &json);
-    void Init(const vector<Node> &nodes);
-    void Update(const Value &json);
-    vector<int> GetNeighbor(const Value &json);
-    vector<int> GetNeighbor(const Node &nodes);
-    void SendDeltaHQ(vector<int> &neighbor, const Value &json, string &key);
-    void SendDeltaHQ(vector<int> &neighbor, const Node &node, string &key);
+    // void Init(const vector<Node> &nodes);
+    int Update(const Value &json);
+    // vector<int> GetNeighbor(const Value &json);
+    vector<int> GetNeighbor(int id);
+    // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string
+    // &key);
+    void SendDeltaHQ(vector<int> &neighbor, int id, string &key);
     void SendDeltaHQ(void);
     void InitDGram(const string &host, const string &port);
 
@@ -35,6 +37,13 @@ class LSH : public NeighborSearch {
     vector<LSHIndex *> lsh_;
 
     vector<Node> nodes_;
+
+    DGram dgram_;
+    bool is_socket_;
+    char send_init_buffer_[9000];
+    char send_update_buffer_[9000];
+    int init_buffer_pos_;
+    int update_buffer_pos_;
 };
 
 } // namespace neighbor_search

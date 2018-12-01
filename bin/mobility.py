@@ -106,15 +106,18 @@ if __name__ == '__main__':
     loop_count = 0
 
     idx = 0
+    json_list = []
     while True:
         if 0 < loop_max:
             if loop_max <= loop_count:
-                sys.stdout.write('{"finish":"finish"}')
-                sys.stdout.write("\n")
-                sys.stdout.flush()
+                #  sys.stdout.write('{"finish":"finish"}')
+                #  sys.stdout.write("\n")
+                #  sys.stdout.flush()
                 #  time.sleep(2)
+                json_list.append('{"finish":"finish"}')
+                break
 
-                sys.exit(1)
+
 
         t0 = time.perf_counter()
 
@@ -162,9 +165,11 @@ if __name__ == '__main__':
 
         #  print(json.dumps(update))
 
-        sys.stdout.write(json.dumps(update, separators=(',' ':')))
-        sys.stdout.write("\n")
-        sys.stdout.flush()
+        #  sys.stdout.write(json.dumps(update, separators=(',' ':')))
+        #  sys.stdout.write("\n")
+        #  sys.stdout.flush()
+
+        json_list.append(json.dumps(update, separators=(',' ':')))
 
         loop_count += 1
 
@@ -174,7 +179,7 @@ if __name__ == '__main__':
 
         mt = mt + (t1 - t0)
 
-        #  print("%04d elapsed: %f" % (idx, (t1 - t0)))
+        #  sys.stderr.write("%04d elapsed: %f\n" % (idx, (t1 - t0)))
 
         idx = idx + 1
 
@@ -183,4 +188,18 @@ if __name__ == '__main__':
 
         #  break
 
-    print("all elapsed: %f" % mt)
+    mt = 0
+    str_array = np.array(json_list)
+    for j in json_list:
+        t0 = time.perf_counter()
+
+        sys.stdout.write(j)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+
+        t1 = time.perf_counter()
+        mt = mt + (t1 - t0)
+
+        #  sys.stderr.write("print elapsed: %f\n" % (t1 - t0))
+
+    sys.stderr.write("mobility elapsed: %f\n" % mt)

@@ -59,16 +59,16 @@ void Loop() {
     // }
 }
 int main(void) {
-    VirtualClass *vc;
-    Foo *foo = new Foo();
-    Bar *bar = new Bar();
+    VirtualClass *vc = new VirtualClass();
+    Foo *foo         = new Foo();
+    Bar *bar         = new Bar();
 
     cout << "main loop\n";
 
     chrono::high_resolution_clock::time_point start =
         chrono::high_resolution_clock::now();
 
-    Loop();
+    vc->Loop();
     chrono::high_resolution_clock::time_point end =
         chrono::high_resolution_clock::now();
 

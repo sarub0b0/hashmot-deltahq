@@ -46,31 +46,37 @@ class NeighborSearch {
     virtual void Init(const Value &json) {
         fprintf(stderr, "NeighborSearch Init\n");
     };
-    virtual void Init(const vector<Node> &node) {
-        fprintf(stderr, "NeighborSearch Init\n");
-    };
+    // virtual void Init(const vector<Node> &node) {
+    //     fprintf(stderr, "NeighborSearch Init\n");
+    // };
     // virtual void Add(const Value &json);
-    virtual void Update(const Value &json) {
+    virtual int Update(const Value &json) {
         fprintf(stderr, "NeighborSearch Update\n");
+        return 0;
     };
-    virtual vector<int> GetNeighbor(const Value &json) {
+    // virtual vector<int> GetNeighbor(const Value &json) {
+    //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
+    //     return vector<int>();
+    // };
+    virtual vector<int> GetNeighbor(int id) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
         return vector<int>();
     };
-    virtual vector<int> GetNeighbor(const Node &node) {
-        fprintf(stderr, "NeighborSearch GetNeighbor\n");
-        return vector<int>();
-    };
+    // virtual vector<int> GetNeighbor(const Node &node) {
+    //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
+    //     return vector<int>();
+    // };
     virtual void SendDeltaHQ(vector<int> &neighbor,
-                             const Value &json,
+                             int id,
+                             // const Value &json,
                              string &key) {
         fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
     };
-    virtual void SendDeltaHQ(vector<int> &neighbor,
-                             const Node &node,
-                             string &key) {
-        fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
-    };
+    // virtual void SendDeltaHQ(vector<int> &neighbor,
+    //                          const Node &node,
+    //                          string &key) {
+    //     fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
+    // };
     virtual void SendDeltaHQ(void) {
         fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
     };

@@ -57,6 +57,7 @@ class KdTreeIndex {
     void Index(vector<Node> &nodes);
     void Update(Node &node);
     vector<int> Query(Node &query, int radius);
+    vector<int> Query(Node &query);
     void Clear();
 
     void Validation(vector<Node> &nodes);
@@ -66,11 +67,14 @@ class KdTreeIndex {
    private:
     int max_depth_;
     int max_remove_count_;
+    int remove_count_;
     bool should_remake_;
 
     TreeNode *tree_;
 
     vector<TreeNode *> remove_tnodes_;
+    vector<TreeNode> rmtnodes_;
+    int remove_pos_;
 
     vector<TreeNode *> tnodes_;
     vector<TreeNode *> sorted_tnodes_;
@@ -135,6 +139,8 @@ class KdTreeIndex {
                                     int axis);
     static vector<Node> &Sort(vector<Node> &nodes, int axis);
     static vector<Node> &Sort(vector<Node> &nodes);
+    void MakeNonRecursiveTree(void) {
+    }
 };
 } // namespace neighbor_search
 

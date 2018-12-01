@@ -45,8 +45,6 @@ int main(int argc, char const *argv[]) {
     int k = 3;
     int L = 64;
 
-    string read;
-
     string init_file;
 
     NeighborSearch *ns;
@@ -111,6 +109,7 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
+    int node_number   = 0;
     const Value &root = init_json;
     for (Value::ConstMemberIterator iter = root.MemberBegin();
          iter != root.MemberEnd();
@@ -119,50 +118,111 @@ int main(int argc, char const *argv[]) {
         const Value &value = iter->value;
 
         ns->Init(value);
-        int id = 0;
         for (auto &&n : value["node"].GetArray()) {
 
             Value node(n, init_json.GetAllocator());
-            node.AddMember("id", id, init_json.GetAllocator());
+            node.AddMember("id", node_number, init_json.GetAllocator());
 
             vector<int> neighbor;
-            neighbor = ns->GetNeighbor(node);
+            neighbor = ns->GetNeighbor(node_number);
 
             sort(neighbor.begin(), neighbor.end());
 
             if (0 < neighbor.size()) {
-                ns->SendDeltaHQ(neighbor, node, key);
+                ns->SendDeltaHQ(neighbor, node_number, key);
             } else {
                 neighbor.push_back(-1);
-                ns->SendDeltaHQ(neighbor, node, key);
+                ns->SendDeltaHQ(neighbor, node_number, key);
             }
-            id++;
+            node_number++;
         }
     }
     fprintf(stderr, "\n-- Update wait --\n");
+
+#ifdef MEASURE
+    chrono::high_resolution_clock::time_point begin, end;
+    chrono::high_resolution_clock::time_point parse_begin, parse_end;
+    chrono::high_resolution_clock::time_point update_begin, update_end;
+    chrono::high_resolution_clock::time_point search_begin, search_end;
+    chrono::high_resolution_clock::time_point send_begin, send_end;
+    chrono::nanoseconds measure_elapsed;
+    chrono::nanoseconds parse_elapsed;
+    chrono::nanoseconds update_elapsed;
+    chrono::nanoseconds search_elapsed;
+    chrono::nanoseconds send_elapsed;
+
+    measure_elapsed =
+        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    update_elapsed =
+        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    parse_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    search_elapsed =
+        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    send_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+
+#endif
+    // #ifdef TCHK_ELAPSED
+    //     chrono::high_resolution_clock::time_point begin, end;
+    //     std::chrono::nanoseconds parse_elapsed;
+    // #endif
+    bool loop_start = false;
+    vector<int> neighbor;
+    // string read;
+    char read[9000];
+
+    Json json;
+    int update_id;
     while (1) {
 
         ///////////////////////////////////////
         // Read stream
         ///////////////////////////////////////
-        getline(cin, read);
+        // getline(cin, read);
+        fgets(read, 9000, stdin);
+#ifdef MEASURE
+        if (loop_start == false) {
+            begin      = chrono::high_resolution_clock::now();
+            loop_start = true;
+        }
+#endif
 
-        Json json;
-        json.Parse(read.c_str());
+        // #ifdef TCHK_ELAPSED
+        //         begin = chrono::high_resolution_clock::now();
+
+        // #endif
+#ifdef MEASURE
+        parse_begin = chrono::high_resolution_clock::now();
+#endif
+        json.Parse(read);
+        // json.Parse(read.c_str());
         // json.Parse(init.c_str());
 
+#ifdef MEASURE
+        parse_end = chrono::high_resolution_clock::now();
+        parse_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+            parse_end - parse_begin);
+#endif
+        // #ifdef TCHK_ELAPSED
+        //         end = chrono::high_resolution_clock::now();
+        //         parse_elapsed =
+        //             std::chrono::duration_cast<std::chrono::nanoseconds>(end
+        //             - begin);
+        //         printf("parse:%lld.%09lld\n",
+        //                parse_elapsed.count() / 1000000000,
+        //                parse_elapsed.count() % 1000000000);
+        // #endif
         ///////////////////////////////////////
         // Check parse error
         ///////////////////////////////////////
-        bool error = json.HasParseError();
-        if (error) {
-            size_t offset       = json.GetErrorOffset();
-            ParseErrorCode code = json.GetParseError();
-            const char *msg     = GetParseError_En(code);
+        // bool error = json.HasParseError();
+        // if (error) {
+        //     size_t offset       = json.GetErrorOffset();
+        //     ParseErrorCode code = json.GetParseError();
+        //     const char *msg     = GetParseError_En(code);
 
-            printf("%lu:%d(%s)\n", offset, code, msg);
-            exit(1);
-        }
+        //     printf("%lu:%d(%s)\n", offset, code, msg);
+        //     exit(1);
+        // }
 
         const Value &root = json;
         for (Value::ConstMemberIterator iter = root.MemberBegin();
@@ -173,63 +233,100 @@ int main(int argc, char const *argv[]) {
 
             if (key == "update") {
                 // std::cout << key << std::endl;
-                if (!value.HasMember("node")) {
-                    continue;
-                }
-#ifdef TCHK_ELAPSED
-                chrono::high_resolution_clock::time_point begin =
+                // if (!value.HasMember("node")) {
+                //     continue;
+                // }
+                // #ifdef TCHK_ELAPSED
+                //                 chrono::high_resolution_clock::time_point
+                //                 begin =
+                //                     chrono::high_resolution_clock::now();
+                // #endif
 
-                    chrono::high_resolution_clock::now();
-
-#endif
-                ns->Update(value["node"]);
-
-#ifdef TCHK_ELAPSED
-                chrono::high_resolution_clock::time_point end =
-                    chrono::high_resolution_clock::now();
-
-                chrono::nanoseconds update_elapsed =
-                    chrono::duration_cast<chrono::nanoseconds>(end - begin);
-
-                // fprintf(stderr, "update elapsed: %lld\n",
-                // elapsed.count());
+#ifdef MEASURE
+                update_begin = chrono::high_resolution_clock::now();
 #endif
 
-#ifdef TCHK_ELAPSED
-                begin = chrono::high_resolution_clock::now();
+                update_id = ns->Update(value["node"]);
+
+#ifdef MEASURE
+                update_end = chrono::high_resolution_clock::now();
+                update_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+                    update_end - update_begin);
 #endif
-                vector<int> neighbor;
-                neighbor = ns->GetNeighbor(value["node"]);
+                // #ifdef TCHK_ELAPSED
+                //                 chrono::high_resolution_clock::time_point
+                //                 end =
+                //                     chrono::high_resolution_clock::now();
 
-#ifdef TCHK_ELAPSED
-                end = chrono::high_resolution_clock::now();
+                //                 chrono::nanoseconds update_elapsed =
+                //                     chrono::duration_cast<chrono::nanoseconds>(end
+                //                     - begin);
 
-                chrono::nanoseconds search_elapsed =
-                    chrono::duration_cast<chrono::nanoseconds>(end - begin);
+                //                 // fprintf(stderr, "update elapsed:
+                //                 %lld\n",
+                //                 // elapsed.count());
+                // #endif
 
-                fprintf(stderr,
-                        "elapsed=%lld.%09lld\n"
-                        "\tupdate=%lld.%09lld\n"
-                        "\tsearch=%lld.%09lld\n",
-                        (update_elapsed.count() + search_elapsed.count()) /
-                            1000000000,
-                        (update_elapsed.count() + search_elapsed.count()) %
-                            1000000000,
-                        update_elapsed.count() / 1000000000,
-                        update_elapsed.count() % 1000000000,
-                        search_elapsed.count() / 1000000000,
-                        search_elapsed.count() % 1000000000);
+                // #ifdef TCHK_ELAPSED
+                //                 begin =
+                //                 chrono::high_resolution_clock::now();
+                // #endif
+
+#ifdef MEASURE
+                search_begin = chrono::high_resolution_clock::now();
 #endif
+
+                neighbor.clear();
+                neighbor = ns->GetNeighbor(update_id);
+
+#ifdef MEASURE
+                search_end = chrono::high_resolution_clock::now();
+                search_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+                    search_end - search_begin);
+#endif
+                // #ifdef TCHK_ELAPSED
+                //                 end = chrono::high_resolution_clock::now();
+
+                //                 chrono::nanoseconds search_elapsed =
+                //                     chrono::duration_cast<chrono::nanoseconds>(end
+                //                     - begin);
+
+                //                 fprintf(stderr,
+                //                         "elapsed=%lld.%09lld\n"
+                //                         "\tupdate=%lld.%09lld\n"
+                //                         "\tsearch=%lld.%09lld\n",
+                //                         (update_elapsed.count() +
+                //                         search_elapsed.count()) /
+                //                             1000000000,
+                //                         (update_elapsed.count() +
+                //                         search_elapsed.count()) %
+                //                             1000000000,
+                //                         update_elapsed.count() /
+                //                         1000000000, update_elapsed.count()
+                //                         % 1000000000,
+                //                         search_elapsed.count() /
+                //                         1000000000, search_elapsed.count()
+                //                         % 1000000000);
+                // #endif
 
                 if (neighbor.size() == 0) {
                     neighbor.push_back(-1);
                 }
 
-                sort(neighbor.begin(), neighbor.end());
+                // sort(neighbor.begin(), neighbor.end());
 
                 // begin = chrono::high_resolution_clock::now();
-                ns->SendDeltaHQ(neighbor, value["node"], key);
 
+#ifdef MEASURE
+                send_begin = chrono::high_resolution_clock::now();
+#endif
+                ns->SendDeltaHQ(neighbor, update_id, key);
+
+#ifdef MEASURE
+                send_end = chrono::high_resolution_clock::now();
+                send_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+                    send_end - send_begin);
+#endif
                 // end     = chrono::high_resolution_clock::now();
                 // elapsed = chrono::duration_cast<chrono::microseconds>(
                 // end - begin);
@@ -239,7 +336,54 @@ int main(int argc, char const *argv[]) {
                 // }
             }
             if (key == "finish") {
+#ifdef MEASURE
+                send_begin = chrono::high_resolution_clock::now();
+#endif
                 ns->SendDeltaHQ();
+#ifdef MEASURE
+                send_end = chrono::high_resolution_clock::now();
+                send_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+                    send_end - send_begin);
+#endif
+
+#ifdef MEASURE
+                end = chrono::high_resolution_clock::now();
+                measure_elapsed =
+                    chrono::duration_cast<chrono::nanoseconds>(end - begin);
+
+                chrono::nanoseconds avg;
+
+                avg = measure_elapsed / node_number;
+                printf("all:%lld.%09lld avg:%lld.%09lld\n",
+                       measure_elapsed.count() / 1000000000,
+                       measure_elapsed.count() % 1000000000,
+                       avg.count() / 1000000000,
+                       avg.count() % 1000000000);
+                avg = parse_elapsed / node_number;
+                printf("\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                       parse_elapsed.count() / 1000000000,
+                       parse_elapsed.count() % 1000000000,
+                       avg.count() / 1000000000,
+                       avg.count() % 1000000000);
+                avg = update_elapsed / node_number;
+                printf("\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                       update_elapsed.count() / 1000000000,
+                       update_elapsed.count() % 1000000000,
+                       avg.count() / 1000000000,
+                       avg.count() % 1000000000);
+                avg = search_elapsed / node_number;
+                printf("\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                       search_elapsed.count() / 1000000000,
+                       search_elapsed.count() % 1000000000,
+                       avg.count() / 1000000000,
+                       avg.count() % 1000000000);
+                avg = send_elapsed / node_number;
+                printf("\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                       send_elapsed.count() / 1000000000,
+                       send_elapsed.count() % 1000000000,
+                       avg.count() / 1000000000,
+                       avg.count() % 1000000000);
+#endif
 
                 goto FINISH_HANDLER;
             }
