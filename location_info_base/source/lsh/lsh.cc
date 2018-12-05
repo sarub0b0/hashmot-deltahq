@@ -201,7 +201,7 @@ vector<int> LSH::GetNeighbor(int id) {
 //     std::flush(std::cout);
 // }
 
-void LSH::SendDeltaHQ(vector<int> &neighbor, int id, string &key) {
+void LSH::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
 #ifdef MEASURE
     // chrono::high_resolution_clock::time_point begin =

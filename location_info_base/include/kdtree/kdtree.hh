@@ -9,8 +9,10 @@
 #include <neighbor_search.hh>
 #include <dgram.hh>
 #include "kdtree_index.hh"
-
 namespace neighbor_search {
+
+typedef GenericDocument<UTF8<>, MemoryPoolAllocator<>, MemoryPoolAllocator<>>
+    DocumentType;
 
 class KdTree : public NeighborSearch {
    public:
@@ -23,7 +25,7 @@ class KdTree : public NeighborSearch {
     int Update(const Value &json);
     // vector<int> GetNeighbor(const Value &json);
     vector<int> GetNeighbor(int id);
-    void SendDeltaHQ(vector<int> &neighbor, int id, string &key);
+    void SendDeltaHQ(const vector<int> &neighbor, int id, string &key);
     // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string
     // &key);
     void SendDeltaHQ(void);
@@ -38,7 +40,14 @@ class KdTree : public NeighborSearch {
 
     // Node *update_node_;
 
-    string send_init_, send_update_;
+    char valueBuffer_[20000];
+    char parseBuffer_[9000];
+
+    MemoryPoolAllocator<> valueAllocator_;
+    MemoryPoolAllocator<> parseAllocator_;
+    DocumentType json_;
+
+    // string send_init_, send_update_;
     char send_init_buffer_[9000];
     char send_update_buffer_[9000];
     int init_buffer_pos_;

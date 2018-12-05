@@ -66,7 +66,7 @@ class NeighborSearch {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void SendDeltaHQ(vector<int> &neighbor,
+    virtual void SendDeltaHQ(const vector<int> &neighbor,
                              int id,
                              // const Value &json,
                              string &key) {

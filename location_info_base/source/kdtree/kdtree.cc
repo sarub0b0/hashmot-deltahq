@@ -16,7 +16,10 @@
 
 namespace neighbor_search {
 
-KdTree::KdTree() {
+KdTree::KdTree()
+    : valueAllocator_(valueBuffer_, sizeof(valueBuffer_)),
+      parseAllocator_(parseBuffer_, sizeof(parseBuffer_)),
+      json_(&valueAllocator_, sizeof(parseBuffer_), &parseAllocator_) {
     is_socket_ = false;
 }
 
@@ -28,8 +31,8 @@ KdTree::~KdTree() {
 void KdTree::Init(const Value &json) {
     // {"init":{"neighbors":{"center":{"id":99983,"x":8833.24,"y":12147.32},"neighbor":[40646]}}}
     // {"update":{"neighbors":{"center":{"id":99985,"x":16287.1,"y":18899.9},"neighbor":[42784]}}}
-    send_init_   = R"({"init":{"neighbors":{"center":{"id":)";
-    send_update_ = R"({"update":{"neighbors":{"center":{"id":)";
+    // string send_init_   = R"({"init":{"neighbors":{"center":{"id":)";
+    // string send_update_ = R"({"update":{"neighbors":{"center":{"id":)";
 
     char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
     char update_prefix[] = "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
@@ -113,6 +116,10 @@ vector<int> KdTree::GetNeighbor(int id) {
 
     neighbor = kdtree_.Query(nodes_[id]);
 
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
+        return neighbor;
+    }
 #ifdef QUERY_VALIDATION
     kdtree_.Validation(nodes_);
 
@@ -255,7 +262,7 @@ vector<int> KdTree::GetNeighbor(int id) {
 //     return neighbor;
 // }
 
-void KdTree::SendDeltaHQ(vector<int> &neighbor,
+void KdTree::SendDeltaHQ(const vector<int> &neighbor,
                          // const Value &json,
                          int id,
                          string &key) {
@@ -267,12 +274,9 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
 
     // {"init":{"neighbors":{"center":{"id":0,"x":3.24,"y":47.32},"neighbor":[6]}}}
     // {"update":{"neighbors":{"center":{"id":0,"x":87.1,"y":9.9},"neighbor":[4]}}}
-    // string buffer;
-    // int id;
     float x, y;
     char *buffer;
 
-    // id = json["id"].GetInt();
     x = nodes_[id].pos[0];
     y = nodes_[id].pos[1];
 
@@ -309,7 +313,7 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
 
     // Json root;
 
-    // root.SetObject();
+    // json_.SetObject();
 
     // Value neighbor_object(kObjectType);
     // Value neighbor_array(kArrayType);
@@ -318,35 +322,36 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
     // Value update_object(kObjectType);
     // Value node_object(kObjectType);
 
-    // node_object.AddMember("id", json["id"].GetInt(), root.GetAllocator());
-    // node_object.AddMember("x", json["x"].GetDouble(), root.GetAllocator());
-    // node_object.AddMember("y", json["y"].GetDouble(), root.GetAllocator());
+    // node_object.AddMember("id", id, json_.GetAllocator());
+    // node_object.AddMember("x", nodes_[id].pos[0], json_.GetAllocator());
+    // node_object.AddMember("y", nodes_[id].pos[1], json_.GetAllocator());
 
-    // neighbors_object.AddMember("center", node_object, root.GetAllocator());
+    // neighbors_object.AddMember("center", node_object,
+    // json_.GetAllocator());
 
     // for (auto &&i : neighbor) {
     //     Value n(kObjectType);
-    //     neighbor_array.PushBack(i, root.GetAllocator());
+    //     neighbor_array.PushBack(i, json_.GetAllocator());
     // }
 
     // neighbors_object.AddMember(
-    //     "neighbor", neighbor_array, root.GetAllocator());
+    //     "neighbor", neighbor_array, json_.GetAllocator());
 
     // update_object.AddMember(
-    //     "neighbors", neighbors_object, root.GetAllocator());
+    //     "neighbors", neighbors_object, json_.GetAllocator());
 
     // if (key == "init") {
-    //     root.AddMember("init", update_object, root.GetAllocator());
+    //     json_.AddMember("init", update_object, json_.GetAllocator());
     // }
 
     // if (key == "update") {
-    //     root.AddMember("update", update_object, root.GetAllocator());
+    //     json_.AddMember("update", update_object, json_.GetAllocator());
     // }
     // StringBuffer buffer;
     // Writer<StringBuffer> writer(buffer);
     // writer.SetMaxDecimalPlaces(4);
 
-    // root.Accept(writer);
+    // json_.Accept(writer);
 
 #ifndef MEASURE
     // printf("%s\n", buffer.GetString());
@@ -365,6 +370,8 @@ void KdTree::SendDeltaHQ(vector<int> &neighbor,
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
         dgram_.SendTo(buffer, strlen(buffer), 0);
     }
+    // valueAllocator_.Clear();
+    // parseAllocator_.Clear();
 }
 
 void KdTree::SendDeltaHQ(void) {

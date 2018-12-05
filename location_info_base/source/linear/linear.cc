@@ -134,7 +134,7 @@ vector<int> Linear::GetNeighbor(int id) {
 //     std::flush(std::cout);
 // }
 
-void Linear::SendDeltaHQ(vector<int> &neighbor, int id, string &key) {
+void Linear::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
 #ifdef MEASURE
     // chrono::high_resolution_clock::time_point begin =

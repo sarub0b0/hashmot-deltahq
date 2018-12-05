@@ -2,6 +2,7 @@
 #include <chrono>
 #include <algorithm>
 #include <fstream>
+#include <cstdlib>
 
 #include <rapidjson/document.h>
 // #include <rapidjson/pointer.h>
@@ -21,6 +22,9 @@
 #define FLOAT(x) static_cast<float>(x)
 
 using namespace neighbor_search;
+
+typedef GenericDocument<UTF8<>, MemoryPoolAllocator<>, MemoryPoolAllocator<>>
+    DocumentType;
 
 void usage(void) {
     // fprintf(stderr, "arguments $1 $2\n");
@@ -137,6 +141,7 @@ int main(int argc, char const *argv[]) {
             node_number++;
         }
     }
+
     fprintf(stderr, "\n-- Update wait --\n");
 
 #ifdef MEASURE
@@ -166,11 +171,19 @@ int main(int argc, char const *argv[]) {
     //     std::chrono::nanoseconds parse_elapsed;
     // #endif
     bool loop_start = false;
-    vector<int> neighbor;
+    // vector<int> neighbor;
     // string read;
     char read[9000];
 
-    Json json;
+    char valueBuffer[20000];
+    char parseBuffer[9000];
+
+    MemoryPoolAllocator<> valueAllocator(valueBuffer, sizeof(valueBuffer));
+    MemoryPoolAllocator<> parseAllocator(parseBuffer, sizeof(parseBuffer));
+    DocumentType json(&valueAllocator, sizeof(parseBuffer), &parseAllocator);
+
+    int neighbor_count = 0;
+    int loop_count     = 0;
     int update_id;
     while (1) {
 
@@ -178,7 +191,8 @@ int main(int argc, char const *argv[]) {
         // Read stream
         ///////////////////////////////////////
         // getline(cin, read);
-        fgets(read, 9000, stdin);
+        while (fgets(read, 9000, stdin) == NULL) {
+        }
 #ifdef MEASURE
         if (loop_start == false) {
             begin      = chrono::high_resolution_clock::now();
@@ -193,6 +207,7 @@ int main(int argc, char const *argv[]) {
 #ifdef MEASURE
         parse_begin = chrono::high_resolution_clock::now();
 #endif
+        // Json json;
         json.Parse(read);
         // json.Parse(read.c_str());
         // json.Parse(init.c_str());
@@ -224,9 +239,9 @@ int main(int argc, char const *argv[]) {
         //     exit(1);
         // }
 
-        const Value &root = json;
-        for (Value::ConstMemberIterator iter = root.MemberBegin();
-             iter != root.MemberEnd();
+        // const Value &root = json;
+        for (Value::ConstMemberIterator iter = json.MemberBegin();
+             iter != json.MemberEnd();
              ++iter) {
             string key         = iter->name.GetString();
             const Value &value = iter->value;
@@ -276,14 +291,18 @@ int main(int argc, char const *argv[]) {
                 search_begin = chrono::high_resolution_clock::now();
 #endif
 
-                neighbor.clear();
-                neighbor = ns->GetNeighbor(update_id);
+                // neighbor.shrink_to_fit();
+                const vector<int> &neighbor = ns->GetNeighbor(update_id);
 
 #ifdef MEASURE
                 search_end = chrono::high_resolution_clock::now();
                 search_elapsed += chrono::duration_cast<chrono::nanoseconds>(
                     search_end - search_begin);
 #endif
+
+                if (neighbor[0] != -1) {
+                    neighbor_count += neighbor.size();
+                }
                 // #ifdef TCHK_ELAPSED
                 //                 end = chrono::high_resolution_clock::now();
 
@@ -309,10 +328,6 @@ int main(int argc, char const *argv[]) {
                 //                         % 1000000000);
                 // #endif
 
-                if (neighbor.size() == 0) {
-                    neighbor.push_back(-1);
-                }
-
                 // sort(neighbor.begin(), neighbor.end());
 
                 // begin = chrono::high_resolution_clock::now();
@@ -334,6 +349,8 @@ int main(int argc, char const *argv[]) {
                 // fprintf(stderr, "send elapsed: %lld\n",
                 // elapsed.count());
                 // }
+                valueAllocator.Clear();
+                parseAllocator.Clear();
             }
             if (key == "finish") {
 #ifdef MEASURE
@@ -353,31 +370,33 @@ int main(int argc, char const *argv[]) {
 
                 chrono::nanoseconds avg;
 
-                avg = measure_elapsed / node_number;
+                printf("neighbor avg: %d\n", neighbor_count / loop_count);
+
+                avg = measure_elapsed / loop_count;
                 printf("all:%lld.%09lld avg:%lld.%09lld\n",
                        measure_elapsed.count() / 1000000000,
                        measure_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
-                avg = parse_elapsed / node_number;
+                avg = parse_elapsed / loop_count;
                 printf("\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        parse_elapsed.count() / 1000000000,
                        parse_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
-                avg = update_elapsed / node_number;
+                avg = update_elapsed / loop_count;
                 printf("\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        update_elapsed.count() / 1000000000,
                        update_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
-                avg = search_elapsed / node_number;
+                avg = search_elapsed / loop_count;
                 printf("\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        search_elapsed.count() / 1000000000,
                        search_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
-                avg = send_elapsed / node_number;
+                avg = send_elapsed / loop_count;
                 printf("\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        send_elapsed.count() / 1000000000,
                        send_elapsed.count() % 1000000000,
@@ -385,9 +404,12 @@ int main(int argc, char const *argv[]) {
                        avg.count() % 1000000000);
 #endif
 
+                valueAllocator.Clear();
+                parseAllocator.Clear();
                 goto FINISH_HANDLER;
             }
         }
+        ++loop_count;
     }
 
 FINISH_HANDLER:

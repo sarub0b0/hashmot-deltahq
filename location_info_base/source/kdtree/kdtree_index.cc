@@ -57,6 +57,7 @@ KdTreeIndex::KdTreeIndex() {
 KdTreeIndex::~KdTreeIndex() {
     tree_ = nullptr;
     nodes_.clear();
+    // nodes_.shrink_to_fit();
 
     for (auto &&tn : tnodes_) {
         delete tn;
@@ -69,7 +70,7 @@ KdTreeIndex::~KdTreeIndex() {
 void KdTreeIndex::Index(vector<Node> &nodes) {
     max_depth_        = log2(nodes.size()) + 15;
     max_remove_count_ = pow(2, max_depth_);
-    max_remove_count_ = nodes.size() * 2;
+    max_remove_count_ = nodes.size() * 3;
     remove_pos_       = 0;
 
     for (auto &&n : nodes) {
@@ -375,7 +376,7 @@ TreeNode *KdTreeIndex::SwapRemoveNode(TreeNode *tnode) {
     tnode->depth        = 0;
     tnode->remove_count = 0;
 
-    remove_tnodes_.push_back(remove_tn);
+    // remove_tnodes_.push_back(remove_tn);
 
     // printf("remove_tn id=%d (%.2f, %.2f)\n",
     //        remove_tn->node.id,
@@ -555,15 +556,15 @@ TreeNode *KdTreeIndex::MakeTree(TreeNode *parent,
     tnode->remove_count = 0;
     tnode->depth        = depth;
 
-    tnode->list.clear();
+    // tnode->list.clear();
 
     // printf("tnode list(%d): ", tnode->node.id);
     // int idx = 0;
-    for (int i = begin; i < end; ++i) {
-        tnode->list.push_back(sorted_nodes[i].id);
-        // printf("%d ", nodes[i].id);
-        // idx++;
-    }
+    // for (int i = begin; i < end; ++i) {
+    //     tnode->list.push_back(sorted_nodes[i].id);
+    //     // printf("%d ", nodes[i].id);
+    //     // idx++;
+    // }
     // puts("");
 
     tnode->parent = parent;
@@ -666,6 +667,7 @@ TreeNode *KdTreeIndex::MakeTree(TreeNode *parent,
 // }
 vector<int> KdTreeIndex::Query(Node &query) {
     neighbor_.clear();
+    // neighbor_.shrink_to_fit();
     // printTree(tree_, nullptr, false);
 
     RangeSearch(tree_, query, query.radius);

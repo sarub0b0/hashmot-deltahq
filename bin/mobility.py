@@ -6,6 +6,7 @@ import json
 import pprint
 import sys
 import numpy as np
+from datetime import datetime
 
 from signal import signal, SIGPIPE, SIG_DFL
 
@@ -99,7 +100,10 @@ if __name__ == '__main__':
 
 
     #  print("Enter Start")
-    input()
+
+    now = datetime.now()
+    now_ts = now.timestamp()
+    random.seed(now_ts)
 
     mt = 0
 
@@ -130,9 +134,10 @@ if __name__ == '__main__':
         y = node[idx]['y']
         r = node[idx]['radius']
 
-        x = round(random.uniform(x - speed, y + speed), 1)
-        y = round(random.uniform(y - speed, y + speed), 1)
+        #  x = round(random.uniform(x - speed, y + speed), 1)
+        #  y = round(random.uniform(y - speed, y + speed), 1)
 
+        x = x + 1
 
         json_update = {}
         json_update['id'] = idx
@@ -190,6 +195,8 @@ if __name__ == '__main__':
 
     mt = 0
     str_array = np.array(json_list)
+    sys.stderr.write("-- mobility stand-by\n")
+    input()
     for j in json_list:
         t0 = time.perf_counter()
 
@@ -202,4 +209,4 @@ if __name__ == '__main__':
 
         #  sys.stderr.write("print elapsed: %f\n" % (t1 - t0))
 
-    sys.stderr.write("mobility elapsed: %f\n" % mt)
+    sys.stderr.write("-- mobility elapsed: %f (%f)\n" % (mt, mt / len(json_list)))
