@@ -134,10 +134,10 @@ if __name__ == '__main__':
         y = node[idx]['y']
         r = node[idx]['radius']
 
-        #  x = round(random.uniform(x - speed, y + speed), 1)
-        #  y = round(random.uniform(y - speed, y + speed), 1)
+        x = round(random.uniform(x - speed, y + speed), 1)
+        y = round(random.uniform(y - speed, y + speed), 1)
 
-        x = x + 1
+        #  x = x + 1
 
         json_update = {}
         json_update['id'] = idx
