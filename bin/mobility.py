@@ -3,7 +3,7 @@
 import random
 import time
 import json
-import pprint
+#  import pprint
 import sys
 import numpy as np
 from datetime import datetime
@@ -60,17 +60,11 @@ if __name__ == '__main__':
     #  if is_single:
     line = f.readline()
     j = json.loads(line)
-        #  sys.stdout.write(json.dumps(j, separators=(',' ':')))
-        #  sys.stdout.write("\n")
-        #  sys.stdout.flush()
+    #  sys.stdout.write(json.dumps(j, separators=(',' ':')))
+    #  sys.stdout.write("\n")
+    #  sys.stdout.flush()
 
     node = j["init"]["node"]
-
-        #  line = f.readline()
-        #  j = json.loads(line)
-        #  sys.stdout.write(json.dumps(j, separators=(',' ':')))
-        #  sys.stdout.write("\n")
-        #  sys.stdout.flush()
 
 
     #  else:

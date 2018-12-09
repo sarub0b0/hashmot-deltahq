@@ -24,23 +24,24 @@ struct TreeNode {
     TreeNode *left;
     TreeNode *right;
     int axis;
-    array<int, 2> range;
-    list<int> list;
-    int own_idx;
+    // array<int, 2> range;
+    // list<int> list;
+    // int own_idx;
 
     int depth;
     int remove_count;
-    TreeNode() : axis(0) {
-        this->parent       = nullptr;
-        this->left         = nullptr;
-        this->right        = nullptr;
-        this->range        = {-1, -1};
-        this->own_idx      = -1;
+    TreeNode() {
+        this->parent = nullptr;
+        this->left   = nullptr;
+        this->right  = nullptr;
+        // this->range        = {-1, -1};
+        // this->own_idx      = -1;
+        this->axis         = -1;
         this->depth        = 0;
         this->remove_count = 0;
     }
     ~TreeNode() {
-        this->list.clear();
+        // this->list.clear();
         this->parent = nullptr;
         this->left   = nullptr;
         this->right  = nullptr;
