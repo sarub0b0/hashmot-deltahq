@@ -370,34 +370,36 @@ int main(int argc, char const *argv[]) {
 
                 chrono::nanoseconds avg;
 
-                printf("neighbor avg: %d\n", neighbor_count / loop_count);
+                fprintf(stderr,
+                        "neighbor avg: %d\n",
+                        neighbor_count / loop_count);
 
                 avg = measure_elapsed / loop_count;
-                printf("all:%lld.%09lld avg:%lld.%09lld\n",
+                fprintf(stderr,"all:%lld.%09lld avg:%lld.%09lld\n",
                        measure_elapsed.count() / 1000000000,
                        measure_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
                 avg = parse_elapsed / loop_count;
-                printf("\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                fprintf(stderr,"\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        parse_elapsed.count() / 1000000000,
                        parse_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
                 avg = update_elapsed / loop_count;
-                printf("\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                fprintf(stderr,"\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        update_elapsed.count() / 1000000000,
                        update_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
                 avg = search_elapsed / loop_count;
-                printf("\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                fprintf(stderr,"\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        search_elapsed.count() / 1000000000,
                        search_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
                        avg.count() % 1000000000);
                 avg = send_elapsed / loop_count;
-                printf("\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                fprintf(stderr,"\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
                        send_elapsed.count() / 1000000000,
                        send_elapsed.count() % 1000000000,
                        avg.count() / 1000000000,
