@@ -13,17 +13,22 @@ ary_loop=()
 
 ary_coe=("0.1" "0.2" "0.4" "0.6" "0.8" "1.0")
 
-echo ${ary_coe[@]}
-
 for c in ${ary_coe[@]}
 do
-    echo $c
     ary_loop+="`echo "${node_number}*${c}" | bc | sed "s/\.0//"` "
 done
 
 echo ${ary_loop[@]}
 
-files=("`ls ../density_json/${node_number}node/`")
+json_dir="../density_json/${node_number}node/"
+if [ -d $json_dir ]
+then
+    files=("`ls $json_dir`")
+else
+    echo "create json file. Use create_measured_init_json.sh"
+    exit
+fi
+
 
 log="../density_json/${node_number}.log"
 touch $log
