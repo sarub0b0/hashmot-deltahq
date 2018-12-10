@@ -19,7 +19,7 @@ if len(sys.argv) < 4:
 
 node_num = int(sys.argv[1])
 
-max_num = int(sys.argv[2])
+max_num = float(sys.argv[2])
 radius = int(sys.argv[3])
 
 fd = open(str(node_num) + "node.json", 'w')
