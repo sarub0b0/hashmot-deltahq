@@ -129,7 +129,7 @@ if __name__ == '__main__':
     mt = 0
     str_array = np.array(json_list)
     sys.stderr.write("-- mobility stand-by\n")
-    input()
+    #  input()
     for j in json_list:
         t0 = time.perf_counter()
 

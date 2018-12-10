@@ -23,7 +23,7 @@ echo ${ary_loop[@]}
 json_dir="../density_json/${node_number}node/"
 if [ -d $json_dir ]
 then
-    files=("`ls $json_dir`")
+    files=("`ls $json_dir | grep --color=never -v out`")
 else
     echo "create json file. Use create_measured_init_json.sh"
     exit
@@ -39,11 +39,13 @@ do
     echo "-----------------------------------------------------------------------"
     echo "-- file $file"
 
+    json=../density_json/${node_number}node/${file}
+    lib_stdin_file=${json}.out
     for max_loop in ${ary_loop[@]}
     do
         echo "max loop(${max_loop})"
-        json=../density_json/${node_number}node/${file}
-        python3 -u measure.py $json ${max_loop} 0 1 r | ./location_info_base $json t 2>&1 | tee -a $log
+        python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
+        cat $lib_stdin_file | ./location_info_base $json t 2>&1 | tee -a $log
     done
 
     echo ""
