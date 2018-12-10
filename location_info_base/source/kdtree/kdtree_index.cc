@@ -111,9 +111,10 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     chrono::nanoseconds make_elapsed =
         chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-    printf("make elapsed=%lld.%09lld\n",
-           make_elapsed.count() / 1000000000,
-           make_elapsed.count() % 1000000000);
+    fprintf(stderr,
+            "make elapsed=%lld.%09lld\n",
+            make_elapsed.count() / 1000000000,
+            make_elapsed.count() % 1000000000);
 
     float min_x, min_y, max_x, max_y;
     min_x = nodes_[0].pos[0];
@@ -134,7 +135,8 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     }
 
     fprintf(stderr,
-            "-- Init density(%.2f) top-left(%.2f, %.2f), bottom-right(%.2f, %.2f)\n",
+            "-- Init density(%.2f) top-left(%.2f, %.2f), bottom-right(%.2f, "
+            "%.2f)\n",
             nodes_.size() / ((max_x - min_x) * (max_y - min_y) * 0.000001),
             min_x,
             min_y,
