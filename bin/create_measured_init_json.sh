@@ -12,14 +12,16 @@ fi
 node_number=$1
 radius=$2
 
+echo "-- node($node_number) radius($radius)"
+
 ary_density=(100 200 500 1000 2000 5000 10000)
 
 for density in ${ary_density[@]}
 do
     length=`echo "scale=2;sqrt( $node_number / $density * 1000000)" | bc`
 
-    echo $length
     python3 create_init_json.py $node_number $length $radius
-    mv $node_number\node.json n$node_number\_d$density\_r$radius.json
+    mv ${node_number}node.json n${node_number}_d${density}_r${radius}.json
+    echo "create density($density) size($length)"
 
 done
