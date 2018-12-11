@@ -20,6 +20,14 @@ Linear::~Linear() {
 }
 void Linear::Init(const Value &json) {
 
+    int node_number = 0;
+    for (auto &&node : json["node"].GetArray()) {
+        ++node_number;
+    }
+
+    nodes_.reserve(node_number);
+    neighbor_.reserve(node_number);
+
     int id = 0;
     for (auto &&n : json["node"].GetArray()) {
 
@@ -63,16 +71,16 @@ int Linear::Update(const Value &json) {
     return id;
 }
 vector<int> Linear::GetNeighbor(int id) {
-    vector<int> neighbor;
     int r;
     r = nodes_[id].radius;
 
-    neighbor = linear_.Query(nodes_[id], r);
+    neighbor_.clear();
+    neighbor_ = linear_.Query(nodes_[id], r);
 
-    if (neighbor.size() == 0) {
-        neighbor.push_back(-1);
+    if (neighbor_.size() == 0) {
+        neighbor_.push_back(-1);
     }
-    return neighbor;
+    return neighbor_;
 }
 // vector<int> Linear::GetNeighbor(const Value &json) {
 //     vector<int> neighbor;

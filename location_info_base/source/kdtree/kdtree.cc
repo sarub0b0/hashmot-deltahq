@@ -43,6 +43,13 @@ void KdTree::Init(const Value &json) {
     init_buffer_pos_   = strlen(init_prefix);
     update_buffer_pos_ = strlen(update_prefix);
 
+    int node_number = 0;
+    for (auto &&node : json["node"].GetArray()) {
+        ++node_number;
+    }
+
+    nodes_.reserve(node_number);
+
     int id = 0;
     for (auto &&node : json["node"].GetArray()) {
 
@@ -135,6 +142,7 @@ vector<int> KdTree::GetNeighbor(int id) {
 
     fprintf(stderr, "exact:\n");
     vector<int> exact;
+    exact.reserve(neighbor.size());
     float dist           = 0;
     int r                = nodes_[id].radius;
     array<float, 2> &pos = nodes_[id].pos;

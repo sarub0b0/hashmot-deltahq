@@ -73,6 +73,12 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     max_remove_count_ = nodes.size() * 1.0;
     remove_pos_       = 0;
 
+    int nodes_size = nodes.size();
+    tnodes_.reserve(nodes_size);
+    sorted_tnodes_.reserve(nodes_size);
+
+    neighbor_.reserve(nodes_size);
+
     for (auto &&n : nodes) {
         TreeNode *tn = new TreeNode();
         tn->node     = n;

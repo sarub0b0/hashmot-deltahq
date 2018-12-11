@@ -33,6 +33,8 @@ class Linear : public NeighborSearch {
     vector<Node> nodes_;
     LinearIndex linear_;
 
+    vector<int> neighbor_;
+
     DGram dgram_;
     bool is_socket_;
 

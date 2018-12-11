@@ -18,6 +18,7 @@ void LinearIndex::Update(Node &node) {
 }
 vector<int> LinearIndex::Query(Node &query, int radius) {
     vector<int> neighbor;
+    neighbor.reserve(nodes_.size());
 
     for (auto &&node : nodes_) {
         if (node.id == query.id) {

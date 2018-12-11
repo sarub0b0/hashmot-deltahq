@@ -37,6 +37,7 @@ class LSH : public NeighborSearch {
     vector<LSHIndex *> lsh_;
 
     vector<Node> nodes_;
+    vector<int> neighbor_;
 
     DGram dgram_;
     bool is_socket_;
