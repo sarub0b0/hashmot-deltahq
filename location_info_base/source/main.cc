@@ -163,6 +163,7 @@ int main(int argc, char const *argv[]) {
             node_size++;
         }
 
+        node_number = node_size;
         density = node_size / ((max_x - min_x) * (max_y - min_y) * 0.000001);
         fprintf(stderr,
                 "-- Init density(%.2f) top-left(%.2f, %.2f), "
@@ -183,7 +184,6 @@ int main(int argc, char const *argv[]) {
             // sort(neighbor.begin(), neighbor.end());
 
             ns->SendDeltaHQ(neighbor, node_number, key);
-            node_number++;
         }
 #endif
     }

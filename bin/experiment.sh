@@ -8,8 +8,6 @@ do
 
 done
 
-exit
-
 
 for n in ${nodes[@]};
 do
