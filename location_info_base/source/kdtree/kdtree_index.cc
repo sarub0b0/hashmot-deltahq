@@ -68,9 +68,9 @@ KdTreeIndex::~KdTreeIndex() {
 }
 
 void KdTreeIndex::Index(vector<Node> &nodes) {
-    max_depth_ = log2(nodes.size()) + 10;
+    max_depth_ = log2(nodes.size()) + 15;
     // max_remove_count_ = pow(2, max_depth_);
-    max_remove_count_ = nodes.size() * 0.8;
+    max_remove_count_ = nodes.size() * 1.0;
     remove_pos_       = 0;
 
     for (auto &&n : nodes) {
@@ -85,8 +85,10 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     nodes_.resize(nodes.size());
     copy(nodes.begin(), nodes.end(), nodes_.begin());
 
+#ifndef MEASURE
     chrono::high_resolution_clock::time_point begin =
         chrono::high_resolution_clock::now();
+#endif
 
     tree_ = MakeTree(nullptr, nodes_, 0, nodes.size(), 0, 1);
 
@@ -105,6 +107,7 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     //     AddIndex(tree_, nodes[i]);
     // }
 
+#ifndef MEASURE
     chrono::high_resolution_clock::time_point end =
         chrono::high_resolution_clock::now();
 
@@ -115,33 +118,35 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
             "make elapsed=%lld.%09lld\n",
             make_elapsed.count() / 1000000000,
             make_elapsed.count() % 1000000000);
+#endif
 
-    float min_x, min_y, max_x, max_y;
-    min_x = nodes_[0].pos[0];
-    min_y = nodes_[0].pos[1];
-    for (int i = 1; i < nodes_.size(); i++) {
-        if (nodes_[i].pos[0] < min_x) {
-            min_x = nodes_[i].pos[0];
-        }
-        if (max_x < nodes_[i].pos[0]) {
-            max_x = nodes_[i].pos[0];
-        }
-        if (nodes_[i].pos[1] < min_y) {
-            min_y = nodes_[i].pos[1];
-        }
-        if (max_y < nodes_[i].pos[1]) {
-            max_y = nodes_[i].pos[1];
-        }
-    }
+    // float min_x, min_y, max_x, max_y;
+    // min_x = nodes_[0].pos[0];
+    // min_y = nodes_[0].pos[1];
+    // for (int i = 1; i < nodes_.size(); i++) {
+    //     if (nodes_[i].pos[0] < min_x) {
+    //         min_x = nodes_[i].pos[0];
+    //     }
+    //     if (max_x < nodes_[i].pos[0]) {
+    //         max_x = nodes_[i].pos[0];
+    //     }
+    //     if (nodes_[i].pos[1] < min_y) {
+    //         min_y = nodes_[i].pos[1];
+    //     }
+    //     if (max_y < nodes_[i].pos[1]) {
+    //         max_y = nodes_[i].pos[1];
+    //     }
+    // }
 
-    fprintf(stderr,
-            "-- Init density(%.2f) top-left(%.2f, %.2f), bottom-right(%.2f, "
-            "%.2f)\n",
-            nodes_.size() / ((max_x - min_x) * (max_y - min_y) * 0.000001),
-            min_x,
-            min_y,
-            max_x,
-            max_y);
+    // fprintf(stderr,
+    //         "-- Init density(%.2f) top-left(%.2f, %.2f), bottom-right(%.2f,
+    //         "
+    //         "%.2f)\n",
+    //         nodes_.size() / ((max_x - min_x) * (max_y - min_y) * 0.000001),
+    //         min_x,
+    //         min_y,
+    //         max_x,
+    //         max_y);
 
     // printTree(tree_, nullptr, false);
 

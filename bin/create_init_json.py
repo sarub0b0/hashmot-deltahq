@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-import random
+#  import random
 import json
 import sys
+import numpy as np
+
 
 def write_file(fd, root):
     out = json.dumps(root, separators=(',' ':'))
@@ -88,14 +90,24 @@ root['init']['node'] = []
 root['init']['environment'] = []
 root['init']['connection'] = []
 
+#  pos_x = np.random.randint(0, max_num, node_num)
+#  pos_y = np.random.randint(0, max_num, node_num)
+
+rand_x = np.random.uniform(0, max_num, node_num)
+rand_y = np.random.uniform(0, max_num, node_num)
+
 for i in range(node_num):
     root['init']['node'].append({
         'name': 'node' + str(i),
         'type': 'regular',
         'connection': 'infrastructure',
         'adapter': 'orinoco',
-        'x': round(random.uniform(0, max_num), 2),
-        'y': round(random.uniform(0, max_num), 2),
+        #  'x': int(pos_x[i]),
+        #  'y': int(pos_y[i]),
+        'x': round(rand_x[i], 2),
+        'y': round(rand_y[i], 2),
+        #  'x': round(random.uniform(0, max_num), 2),
+        #  'y': round(random.uniform(0, max_num), 2),
         #  'z': round(random.uniform(0, max_num), 2),
         'z': 0,
         'Pt': 20,
@@ -121,6 +133,7 @@ root['init']['environment'].append({
             'W': 0.0,
             'noise_power': -100.0
         })
+
 write_file(fd, root)
 #  fd.write("{\"init\":\"finish\"}\n")
 #  fd.write("{\"finish\":\"finish\"}\n")

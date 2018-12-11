@@ -19,6 +19,8 @@ for i in node:
     x.append(i['x'])
     y.append(i['y'])
 
+x = np.random.randint(0, len(node), len(node))
+y = np.random.randint(0, len(node), len(node))
 
 plt.plot(x, y, '.')
 plt.show()

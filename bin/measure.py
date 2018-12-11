@@ -17,7 +17,7 @@ if __name__ == '__main__':
         print("\t$2   max loop")
         print("\t$3   delay")
         print("\t$4   node speed")
-        print("\t$5   update random or linear[r, l]")
+        #  print("\t$5   update random or linear[r, l]")
         #  print("\t$6   single or multi line [s, m]")
 
         sys.exit(1)
@@ -32,6 +32,7 @@ if __name__ == '__main__':
         loop_max = int(sys.argv[2])
     else:
         loop_max = 0
+        sys.exit(1)
 
     # delay
     delay = 0
@@ -47,6 +48,8 @@ if __name__ == '__main__':
         is_random = True
     else:
         is_random = False
+
+    is_random = True
 
     line = f.readline()
     j = json.loads(line)
@@ -71,7 +74,12 @@ if __name__ == '__main__':
 
     update_node = node
 
-    while node_len - loop_max - 1 != len(node):
+    choice_nodes = np.random.choice(node, loop_max, replace=False)
+
+    #  print(choice_nodes)
+
+    #  while node_len - loop_max - 1 != len(node):
+    for cnode in choice_nodes:
         if 0 < loop_max:
             if loop_max <= loop_count:
                 break
@@ -79,15 +87,15 @@ if __name__ == '__main__':
         t0 = time.perf_counter()
 
         if is_random:
-            idx = random.randint(0, len(node) - 1)
+            pass
         else:
             idx = idx % len(node)
 
-        name = node[idx]['name']
+        name = cnode['name']
         identifier = int(name[4:len(name)])
-        x = node[idx]['x']
-        y = node[idx]['y']
-        r = node[idx]['radius']
+        x = cnode['x']
+        y = cnode['y']
+        r = cnode['radius']
 
         json_update = {}
         json_update['id'] = identifier
@@ -95,8 +103,8 @@ if __name__ == '__main__':
         json_update['y'] = y
         json_update['r'] = r
 
-        update_node[identifier]['x'] = x
-        update_node[identifier]['y'] = y
+        update_node[idx]['x'] = x
+        update_node[idx]['y'] = y
 
 
 
@@ -113,8 +121,9 @@ if __name__ == '__main__':
 
         if is_random:
             #  print(idx)
-            node = np.delete(node, idx)
+            #  node = np.delete(node, idx)
             #  print(node)
+            pass
         else:
             idx = idx + 1
 

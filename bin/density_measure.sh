@@ -32,7 +32,8 @@ fi
 
 log="../density_json/${node_number}.log"
 touch $log
-echo "" > $log
+echo "node_number neighbor_avg density update_count all_elapsed parse_elapsed update_elapsed search_elapsed send_elapsed all_avg_elapsed parse_avg_elapsed update_avg_elapsed search_avg_elapsed send_avg_elapsed" > $log
+
 
 for file in ${files[@]}
 do
@@ -44,8 +45,11 @@ do
     for max_loop in ${ary_loop[@]}
     do
         echo "max loop(${max_loop})"
-        python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
-        cat $lib_stdin_file | ./location_info_base $json t 2>&1 | tee -a $log
+        lib_stdin_file=${json}_u${max_loop}.out
+        if [ ! -f $lib_stdin_file ]; then
+            python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
+        fi
+        cat $lib_stdin_file | ./location_info_base $json t | tee -a $log
     done
 
     echo ""

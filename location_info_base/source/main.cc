@@ -113,6 +113,8 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
+    float density = 0;
+
     int node_number   = 0;
     const Value &root = init_json;
     for (Value::ConstMemberIterator iter = root.MemberBegin();
@@ -122,8 +124,45 @@ int main(int argc, char const *argv[]) {
         const Value &value = iter->value;
 
         ns->Init(value);
-        for (auto &&n : value["node"].GetArray()) {
 
+        int min_x, min_y, max_x, max_y;
+        min_x = INT_MAX;
+        min_y = INT_MAX;
+        max_x = 0;
+        max_y = 0;
+        int x, y;
+        int node_size = 0;
+        for (auto &&node : value["node"].GetArray()) {
+            x = FLOAT(node["x"].GetDouble());
+            y = FLOAT(node["y"].GetDouble());
+            if (x < min_x) {
+                min_x = x;
+            }
+            if (max_x < x) {
+                max_x = x;
+            }
+            if (y < min_y) {
+                min_y = y;
+            }
+            if (max_y < y) {
+                max_y = y;
+            }
+            node_size++;
+        }
+
+        density = node_size / ((max_x - min_x) * (max_y - min_y) * 0.000001);
+        // fprintf(stderr,
+        //         "-- Init density(%.2f) top-left(%.2f, %.2f), "
+        //         "bottom-right(%.2f, "
+        //         "%.2f)\n",
+        //         nodes_.size() /
+        //             ((max_x - min_x) * (max_y - min_y) * 0.000001),
+        //         min_x,
+        //         min_y,
+        //         max_x,
+        //         max_y);
+
+        for (auto &&n : value["node"].GetArray()) {
             Value node(n, init_json.GetAllocator());
             node.AddMember("id", node_number, init_json.GetAllocator());
 
@@ -368,42 +407,102 @@ int main(int argc, char const *argv[]) {
                 measure_elapsed =
                     chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-                chrono::nanoseconds avg;
+                chrono::nanoseconds avg, measure_avg, parse_avg, update_avg,
+                    search_avg, send_avg;
+
+                measure_avg = measure_elapsed / loop_count;
+                parse_avg   = parse_elapsed / loop_count;
+                update_avg  = update_elapsed / loop_count;
+                search_avg  = search_elapsed / loop_count;
+                send_avg    = send_elapsed / loop_count;
+
+                fprintf(stderr,
+                        "node_number neighbor_avg density update_count "
+                        "all_elapsed parse_elapsed update_elapsed "
+                        "search_elapsed send_elapsed all_avg_elapsed "
+                        "parse_avg_elapsed update_avg_elapsed "
+                        "search_avg_elapsed send_avg_elapsed\n");
+
+                fprintf(stdout,
+                        "%d %d %.2f %d %lld.%09lld %lld.%09lld %lld.%09lld "
+                        "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
+                        "%lld.%09lld %lld.%09lld %lld.%09lld \n",
+                        node_number,
+                        loop_count,
+                        density,
+                        neighbor_count / loop_count,
+
+                        measure_elapsed.count() / 1000000000,
+                        measure_elapsed.count() % 1000000000,
+
+                        parse_elapsed.count() / 1000000000,
+                        parse_elapsed.count() % 1000000000,
+
+                        update_elapsed.count() / 1000000000,
+                        update_elapsed.count() % 1000000000,
+
+                        search_elapsed.count() / 1000000000,
+                        search_elapsed.count() % 1000000000,
+
+                        send_elapsed.count() / 1000000000,
+                        send_elapsed.count() % 1000000000,
+
+                        measure_avg.count() / 1000000000,
+                        measure_avg.count() % 1000000000,
+
+                        parse_avg.count() / 1000000000,
+                        parse_avg.count() % 1000000000,
+
+                        update_avg.count() / 1000000000,
+                        update_avg.count() % 1000000000,
+
+                        search_avg.count() / 1000000000,
+                        search_avg.count() % 1000000000,
+
+                        send_avg.count() / 1000000000,
+                        send_avg.count() % 1000000000
+
+                );
 
                 fprintf(stderr,
                         "neighbor avg: %d\n",
                         neighbor_count / loop_count);
 
                 avg = measure_elapsed / loop_count;
-                fprintf(stderr,"all:%lld.%09lld avg:%lld.%09lld\n",
-                       measure_elapsed.count() / 1000000000,
-                       measure_elapsed.count() % 1000000000,
-                       avg.count() / 1000000000,
-                       avg.count() % 1000000000);
+                fprintf(stderr,
+                        "all:%lld.%09lld avg:%lld.%09lld\n",
+                        measure_elapsed.count() / 1000000000,
+                        measure_elapsed.count() % 1000000000,
+                        avg.count() / 1000000000,
+                        avg.count() % 1000000000);
                 avg = parse_elapsed / loop_count;
-                fprintf(stderr,"\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
-                       parse_elapsed.count() / 1000000000,
-                       parse_elapsed.count() % 1000000000,
-                       avg.count() / 1000000000,
-                       avg.count() % 1000000000);
+                fprintf(stderr,
+                        "\tparse: %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                        parse_elapsed.count() / 1000000000,
+                        parse_elapsed.count() % 1000000000,
+                        avg.count() / 1000000000,
+                        avg.count() % 1000000000);
                 avg = update_elapsed / loop_count;
-                fprintf(stderr,"\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
-                       update_elapsed.count() / 1000000000,
-                       update_elapsed.count() % 1000000000,
-                       avg.count() / 1000000000,
-                       avg.count() % 1000000000);
+                fprintf(stderr,
+                        "\tupdate:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                        update_elapsed.count() / 1000000000,
+                        update_elapsed.count() % 1000000000,
+                        avg.count() / 1000000000,
+                        avg.count() % 1000000000);
                 avg = search_elapsed / loop_count;
-                fprintf(stderr,"\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
-                       search_elapsed.count() / 1000000000,
-                       search_elapsed.count() % 1000000000,
-                       avg.count() / 1000000000,
-                       avg.count() % 1000000000);
+                fprintf(stderr,
+                        "\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                        search_elapsed.count() / 1000000000,
+                        search_elapsed.count() % 1000000000,
+                        avg.count() / 1000000000,
+                        avg.count() % 1000000000);
                 avg = send_elapsed / loop_count;
-                fprintf(stderr,"\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
-                       send_elapsed.count() / 1000000000,
-                       send_elapsed.count() % 1000000000,
-                       avg.count() / 1000000000,
-                       avg.count() % 1000000000);
+                fprintf(stderr,
+                        "\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
+                        send_elapsed.count() / 1000000000,
+                        send_elapsed.count() % 1000000000,
+                        avg.count() / 1000000000,
+                        avg.count() % 1000000000);
 #endif
 
                 valueAllocator.Clear();
