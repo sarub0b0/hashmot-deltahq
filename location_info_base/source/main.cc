@@ -133,9 +133,10 @@ int main(int argc, char const *argv[]) {
 
         elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-        printf("Init elapsed %lld.%09lld\n",
-               elapsed.count() / 1000000000,
-               elapsed.count() % 1000000000);
+        fprintf(stderr,
+                "Init elapsed %lld.%09lld\n",
+                elapsed.count() / 1000000000,
+                elapsed.count() % 1000000000);
 
         float min_x, min_y, max_x, max_y;
         min_x = FLT_MAX;

@@ -4,10 +4,19 @@ if [ -z "$1" ]
 then
     echo "set argument"
     echo -ne "\t\$1: node number\n"
+    echo -ne "\t\$2: algorithm\n"
     exit
 fi
 
+if [ -z "$2" ]
+then
+    echo "set argument"
+    echo -ne "\t\$1: node number\n"
+    echo -ne "\t\$2: algorithm\n"
+    exit
+fi
 node_number=$1
+algorithm=$2
 
 ary_loop=()
 
@@ -49,7 +58,7 @@ do
         if [ ! -f $lib_stdin_file ]; then
             python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
         fi
-        cat $lib_stdin_file | ./location_info_base $json t | tee -a $log
+        cat $lib_stdin_file | ./location_info_base $json $algorithm | tee -a $log
     done
 
     echo ""

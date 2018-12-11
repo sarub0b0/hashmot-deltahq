@@ -13,5 +13,18 @@ exit
 
 for n in ${nodes[@]};
 do
-    ./density_measure.sh $n
+    ./density_measure.sh $n t
+    cp -r ../density_json/ ../tree_density
+done
+
+for n in ${nodes[@]};
+do
+    ./density_measure.sh $n h
+    cp -r ../density_json/ ../hash_density
+done
+
+for n in ${nodes[@]};
+do
+    ./density_measure.sh $n l
+    cp -r ../density_json/ ../linear_density
 done
