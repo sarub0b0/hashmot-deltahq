@@ -174,9 +174,10 @@ int main(int argc, char const *argv[]) {
                 max_x,
                 max_y);
 
+#ifndef MEASURE
         for (auto &&n : value["node"].GetArray()) {
-            Value node(n, init_json.GetAllocator());
-            node.AddMember("id", node_number, init_json.GetAllocator());
+            // Value node(n, init_json.GetAllocator());
+            // node.AddMember("id", node_number, init_json.GetAllocator());
 
             const vector<int> &neighbor = ns->GetNeighbor(node_number);
             // sort(neighbor.begin(), neighbor.end());
@@ -184,6 +185,7 @@ int main(int argc, char const *argv[]) {
             ns->SendDeltaHQ(neighbor, node_number, key);
             node_number++;
         }
+#endif
     }
 
     fprintf(stderr, "\n-- Update wait --\n");
