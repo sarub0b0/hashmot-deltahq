@@ -19,10 +19,12 @@ ary_density=(100 200 500 1000 2000 5000 10000)
 dir=../density_json/
 
 if [ ! -d $dir ]; then
+    echo "mkdir $dir"
     mkdir $dir
 fi
 
 if [ ! -d ${dir}/${node_number}node ]; then
+    echo "mkdir ${dir}/${node_number}node"
     mkdir ${dir}/${node_number}node
 fi
 
@@ -31,6 +33,7 @@ do
     length=`echo "scale=2;sqrt( $node_number / $density * 1000000)" | bc`
 
     python3 create_init_json.py $node_number $length $radius
+    echo "mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json"
     mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json
     echo "create density($density) size($length)"
 
