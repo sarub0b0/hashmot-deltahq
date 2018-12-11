@@ -152,16 +152,15 @@ int main(int argc, char const *argv[]) {
         }
 
         density = node_size / ((max_x - min_x) * (max_y - min_y) * 0.000001);
-        // fprintf(stderr,
-        //         "-- Init density(%.2f) top-left(%.2f, %.2f), "
-        //         "bottom-right(%.2f, "
-        //         "%.2f)\n",
-        //         nodes_.size() /
-        //             ((max_x - min_x) * (max_y - min_y) * 0.000001),
-        //         min_x,
-        //         min_y,
-        //         max_x,
-        //         max_y);
+        fprintf(stderr,
+                "-- Init density(%.2f) top-left(%.2f, %.2f), "
+                "bottom-right(%.2f, "
+                "%.2f)\n",
+                density,
+                min_x,
+                min_y,
+                max_x,
+                max_y);
 
         for (auto &&n : value["node"].GetArray()) {
             Value node(n, init_json.GetAllocator());
