@@ -7,9 +7,9 @@
 #include <rapidjson/document.h>
 
 #include "using.hh"
-#include "lsh_index.hh"
 #include <dgram.hh>
 #include <neighbor_search.hh>
+#include <lsh/lsh_index.hh>
 
 namespace neighbor_search {
 

@@ -1,8 +1,9 @@
 #include <set>
+#include <unordered_set>
+#include <chrono>
 
 #include <using.hh>
 #include <lsh/lsh_index.hh>
-
 namespace neighbor_search {
 
 LSHIndex::LSHIndex(float w, int d, int k, int L, int radius)
@@ -19,9 +20,13 @@ void LSHIndex::Resize(int L) {
         hash_table_.resize(L);
     } else {
         vector<vector<L2Hash>> hash_func;
-        for (int i = L_; i < L; i++) {
+        // hash_func.reserve(L - L_);
+        int l = 0;
+        for (int i = L_; i < L; ++i) {
             hash_func.push_back(vector<L2Hash>());
-            for (int j = 0; j < k_; j++) {
+            hash_func[l].reserve(k_);
+            ++l;
+            for (int j = 0; j < k_; ++j) {
                 hash_func[i].push_back(hash_family_->CreateHashFunc());
             }
         }
@@ -29,25 +34,29 @@ void LSHIndex::Resize(int L) {
         for (auto &&g : hash_func) {
             Table t;
             t.g = g;
+            t.g.reserve(k_);
             hash_table_.push_back(t);
         }
     }
 }
 
-string LSHIndex::Hash(vector<L2Hash> &g, array<float, 2> &v) {
+vector<int> LSHIndex::Hash(vector<L2Hash> &g, array<float, 2> &v) {
     vector<int> hashes;
+    hashes.reserve(k_);
     for (auto &&h : g) {
         point p(v[0], v[1]);
         hashes.push_back(h.Hash(p));
     }
-
     // printf("hash=%s\n", hash_family_->Combine(hashes).c_str());
-    return hash_family_->Combine(hashes);
+    // return hash_family_->Combine(hashes);
+    return hashes;
 }
 
 void LSHIndex::Index(vector<array<float, 2>> &points) {
+
     points_ = points;
     for (auto &&table : hash_table_) {
+        table.table.reserve(points_.size());
         for (unsigned int i = 0; i < points.size(); i++) {
             table.table[Hash(table.g, points[i])].push_back(i);
         }
@@ -56,36 +65,51 @@ void LSHIndex::Index(vector<array<float, 2>> &points) {
 
 void LSHIndex::Update(int id, array<float, 2> &point) {
 
+#ifdef TCHK_ELAPSED
+    chrono::high_resolution_clock::time_point begin, end;
+    chrono::nanoseconds elapsed;
+
+    begin = chrono::high_resolution_clock::now();
+
+#endif
     for (auto &&table : hash_table_) {
         table.table[Hash(table.g, points_[id])].remove(id);
-        if (table.table[Hash(table.g, points_[id])].size() == 0) {
-            table.table.erase(Hash(table.g, points_[id]));
-        }
+        table.table[Hash(table.g, point)].push_back(id);
     }
 
     points_[id] = point;
 
-    for (auto &&table : hash_table_) {
-        table.table[Hash(table.g, point)].push_back(id);
+    // for (auto &&table : hash_table_) {
+    //     table.table[Hash(table.g, point)].push_back(id);
 
-        // for (auto itr = table.table.begin(); itr != table.table.end();
-        //      ++itr) {
+    //     // for (auto itr = table.table.begin(); itr != table.table.end();
+    //     //      ++itr) {
 
-        //     printf("key=%s: ", itr->first.c_str());
-        //     for (auto &&l : itr->second) {
-        //         printf("%d ", l);
-        //     }
-        //     puts("");
-        // }
-    }
+    //     //     printf("key=%s: ", itr->first.c_str());
+    //     //     for (auto &&l : itr->second) {
+    //     //         printf("%d ", l);
+    //     //     }
+    //     //     puts("");
+    //     // }
+    // }
+
+#ifdef TCHK_ELAPSED
+    end = chrono::high_resolution_clock::now();
+
+    elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
+
+    printf("update lsh: %lld.%09lld\n",
+           elapsed.count() / 1000000000,
+           elapsed.count() % 1000000000);
+#endif
 }
 
 vector<int> LSHIndex::Query(array<float, 2> &q) {
-    set<int> temp_candidate;
+    unordered_set<int> temp_candidate;
+    // set<int> temp_candidate;
 
-    list<int> match;
     for (auto &&table : hash_table_) {
-        match = table.table[Hash(table.g, q)];
+        list<int> &match = table.table[Hash(table.g, q)];
         temp_candidate.insert(match.begin(), match.end());
     }
 
@@ -100,6 +124,7 @@ vector<int> LSHIndex::Query(array<float, 2> &q) {
     // TODO ソートしてからradiusで枝刈りしたほうが早いかもしれない
     //
     vector<int> candidate;
+    candidate.reserve(temp_candidate.size());
     for (auto &&i : temp_candidate) {
         point a, b;
         a = point(q[0], q[1]);
@@ -110,6 +135,7 @@ vector<int> LSHIndex::Query(array<float, 2> &q) {
         }
     }
 
+    // candidate.shrink_to_fit();
     // puts("");
     return candidate;
 }

@@ -48,7 +48,7 @@ int main(int argc, char const *argv[]) {
 
     int d = 2;
     int k = 3;
-    int L = 64;
+    int L = 32;
 
     string init_file;
 
@@ -124,7 +124,18 @@ int main(int argc, char const *argv[]) {
         string key         = iter->name.GetString();
         const Value &value = iter->value;
 
+        chrono::high_resolution_clock::time_point begin, end;
+        chrono::nanoseconds elapsed;
+
+        begin = chrono::high_resolution_clock::now();
         ns->Init(value);
+        end = chrono::high_resolution_clock::now();
+
+        elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
+
+        printf("Init elapsed %lld.%09lld\n",
+               elapsed.count() / 1000000000,
+               elapsed.count() % 1000000000);
 
         float min_x, min_y, max_x, max_y;
         min_x = FLT_MAX;
@@ -166,17 +177,10 @@ int main(int argc, char const *argv[]) {
             Value node(n, init_json.GetAllocator());
             node.AddMember("id", node_number, init_json.GetAllocator());
 
-            vector<int> neighbor;
-            neighbor = ns->GetNeighbor(node_number);
+            const vector<int> &neighbor = ns->GetNeighbor(node_number);
+            // sort(neighbor.begin(), neighbor.end());
 
-            sort(neighbor.begin(), neighbor.end());
-
-            if (0 < neighbor.size()) {
-                ns->SendDeltaHQ(neighbor, node_number, key);
-            } else {
-                neighbor.push_back(-1);
-                ns->SendDeltaHQ(neighbor, node_number, key);
-            }
+            ns->SendDeltaHQ(neighbor, node_number, key);
             node_number++;
         }
     }

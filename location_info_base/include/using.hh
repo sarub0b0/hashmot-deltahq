@@ -12,5 +12,6 @@ using namespace std;
 using namespace rapidjson;
 using Json = rapidjson::Document;
 
+
 } // namespace neighbor_search
 #endif

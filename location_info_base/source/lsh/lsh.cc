@@ -35,6 +35,14 @@ void LSH::Init(const Value &json) {
 
     json.Accept(writer);
 
+    int node_number = 0;
+    for (auto &&n : json["node"].GetArray()) {
+        ++node_number;
+    }
+
+    points.reserve(node_number);
+    nodes_.reserve(node_number);
+
     // printf("%s\n", buffer.GetString());
     int id = 0;
     for (auto &&node : json["node"].GetArray()) {
@@ -78,21 +86,21 @@ void LSH::Init(const Value &json) {
 // }
 int LSH::Update(const Value &json) {
     int id, r;
-    float x, y;
+    // float x, y;
     id = json["id"].GetInt();
-    x  = json["x"].GetDouble();
-    y  = json["y"].GetDouble();
-    r  = json["r"].GetInt();
+    // x  = json["x"].GetDouble();
+    // y  = json["y"].GetDouble();
+    r = json["r"].GetInt();
 
-    nodes_[id].pos[0] = x;
-    nodes_[id].pos[1] = y;
+    nodes_[id].pos[0] = json["x"].GetDouble();
+    nodes_[id].pos[1] = json["y"].GetDouble();
     nodes_[id].radius = r;
 
     for (auto &&lsh : lsh_) {
         if (lsh->IsSameRadius(r)) {
-            array<float, 2> point{x, y};
-
-            lsh->Update(id, point);
+            // array<float, 2> p{x, y};
+            // lsh->Update(id, p);
+            lsh->Update(id, nodes_[id].pos);
         }
     }
     return id;
@@ -125,17 +133,18 @@ int LSH::Update(const Value &json) {
 
 vector<int> LSH::GetNeighbor(int id) {
     int r;
-    float x, y;
-    x = nodes_[id].pos[0];
-    y = nodes_[id].pos[1];
+    // float x, y;
+    // x = nodes_[id].pos[0];
+    // y = nodes_[id].pos[1];
     r = nodes_[id].radius;
 
     vector<int> neighbor;
+    // neighbor.reserve(nodes_.size());
     for (auto &&lsh : lsh_) {
         if (lsh->IsSameRadius(r)) {
-            array<float, 2> point{x, y};
-
-            neighbor = lsh->Query(point);
+            // array<float, 2> point{x, y};
+            // neighbor = lsh->Query(point);
+            neighbor = lsh->Query(nodes_[id].pos);
         }
     }
 

@@ -20,7 +20,7 @@ L2HashFamily::~L2HashFamily() {
 L2Hash L2HashFamily::CreateHashFunc() {
     return L2Hash(RandVec(), RandOffset(), w_);
 }
-array<float, 2> L2HashFamily::RandVec() {
+inline array<float, 2> L2HashFamily::RandVec() {
     array<float, 2> rand_vec;
     for (int i = 0; i < 2; i++) {
         rand_vec[i] = gauss_(engine_);
@@ -29,19 +29,20 @@ array<float, 2> L2HashFamily::RandVec() {
     return rand_vec;
 }
 
-float L2HashFamily::RandOffset() {
+inline float L2HashFamily::RandOffset() {
     return uniform_(engine_);
 }
 
-string L2HashFamily::Combine(vector<int> &hashes) {
-    string key;
-    key = "[";
-    for (auto &&i : hashes) {
-        key += to_string(i) + ",";
-    }
-    key.pop_back();
-    key += "]";
-    return key;
-}
+// string L2HashFamily::Combine(vector<int> &hashes) {
+//     // string key;
+//     string key(15, '\0');
+//     // key = "[";
+//     for (auto &&i : hashes) {
+//         key += to_string(i) + ",";
+//     }
+//     key.pop_back();
+//     // key += "]";
+//     return key;
+// }
 
 } // namespace neighbor_search

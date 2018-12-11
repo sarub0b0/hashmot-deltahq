@@ -1,29 +1,34 @@
 #ifndef LSH_INDEX_H
 #define LSH_INDEX_H
 
+// #include <bits/stdc++.h>
+
 #include <array>
 #include <string>
 #include <unordered_map>
 #include <list>
+#include <vector>
 
 #include <using.hh>
 #include "l2hash_family.hh"
+#include <hash.hh>
 
 namespace neighbor_search {
 
-typedef struct table {
+struct Table {
     vector<L2Hash> g;
-    unordered_map<string, list<int>> table;
-} Table;
+    unordered_map<vector<int>, list<int>> table;
+};
 
 class LSHIndex {
+
    public:
     LSHIndex(float w, int d, int k, int L, int radius);
     ~LSHIndex();
 
     void Resize(int L);
 
-    string Hash(vector<L2Hash> &g, array<float, 2> &v);
+    vector<int> Hash(vector<L2Hash> &g, array<float, 2> &v);
 
     void Index(vector<array<float, 2>> &points);
     void Update(int id, array<float, 2> &point);
