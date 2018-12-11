@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cstdlib>
+#include <cfloat>
 
 #include <rapidjson/document.h>
 // #include <rapidjson/pointer.h>
@@ -125,9 +126,9 @@ int main(int argc, char const *argv[]) {
 
         ns->Init(value);
 
-        int min_x, min_y, max_x, max_y;
-        min_x = INT_MAX;
-        min_y = INT_MAX;
+        float min_x, min_y, max_x, max_y;
+        min_x = FLT_MAX;
+        min_y = FLT_MAX;
         max_x = 0;
         max_y = 0;
         int x, y;
