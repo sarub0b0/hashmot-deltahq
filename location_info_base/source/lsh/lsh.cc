@@ -139,6 +139,10 @@ vector<int> LSH::GetNeighbor(int id) {
         }
     }
 
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
+    }
+
     return neighbor;
 }
 // vector<int> LSH::GetNeighbor(const Node &node) {

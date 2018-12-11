@@ -24,9 +24,10 @@ void Linear::Init(const Value &json) {
     for (auto &&n : json["node"].GetArray()) {
 
         Node p;
-        p.id  = id;
-        p.pos = array<float, 2>{static_cast<float>(n["x"].GetDouble()),
+        p.id     = id;
+        p.pos    = array<float, 2>{static_cast<float>(n["x"].GetDouble()),
                                 static_cast<float>(n["y"].GetDouble())};
+        p.radius = n["radius"].GetInt();
         nodes_.push_back(p);
         id++;
     }
@@ -46,14 +47,17 @@ void Linear::Init(const Value &json) {
 // }
 int Linear::Update(const Value &json) {
     int id;
-    float x, y;
+    // float x, y;
     id = json["id"].GetInt();
-    x  = json["x"].GetDouble();
-    y  = json["y"].GetDouble();
+    // x                 = json["x"].GetDouble();
+    // y                 = json["y"].GetDouble();
+    nodes_[id].pos[0] = json["x"].GetDouble();
+    nodes_[id].pos[1] = json["y"].GetDouble();
+    nodes_[id].radius = json["r"].GetInt();
 
-    array<float, 2> pos{x, y};
-    Node p(id, pos);
-    nodes_[id] = p;
+    // array<float, 2> pos{x, y};
+    // Node p(id, pos);
+    // nodes_[id] = p;
 
     linear_.Update(nodes_[id]);
     return id;
@@ -64,6 +68,10 @@ vector<int> Linear::GetNeighbor(int id) {
     r = nodes_[id].radius;
 
     neighbor = linear_.Query(nodes_[id], r);
+
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
+    }
     return neighbor;
 }
 // vector<int> Linear::GetNeighbor(const Value &json) {
