@@ -20,17 +20,5 @@ algorithm=$1
 for n in ${nodes[@]};
 do
     ./density_measure.sh $n $algorithm
-    cp -r ../density_json/ ../tree_density
 done
 
-for n in ${nodes[@]};
-do
-    ./density_measure.sh $n $algorithm
-    cp -r ../density_json/ ../hash_density
-done
-
-for n in ${nodes[@]};
-do
-    ./density_measure.sh $n $algorithm
-    cp -r ../density_json/ ../linear_density
-done
