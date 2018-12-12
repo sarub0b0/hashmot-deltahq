@@ -58,7 +58,7 @@ do
         if [ ! -f $lib_stdin_file ]; then
             python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
         fi
-        cat $lib_stdin_file | ./location_info_base $json $algorithm | tee -a $log
+        cat -u $lib_stdin_file | ./location_info_base $json $algorithm | tee -a $log
     done
 
     echo ""

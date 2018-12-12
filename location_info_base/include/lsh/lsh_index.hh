@@ -17,7 +17,8 @@ namespace neighbor_search {
 
 struct Table {
     vector<L2Hash> g;
-    unordered_map<vector<int>, list<int>> table;
+    unordered_map<array<uint32_t, K_FUNCS>, list<int>> table;
+    // unordered_map<vector<int>, list<int>> table;
 };
 
 class LSHIndex {
@@ -28,11 +29,13 @@ class LSHIndex {
 
     void Resize(int L);
 
-    vector<int> Hash(vector<L2Hash> &g, array<float, 2> &v);
+    // vector<int> Hash(vector<L2Hash> &g, array<float, 2> &v);
+    array<uint32_t, K_FUNCS> Hash(vector<L2Hash> &g,
+                                  array<float, DIMENSION> &v);
 
-    void Index(vector<array<float, 2>> &points);
-    void Update(int id, array<float, 2> &point);
-    vector<int> Query(array<float, 2> &q);
+    void Index(vector<array<float, DIMENSION>> &points);
+    void Update(int id, array<float, DIMENSION> &point);
+    vector<int> Query(array<float, DIMENSION> &q);
 
     bool IsSameRadius(int radius);
 
@@ -44,7 +47,7 @@ class LSHIndex {
     int L_;
     int radius_;
 
-    vector<array<float, 2>> points_;
+    vector<array<float, DIMENSION>> points_;
 
     vector<Table> hash_table_;
 };

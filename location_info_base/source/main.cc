@@ -46,9 +46,10 @@ int main(int argc, char const *argv[]) {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int d = 2;
-    int k = 3;
-    int L = 32;
+    //* lsh.hh define
+    int d = DIMENSION;
+    int k = K_FUNCS;
+    int L = HASHES;
 
     string init_file;
 

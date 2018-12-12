@@ -5,6 +5,8 @@
 #include <array>
 #include <unordered_map>
 
+#include <using.hh>
+
 namespace neighbor_search {
 
 // struct umap_key {
@@ -47,63 +49,63 @@ namespace neighbor_search {
 //     }
 // };
 
-// struct umap_key {
-//     std::array<int, 3> key;
-// };
-
-// inline bool operator==(const umap_key &lhs, const umap_key &rhs) {
-
-//     return lhs.key[0] == rhs.key[0] && lhs.key[1] == rhs.key[1] &&
-//            lhs.key[2] == rhs.key[2];
-// }
-
-// } // namespace neighbor_search
-// namespace std {
-// template <>
-// struct hash<neighbor_search::umap_key> {
-//     size_t operator()(const neighbor_search::umap_key &key) const {
-//         size_t seed = 0;
-
-//         seed ^= key.key[0] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-//         seed ^= key.key[1] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-//         seed ^= key.key[2] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-
-//         return seed;
-//     }
-// };
-
 } // namespace neighbor_search
 namespace std {
-inline bool operator==(const vector<int> &lhs, const vector<int> &rhs) {
 
-    int lhs_size = lhs.size();
-    int rhs_size = rhs.size();
+inline bool operator==(const array<uint32_t, K_FUNCS> &lhs,
+                       const array<uint32_t, K_FUNCS> &rhs) {
 
-    if (lhs_size != rhs_size) {
-        return false;
-    }
-
-    for (int i = 0; i < lhs_size; ++i) {
-        if (lhs[i] != rhs[i]) {
-            return false;
-        }
-    }
-
-    return true;
+    return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2];
 }
 template <>
-struct hash<vector<int>> {
-    size_t operator()(const vector<int> &vec) const {
+struct hash<array<uint32_t, K_FUNCS>> {
+    size_t operator()(const array<uint32_t, K_FUNCS> &key) const {
         size_t seed = 0;
 
-        for (auto &&v : vec) {
-            seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
+        auto a = hash<int>()(key[0]);
+        auto b = hash<int>()(key[1]);
+        auto c = hash<int>()(key[2]);
+
+        seed ^= a + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= b + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= c + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 
         return seed;
     }
 };
 
 } // namespace std
+// namespace std {
+// inline bool operator==(const vector<int> &lhs, const vector<int> &rhs) {
+
+//     int lhs_size = lhs.size();
+//     int rhs_size = rhs.size();
+
+//     if (lhs_size != rhs_size) {
+//         return false;
+//     }
+
+//     for (int i = 0; i < lhs_size; ++i) {
+//         if (lhs[i] != rhs[i]) {
+//             return false;
+//         }
+//     }
+
+//     return true;
+// }
+// template <>
+// struct hash<vector<int>> {
+//     size_t operator()(const vector<int> &vec) const {
+//         size_t seed = 0;
+
+//         for (auto &&v : vec) {
+//             seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//         }
+
+//         return seed;
+//     }
+// };
+
+// } // namespace std
 
 #endif

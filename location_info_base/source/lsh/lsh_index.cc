@@ -40,19 +40,25 @@ void LSHIndex::Resize(int L) {
     }
 }
 
-vector<int> LSHIndex::Hash(vector<L2Hash> &g, array<float, 2> &v) {
-    vector<int> hashes;
-    hashes.reserve(k_);
-    for (auto &&h : g) {
-        point p(v[0], v[1]);
-        hashes.push_back(h.Hash(p));
-    }
+array<uint32_t, K_FUNCS> LSHIndex::Hash(vector<L2Hash> &g,
+                                        array<float, DIMENSION> &v) {
+    // vector<int> hashes;
+    // hashes.reserve(k_);
+    // for (auto &&h : g) {
+    //     point p(v[0], v[1]);
+    //     hashes.push_back(h.Hash(p));
+    // }
     // printf("hash=%s\n", hash_family_->Combine(hashes).c_str());
     // return hash_family_->Combine(hashes);
+    array<uint32_t, K_FUNCS> hashes;
+    for (int i = 0; i < K_FUNCS; ++i) {
+        point p(v[0], v[1]);
+        hashes[i] = g[i].Hash(p);
+    }
     return hashes;
 }
 
-void LSHIndex::Index(vector<array<float, 2>> &points) {
+void LSHIndex::Index(vector<array<float, DIMENSION>> &points) {
 
     points_ = points;
     for (auto &&table : hash_table_) {
@@ -63,7 +69,7 @@ void LSHIndex::Index(vector<array<float, 2>> &points) {
     }
 }
 
-void LSHIndex::Update(int id, array<float, 2> &point) {
+void LSHIndex::Update(int id, array<float, DIMENSION> &point) {
 
 #ifdef TCHK_ELAPSED
     chrono::high_resolution_clock::time_point begin, end;
@@ -72,13 +78,24 @@ void LSHIndex::Update(int id, array<float, 2> &point) {
     begin = chrono::high_resolution_clock::now();
 
 #endif
+
+    array<float, DIMENSION> &old_point = points_[id];
+    array<float, DIMENSION> &new_point = point;
+
     for (auto &&table : hash_table_) {
-        table.table[Hash(table.g, points_[id])].remove(id);
-        table.table[Hash(table.g, point)].push_back(id);
+        const array<uint32_t, K_FUNCS> old_hash = Hash(table.g, old_point);
+        const array<uint32_t, K_FUNCS> new_hash = Hash(table.g, new_point);
+
+        if (old_hash == new_hash) {
+            continue;
+        }
+
+        table.table[old_hash].remove(id);
+        table.table[new_hash].push_back(id);
     }
 
-    points_[id] = point;
-
+    // points_[id] = point;
+    old_point = new_point;
     // for (auto &&table : hash_table_) {
     //     table.table[Hash(table.g, point)].push_back(id);
 
@@ -104,14 +121,19 @@ void LSHIndex::Update(int id, array<float, 2> &point) {
 #endif
 }
 
-vector<int> LSHIndex::Query(array<float, 2> &q) {
+vector<int> LSHIndex::Query(array<float, DIMENSION> &q) {
     unordered_set<int> temp_candidate;
     // set<int> temp_candidate;
+    // list<int> temp_candidate;
 
     for (auto &&table : hash_table_) {
         list<int> &match = table.table[Hash(table.g, q)];
         temp_candidate.insert(match.begin(), match.end());
+        // temp_candidate.insert(
+        // temp_candidate.end(), match.begin(), match.end());
     }
+    // temp_candidate.sort();
+    // temp_candidate.unique();
 
     // puts("Candidate:");
     // for (auto &&i : temp_candidate) {
@@ -126,10 +148,18 @@ vector<int> LSHIndex::Query(array<float, 2> &q) {
     vector<int> candidate;
     candidate.reserve(temp_candidate.size());
     for (auto &&i : temp_candidate) {
-        point a, b;
-        a = point(q[0], q[1]);
-        b = point(points_[i][0], points_[i][1]);
-        if (L2Hash::Norm(a, b) <= radius_ && L2Hash::Norm(a, b) != 0.0) {
+        float d;
+        // point a, b;
+        // a = point(q[0], q[1]);
+        // b = point(points_[i][0], points_[i][1]);
+        // d = L2Hash::Norm(a, b);
+
+        array<float, 2> &a = q;
+        array<float, 2> &b = points_[i];
+
+        d = sqrt((a[0] - b[0]) * (a[0] - b[0]) +
+                 (a[1] - b[1]) * (a[1] - b[1]));
+        if (d <= radius_ && d != 0.0) {
             // printf("%d ", i);
             candidate.push_back(i);
         }
