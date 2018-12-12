@@ -54,7 +54,7 @@ do
     for max_loop in ${ary_loop[@]}
     do
         echo "max loop(${max_loop})"
-        lib_stdin_file=${json}_u${max_loop}.out
+        lib_stdin_file=${json}.u${max_loop}.out
         if [ ! -f $lib_stdin_file ]; then
             python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
         fi

@@ -16,7 +16,7 @@ echo "-- node($node_number) radius($radius)"
 
 ary_density=(100 200 500 1000 2000 5000 10000)
 
-dir=../density_json/
+dir=../density_json
 
 if [ ! -d $dir ]; then
     echo "mkdir $dir"
