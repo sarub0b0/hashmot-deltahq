@@ -143,7 +143,7 @@ if __name__ == '__main__':
         t0 = time.perf_counter()
 
         sys.stdout.write(j)
-        sys.stdout.write("\n")
+        sys.stdout.write('\n')
         sys.stdout.flush()
 
         t1 = time.perf_counter()
@@ -151,6 +151,5 @@ if __name__ == '__main__':
 
         #  sys.stderr.write("print elapsed: %f\n" % (t1 - t0))
 
-    sys.stdout.write("")
     sys.stderr.write(
         "-- mobility elapsed: %f (%f)\n" % (mt, mt / len(json_list)))
