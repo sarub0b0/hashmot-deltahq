@@ -70,17 +70,19 @@ int Linear::Update(const Value &json) {
     linear_.Update(nodes_[id]);
     return id;
 }
-vector<int> Linear::GetNeighbor(int id) {
+// vector<int> Linear::GetNeighbor(int id) {
+void Linear::GetNeighbor(int id, vector<int> *neighbor) {
     int r;
     r = nodes_[id].radius;
 
-    neighbor_.clear();
-    neighbor_ = linear_.Query(nodes_[id], r);
+    // neighbor->clear();
+    // neighbor_ = linear_.Query(nodes_[id], r);
+    linear_.Query(nodes_[id], neighbor);
 
-    if (neighbor_.size() == 0) {
-        neighbor_.push_back(-1);
+    if (neighbor->size() == 0) {
+        neighbor->push_back(-1);
     }
-    return neighbor_;
+    // return neighbor_;
 }
 // vector<int> Linear::GetNeighbor(const Value &json) {
 //     vector<int> neighbor;

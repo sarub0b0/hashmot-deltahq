@@ -98,6 +98,7 @@ int main(int argc, char const *argv[]) {
     // }
 
     vector<Node> init_nodes;
+    vector<int> neighbor;
 
     ifstream ifs(init_file);
     IStreamWrapper isw(ifs);
@@ -176,16 +177,25 @@ int main(int argc, char const *argv[]) {
                 max_x,
                 max_y);
 
+        neighbor.reserve(node_size);
+        neighbor.resize(node_size);
+        neighbor.clear();
+
 #ifndef MEASURE
+        int id = 0;
         for (auto &&n : value["node"].GetArray()) {
             // Value node(n, init_json.GetAllocator());
             // node.AddMember("id", node_number, init_json.GetAllocator());
 
-            const vector<int> &neighbor = ns->GetNeighbor(node_number);
+            neighbor.clear();
+            ns->GetNeighbor(id, &neighbor);
+            // const vector<int> &neighbor = ns->GetNeighbor(node_number);
             // sort(neighbor.begin(), neighbor.end());
 
-            ns->SendDeltaHQ(neighbor, node_number, key);
+            ns->SendDeltaHQ(neighbor, id, key);
+            ++id;
         }
+
 #endif
     }
 
@@ -339,7 +349,9 @@ int main(int argc, char const *argv[]) {
 #endif
 
                 // neighbor.shrink_to_fit();
-                const vector<int> &neighbor = ns->GetNeighbor(update_id);
+                // const vector<int> &neighbor = ns->GetNeighbor(update_id);
+                neighbor.clear();
+                ns->GetNeighbor(update_id, &neighbor);
 
 #ifdef MEASURE
                 search_end = chrono::high_resolution_clock::now();

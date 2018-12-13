@@ -21,7 +21,8 @@ class LSH : public NeighborSearch {
     // void Init(const vector<Node> &nodes);
     int Update(const Value &json);
     // vector<int> GetNeighbor(const Value &json);
-    vector<int> GetNeighbor(int id);
+    // vector<int> GetNeighbor(int id, vector<int> *neighbor);
+    void GetNeighbor(int id, vector<int> *neighbor);
     // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string
     // &key);
     void SendDeltaHQ(const vector<int> &neighbor, int id, string &key);

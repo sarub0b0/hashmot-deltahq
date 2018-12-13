@@ -104,8 +104,9 @@ int KdTree::Update(const Value &json) {
     return id;
 }
 
-vector<int> KdTree::GetNeighbor(int id) {
-    vector<int> neighbor;
+// vector<int> KdTree::GetNeighbor(int id) {
+void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
+    // vector<int> neighbor;
     // int id, r;
     // float x, y;
     // id = json["id"].GetInt();
@@ -121,11 +122,12 @@ vector<int> KdTree::GetNeighbor(int id) {
 
     // Node query(id, pos, r);
 
-    neighbor = kdtree_.Query(nodes_[id]);
+    // neighbor = kdtree_.Query(nodes_[id]);
+    kdtree_.Query(nodes_[id], neighbor);
 
-    if (neighbor.size() == 0) {
-        neighbor.push_back(-1);
-        return neighbor;
+    if (neighbor->size() == 0) {
+        neighbor->push_back(-1);
+        // return neighbor;
     }
 #ifdef QUERY_VALIDATION
     kdtree_.Validation(nodes_);
@@ -182,7 +184,7 @@ vector<int> KdTree::GetNeighbor(int id) {
 
     assert(exact.size() == neighbor.size());
 #endif
-    return neighbor;
+    // return neighbor;
 } // namespace neighbor_search
 
 // vector<int> KdTree::GetNeighbor(const Value &json) {

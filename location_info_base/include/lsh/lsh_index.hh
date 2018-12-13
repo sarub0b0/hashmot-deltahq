@@ -6,6 +6,7 @@
 #include <array>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <list>
 #include <vector>
 
@@ -35,7 +36,7 @@ class LSHIndex {
 
     void Index(vector<array<float, DIMENSION>> &points);
     void Update(int id, array<float, DIMENSION> &point);
-    vector<int> Query(array<float, DIMENSION> &q);
+    void Query(array<float, DIMENSION> &q, vector<int> *neighbor);
 
     bool IsSameRadius(int radius);
 
@@ -48,6 +49,8 @@ class LSHIndex {
     int radius_;
 
     vector<array<float, DIMENSION>> points_;
+
+    unordered_set<int> candidate_;
 
     vector<Table> hash_table_;
 };

@@ -41,9 +41,14 @@ void LSH::Init(const Value &json) {
     }
 
     points.reserve(node_number);
-    nodes_.reserve(node_number);
+    points.resize(node_number);
+    points.clear();
 
-    neighbor_.reserve(node_number);
+    nodes_.reserve(node_number);
+    nodes_.resize(node_number);
+    nodes_.clear();
+
+    // neighbor_.reserve(node_number);
 
     // printf("%s\n", buffer.GetString());
     int id = 0;
@@ -133,29 +138,31 @@ int LSH::Update(const Value &json) {
 //     return neighbor;
 // }
 
-vector<int> LSH::GetNeighbor(int id) {
+// vector<int> LSH::GetNeighbor(int id) {
+void LSH::GetNeighbor(int id, vector<int> *neighbor) {
     int r;
     // float x, y;
     // x = nodes_[id].pos[0];
     // y = nodes_[id].pos[1];
     r = nodes_[id].radius;
 
-    neighbor_.clear();
+    // neighbor_.clear();
 
     // neighbor.reserve(nodes_.size());
     for (auto &&lsh : lsh_) {
         if (lsh->IsSameRadius(r)) {
             // array<float, 2> point{x, y};
             // neighbor = lsh->Query(point);
-            neighbor_ = lsh->Query(nodes_[id].pos);
+            // neighbor_ = lsh->Query(nodes_[id].pos);
+            lsh->Query(nodes_[id].pos, neighbor);
         }
     }
 
-    if (neighbor_.size() == 0) {
-        neighbor_.push_back(-1);
+    if (neighbor->size() == 0) {
+        neighbor->push_back(-1);
     }
 
-    return neighbor_;
+    // return neighbor_;
 }
 // vector<int> LSH::GetNeighbor(const Node &node) {
 //     vector<int> neighbor;

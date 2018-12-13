@@ -16,14 +16,14 @@ class LinearIndex {
 
     void Index(vector<Node> &nodes);
     void Update(Node &node);
-    vector<int> Query(Node &query, int radius);
+    void Query(Node &query, vector<int> *neighbor);
     void Clear();
 
    private:
     vector<Node> nodes_;
     vector<int> neighbor_;
 
-    void Search(Node &query, int radius);
+    // void Search(Node &query, int radius, vector<int> *neighbor);
 
     // float Distance(array<float, 2> &a, array<float, 2> &b);
 
