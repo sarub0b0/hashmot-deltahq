@@ -97,6 +97,8 @@ if __name__ == '__main__':
         y = cnode['y']
         r = cnode['radius']
 
+        x = x + speed
+
         json_update = {}
         json_update['id'] = identifier
         json_update['x'] = x

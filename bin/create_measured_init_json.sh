@@ -15,6 +15,7 @@ radius=$2
 echo "-- node($node_number) radius($radius)"
 
 ary_density=(100 200 500 1000 2000 5000 10000)
+# ary_density=(100 200 500)
 
 dir=../density_json
 
