@@ -170,7 +170,7 @@ void LSHIndex::Update(int id, array<float, DIMENSION> &point) {
 }
 
 // vector<int> LSHIndex::Query(array<float, DIMENSION> &q) {
-void LSHIndex::Query(array<float, DIMENSION> &q, vector<int> *neighbor) {
+void LSHIndex::Query(array<float, DIMENSION> &q, vector<int> &neighbor) {
     candidate_.clear();
 
     for (auto &&table : hash_table_) {
@@ -208,7 +208,7 @@ void LSHIndex::Query(array<float, DIMENSION> &q, vector<int> *neighbor) {
                  (a[1] - b[1]) * (a[1] - b[1]));
         if (d <= radius_ && d != 0.0) {
             // printf("%d ", i);
-            neighbor->push_back(i);
+            neighbor.push_back(i);
         }
     }
 

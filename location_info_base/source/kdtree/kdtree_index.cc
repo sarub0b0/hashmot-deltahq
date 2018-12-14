@@ -315,6 +315,7 @@ void KdTreeIndex::Update(Node &node) {
     if (max_remove_count_ == remove_pos_ || should_remake_) {
         // if (max_remove_count_ == remove_pos_) {
 
+        fprintf(stderr, "remake\n");
 #ifdef TCHK_ELAPSED
         chrono::high_resolution_clock::time_point remake_begin =
             chrono::high_resolution_clock::now();
@@ -733,7 +734,7 @@ TreeNode *KdTreeIndex::MakeTree(TreeNode *parent,
 //     return neighbor_;
 // }
 // vector<int> KdTreeIndex::Query(Node &query) {
-void KdTreeIndex::Query(Node &query, vector<int> *neighbor) {
+void KdTreeIndex::Query(Node &query, vector<int> &neighbor) {
     // neighbor->clear();
     // neighbor_.shrink_to_fit();
     // printTree(tree_, nullptr, false);
@@ -772,7 +773,7 @@ void KdTreeIndex::Query(Node &query, vector<int> *neighbor) {
 void KdTreeIndex::RangeSearch(TreeNode *tnode,
                               Node &query,
                               int radius,
-                              vector<int> *neighbor) {
+                              vector<int> &neighbor) {
 
     if (tnode == nullptr) return;
 
@@ -798,7 +799,7 @@ void KdTreeIndex::RangeSearch(TreeNode *tnode,
         dist = sqrt(pow(node[0] - q[0], 2) + pow(node[1] - q[1], 2));
 
         if (dist <= radius) {
-            neighbor->push_back(tnode->node.id);
+            neighbor.push_back(tnode->node.id);
         }
     }
     // #endif

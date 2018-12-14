@@ -71,7 +71,7 @@ int Linear::Update(const Value &json) {
     return id;
 }
 // vector<int> Linear::GetNeighbor(int id) {
-void Linear::GetNeighbor(int id, vector<int> *neighbor) {
+void Linear::GetNeighbor(int id, vector<int> &neighbor) {
     int r;
     r = nodes_[id].radius;
 
@@ -79,8 +79,8 @@ void Linear::GetNeighbor(int id, vector<int> *neighbor) {
     // neighbor_ = linear_.Query(nodes_[id], r);
     linear_.Query(nodes_[id], neighbor);
 
-    if (neighbor->size() == 0) {
-        neighbor->push_back(-1);
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
     }
     // return neighbor_;
 }

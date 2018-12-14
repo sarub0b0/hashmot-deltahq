@@ -24,7 +24,7 @@ class KdTree : public NeighborSearch {
     // void Add(const Value &json);
     int Update(const Value &json);
     // vector<int> GetNeighbor(const Value &json);
-    void GetNeighbor(int id, vector<int> *neighbor);
+    void GetNeighbor(int id, vector<int> &neighbor);
     // vector<int> GetNeighbor(int id, vector<int> *neighbor);
     void SendDeltaHQ(const vector<int> &neighbor, int id, string &key);
     // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string

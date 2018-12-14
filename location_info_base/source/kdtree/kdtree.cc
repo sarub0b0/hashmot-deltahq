@@ -105,7 +105,7 @@ int KdTree::Update(const Value &json) {
 }
 
 // vector<int> KdTree::GetNeighbor(int id) {
-void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
+void KdTree::GetNeighbor(int id, vector<int> &neighbor) {
     // vector<int> neighbor;
     // int id, r;
     // float x, y;
@@ -125,8 +125,8 @@ void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
     // neighbor = kdtree_.Query(nodes_[id]);
     kdtree_.Query(nodes_[id], neighbor);
 
-    if (neighbor->size() == 0) {
-        neighbor->push_back(-1);
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
         return;
         // return neighbor;
     }
@@ -134,15 +134,15 @@ void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
     kdtree_.Validation(nodes_);
 
     fprintf(stderr, "neighbor:\n");
-    sort(neighbor->begin(), neighbor->end());
-    for (auto &&i : *neighbor) {
+    sort(neighbor.begin(), neighbor.end());
+    for (auto &&i : neighbor) {
         fprintf(stderr, "%d ", i);
     }
     fprintf(stderr, "\n");
 
     fprintf(stderr, "exact:\n");
     vector<int> exact;
-    exact.reserve(neighbor->size());
+    exact.reserve(neighbor.size());
     float dist           = 0;
     int r                = nodes_[id].radius;
     array<float, 2> &pos = nodes_[id].pos;
@@ -166,7 +166,7 @@ void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
     if (exact.size()) {
         for (auto &&exa : exact) {
             is_same = false;
-            for (auto &&nei : *neighbor) {
+            for (auto &&nei : neighbor) {
                 if (nei == exa) {
                     is_same = true;
                     break;
@@ -180,7 +180,7 @@ void KdTree::GetNeighbor(int id, vector<int> *neighbor) {
         }
     }
 
-    assert(exact.size() == neighbor->size());
+    assert(exact.size() == neighbor.size());
 #endif
     // return neighbor;
 } // namespace neighbor_search

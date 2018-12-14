@@ -58,7 +58,7 @@ class NeighborSearch {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void GetNeighbor(int id, vector<int> *neighbor) {
+    virtual void GetNeighbor(int id, vector<int> &neighbor) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
     };
     // virtual vector<int> GetNeighbor(const Node &node) {

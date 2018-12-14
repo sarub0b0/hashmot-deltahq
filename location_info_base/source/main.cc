@@ -116,7 +116,8 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
-    float density = 0;
+    float field_size[2] = {0};
+    float density       = 0;
 
     int node_number   = 0;
     const Value &root = init_json;
@@ -165,6 +166,9 @@ int main(int argc, char const *argv[]) {
             node_size++;
         }
 
+        field_size[0] = max_x - min_x;
+        field_size[1] = max_y - min_y;
+
         node_number = node_size;
         density = node_size / ((max_x - min_x) * (max_y - min_y) * 0.000001);
         fprintf(stderr,
@@ -188,7 +192,7 @@ int main(int argc, char const *argv[]) {
             // node.AddMember("id", node_number, init_json.GetAllocator());
 
             neighbor.clear();
-            ns->GetNeighbor(id, &neighbor);
+            ns->GetNeighbor(id, neighbor);
             // const vector<int> &neighbor = ns->GetNeighbor(node_number);
             // sort(neighbor.begin(), neighbor.end());
 
@@ -248,8 +252,6 @@ int main(int argc, char const *argv[]) {
         // Read stream
         ///////////////////////////////////////
         // getline(cin, read);
-        while (fgets(read, 9000, stdin) == NULL) {
-        }
 #ifdef MEASURE
         if (loop_start == false) {
             begin      = chrono::high_resolution_clock::now();
@@ -257,6 +259,8 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
+        while (fgets(read, 9000, stdin) == NULL) {
+        }
         // #ifdef TCHK_ELAPSED
         //         begin = chrono::high_resolution_clock::now();
 
@@ -351,7 +355,7 @@ int main(int argc, char const *argv[]) {
                 // neighbor.shrink_to_fit();
                 // const vector<int> &neighbor = ns->GetNeighbor(update_id);
                 neighbor.clear();
-                ns->GetNeighbor(update_id, &neighbor);
+                ns->GetNeighbor(update_id, neighbor);
 
 #ifdef MEASURE
                 search_end = chrono::high_resolution_clock::now();
@@ -437,18 +441,22 @@ int main(int argc, char const *argv[]) {
                 send_avg    = send_elapsed / loop_count;
 
                 fprintf(stderr,
-                        "node_number neighbor_avg density update_count "
+                        "node_number neighbor_avg width height density "
+                        "update_count "
                         "all_elapsed parse_elapsed update_elapsed "
                         "search_elapsed send_elapsed all_avg_elapsed "
                         "parse_avg_elapsed update_avg_elapsed "
                         "search_avg_elapsed send_avg_elapsed\n");
 
                 fprintf(stdout,
-                        "%d %d %.2f %d %lld.%09lld %lld.%09lld %lld.%09lld "
+                        "%d %d %.2f %.2f %.2f %d %lld.%09lld %lld.%09lld "
+                        "%lld.%09lld "
                         "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
                         "%lld.%09lld %lld.%09lld %lld.%09lld \n",
                         node_number,
                         loop_count,
+                        field_size[0],
+                        field_size[1],
                         density,
                         neighbor_count / loop_count,
 

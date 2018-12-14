@@ -55,20 +55,23 @@ namespace std {
 inline bool operator==(const array<uint32_t, K_FUNCS> &lhs,
                        const array<uint32_t, K_FUNCS> &rhs) {
 
-    return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2];
+    for (int i = 0; i < K_FUNCS; i++) {
+        if (lhs[i] != rhs[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 template <>
 struct hash<array<uint32_t, K_FUNCS>> {
     size_t operator()(const array<uint32_t, K_FUNCS> &key) const {
         size_t seed = 0;
 
-        auto a = hash<int>()(key[0]);
-        auto b = hash<int>()(key[1]);
-        auto c = hash<int>()(key[2]);
-
-        seed ^= a + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= b + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= c + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        for (auto &&k : key) {
+            auto h = hash<int>()(k);
+            seed ^= h + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
 
         return seed;
     }

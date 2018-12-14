@@ -139,7 +139,7 @@ int LSH::Update(const Value &json) {
 // }
 
 // vector<int> LSH::GetNeighbor(int id) {
-void LSH::GetNeighbor(int id, vector<int> *neighbor) {
+void LSH::GetNeighbor(int id, vector<int> &neighbor) {
     int r;
     // float x, y;
     // x = nodes_[id].pos[0];
@@ -158,8 +158,8 @@ void LSH::GetNeighbor(int id, vector<int> *neighbor) {
         }
     }
 
-    if (neighbor->size() == 0) {
-        neighbor->push_back(-1);
+    if (neighbor.size() == 0) {
+        neighbor.push_back(-1);
     }
 
     // return neighbor_;
