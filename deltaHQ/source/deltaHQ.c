@@ -637,6 +637,7 @@ int main(int argc, char **argv) {
     // read json and init scenario
     // =====================================================
     // WARNING("json_init_scenario start");
+    fprintf(stderr, "-- Initialize scenario\n");
     if (json_init_scenario(scenario, init_file) == ERROR) {
         WARNING("json_init_scenario");
         goto ERROR_HANDLE;
@@ -755,6 +756,7 @@ int main(int argc, char **argv) {
         // }
         WARNING("update_neighbors");
 
+        fprintf(stderr, "\n-- Initial Neighbors Update:\n");
         for (int i = 0; i < scenario->node_number; ++i) {
             neighbor_number = update_all_neighbors(
                 scenario, neighbor, &center_id, all_neighbor_ids, &ibuf, 0);
