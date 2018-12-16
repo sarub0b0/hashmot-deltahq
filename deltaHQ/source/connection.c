@@ -37,7 +37,7 @@
 // Global variable initialization
 //////////////////////////////////
 
-char *connection_standards[] = {"802.11b",
+char *connection_standards[8] = {"802.11b",
                                 "802.11g",
                                 "802.11a",
                                 "Eth-10Mbps",
@@ -222,13 +222,13 @@ int connection_init_indexes(struct connection_class *connection,
     if (connection->from_node_index == INVALID_INDEX ||
         connection->to_node_index == INVALID_INDEX) {
         // try to find the "from_node" and "to_node" in scenario
-        for (i = 0; i < scenario->node_number; i++) {
+        for (i = 0; i < scenario->node_number; ++i) {
             node = &(scenario->nodes[i]);
 
             // try to identify from_node
             if (strcmp(node->name, connection->from_node) == 0) {
                 connection->from_node_index = i;
-                found_nodes++;
+                ++found_nodes;
 
                 // check whether a from_interface was defined
                 if (strcmp(connection->from_interface, DEFAULT_STRING) == 0) {
@@ -237,7 +237,7 @@ int connection_init_indexes(struct connection_class *connection,
                     connection->from_id              = node->interfaces[0].id;
                 } else // try to find from_interface among those of the node
                 {
-                    for (j = 0; j < node->interface_number; j++)
+                    for (j = 0; j < node->interface_number; ++i)
                         if (strcmp(node->interfaces[j].name,
                                    connection->from_interface) == 0) {
                             connection->from_interface_index = j;
@@ -263,7 +263,7 @@ int connection_init_indexes(struct connection_class *connection,
             // try to identify to_node
             if (strcmp(node->name, connection->to_node) == 0) {
                 connection->to_node_index = i;
-                found_nodes++;
+                ++found_nodes;
 
                 // check whether a to_interface was defined
                 if (strcmp(connection->to_interface, DEFAULT_STRING) == 0) {
@@ -272,7 +272,7 @@ int connection_init_indexes(struct connection_class *connection,
                     connection->to_id              = node->interfaces[0].id;
                 } else // try to find to_interface among those of the node
                 {
-                    for (j = 0; j < node->interface_number; j++)
+                    for (j = 0; j < node->interface_number; ++j)
                         if (strcmp(node->interfaces[j].name,
                                    connection->to_interface) == 0) {
                             connection->to_interface_index = j;
@@ -323,7 +323,7 @@ in scenario",
                         strlen(connection->through_environment));
         // try to find the through_environment in scenario
         for (i = 0; i < scenario->environment_number;
-             i++) { /*
+             ++i) { /*
                        INFO("crt_name=%s crt_hash=%d  through=%s
                        through_hash=%d",
                        scenario->environments[i].name,
@@ -535,7 +535,7 @@ void connection_copy(struct connection_class *connection_dst,
     connection_dst->bandwidth_defined   = connection_src->bandwidth_defined;
 
     // copy fixed_deltaQ properties
-    for (i = 0; i < connection_src->fixed_deltaQ_number; i++)
+    for (i = 0; i < connection_src->fixed_deltaQ_number; ++i)
         fixed_deltaQ_copy(&(connection_dst->fixed_deltaQs[i]),
                           &(connection_src->fixed_deltaQs[i]));
     connection_dst->fixed_deltaQ_number = connection_src->fixed_deltaQ_number;
@@ -1033,7 +1033,7 @@ the end time of the previous one.");
             return NULL;
         }
 
-        connection->fixed_deltaQ_number++;
+        ++connection->fixed_deltaQ_number;
         fixed_deltaQ_copy(
             &(connection->fixed_deltaQs[connection->fixed_deltaQ_number - 1]),
             fixed_deltaQ);
@@ -1060,7 +1060,7 @@ void *thread_connection_init_index(void *arg) {
     start       = a->start;
     end         = a->end;
 
-    for (int i = start; i < end; i++) {
+    for (int i = start; i < end; ++i) {
 
         if (connection_init_indexes(&connections[i], scenario) == ERROR) {
             WARNING("Error while initializing connection indexes");
@@ -1087,7 +1087,7 @@ void *thread_connection_init_status(void *arg) {
 
     int num_iterations;
     int deltaQ_changed;
-    for (int i = start; i < end; i++) {
+    for (int i = start; i < end; ++i) {
         num_iterations = 0;
         INFO("--- Initializing connection %d ---", i);
         do {
@@ -1104,7 +1104,7 @@ void *thread_connection_init_status(void *arg) {
             if (deltaQ_changed == FALSE) {
                 break;
             } else {
-                num_iterations++;
+                ++num_iterations;
             }
 
             if (num_iterations >= MAXIMUM_PRECOMPUTE) {
@@ -1135,14 +1135,14 @@ int connection_init_neighbor(struct scenario_class *scenario,
     int ni     = 0;
 
     if (0 < own_id) {
-        for (int i = 0; i < scenario->node_number; i++) {
+        for (int i = 0; i < scenario->node_number; ++i) {
             if (own_id == i) {
                 continue;
             }
             nb_id = i;
 
             if (own_id < nb_id) {
-                nb_id--;
+                --nb_id;
             }
             conn_i         = own_id * (scenario->node_number - 1) + nb_id;
             neighbor[ni++] = &scenario->connections[conn_i];
@@ -1150,7 +1150,7 @@ int connection_init_neighbor(struct scenario_class *scenario,
 
             nb_id = own_id;
             if (i < nb_id) {
-                nb_id--;
+                --nb_id;
             }
             conn_i         = i * (scenario->node_number - 1) + nb_id;
             neighbor[ni++] = &scenario->connections[conn_i];

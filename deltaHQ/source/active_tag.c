@@ -140,7 +140,7 @@ int active_tag_fer(struct connection_class *connection,
     if (environment->num_segments > 0) {
         int seg_i;
 
-        for (seg_i = 0; seg_i < environment->num_segments; seg_i++)
+        for (seg_i = 0; seg_i < environment->num_segments; ++seg_i)
             if (environment->W[seg_i] > 0) {
                 (*fer) = 1.0;
                 DEBUG("Adjusted connection FER = %f (building attenuation)",
@@ -352,7 +352,7 @@ int active_tag_connection_update(struct connection_class *connection,
                   sigma_square_sum);
 
             // for multiple segments, attenuation parameters must be cumulated
-            for (i = 1; i < environment->num_segments; i++) {
+            for (i = 1; i < environment->num_segments; ++i) {
                 // compute the sum of wall attenuation (in dB)
                 W_sum += environment->W[i];
 
@@ -491,7 +491,7 @@ int active_tag_interference(struct connection_class *connection,
     // search connections in scenario that operate on same band
     // and are closely located to the current connection
     for (connection_i = 0; connection_i < scenario->connection_number;
-         connection_i++) {
+         ++connection_i) {
         // look only at connections that are not the same with
         // the current one
         if (connection != &(scenario->connections[connection_i])) {

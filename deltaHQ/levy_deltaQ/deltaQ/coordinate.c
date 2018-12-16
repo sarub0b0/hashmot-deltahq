@@ -26,7 +26,7 @@
 #include "coordinate.h"
 #include "deltaQ.h"
 
-// assign the name 'name to the 3D coordinate 'coordinate', 
+// assign the name 'name to the 3D coordinate 'coordinate',
 // and initialize it using the values c0, c1, and c2
 void
 coordinate_init (struct coordinate_class *coordinate, const char *name,
@@ -84,7 +84,7 @@ coordinate_copy (struct coordinate_class *coord_dest,
 {
   int i;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     coord_dest->c[i] = coord_src->c[i];
 }
 
@@ -134,7 +134,7 @@ coordinate_are_equal (const struct coordinate_class *point1,
 // Vector-related functions
 /////////////////////////////////////////
 
-// compute the magnitude of a vector represented by 
+// compute the magnitude of a vector represented by
 // the coordinate 'vector';
 // return the magnitude
 double
@@ -143,13 +143,13 @@ coordinate_vector_magnitude (const struct coordinate_class *vector)
   int i;
   double sum_squares = 0;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     sum_squares += (vector->c[i] * vector->c[i]);
 
   return sqrt (sum_squares);
 }
 
-// compute the vector sum of the vectors represented by 
+// compute the vector sum of the vectors represented by
 // the coordinates 'vector1' and 'vector'; store the result
 // in coordinate 'result'
 void
@@ -159,11 +159,11 @@ coordinate_vector_sum (struct coordinate_class *result,
 {
   int i;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     result->c[i] = vector1->c[i] + vector2->c[i];
 }
 
-// compute the (3D) vector difference of the vectors represented by 
+// compute the (3D) vector difference of the vectors represented by
 // the coordinates 'vector1' and 'vector2'; store the result
 // in coordinate 'result'
 void
@@ -173,11 +173,11 @@ coordinate_vector_difference (struct coordinate_class *result,
 {
   int i;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     result->c[i] = vector1->c[i] - vector2->c[i];
 }
 
-// compute the 2D vector difference of the vectors represented by 
+// compute the 2D vector difference of the vectors represented by
 // the coordinates 'vector1' and 'vector2'; store the result
 // in coordinate 'result'
 void
@@ -187,13 +187,13 @@ coordinate_vector_difference_2D (struct coordinate_class *result,
 {
   int i;
 
-  for (i = 0; i < MAX_COORDINATES_2D; i++)
+  for (i = 0; i < MAX_COORDINATES_2D; ++i)
     result->c[i] = vector1->c[i] - vector2->c[i];
-  for (i = MAX_COORDINATES_2D; i < MAX_COORDINATES; i++)
+  for (i = MAX_COORDINATES_2D; i < MAX_COORDINATES; ++i)
     result->c[i] = 0;
 }
 
-// compute the scalar multiplication of the vector represented by 
+// compute the scalar multiplication of the vector represented by
 // the coordinate 'vector' with scalar 'scalar'; store the result
 // in coordinate 'result'
 void
@@ -203,7 +203,7 @@ coordinate_multiply_scalar (struct coordinate_class *result,
 {
   int i;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     result->c[i] = vector->c[i] * scalar;
 }
 
@@ -215,7 +215,7 @@ coordinate_multiply_scalar (struct coordinate_class *result,
 // the coordinate of the intersection of the perpendicular line
 // from point to segment in 'intersection';
 // return SUCCESS on success, ERROR on error (i.e., distance cannot
-// be computed because the perpendicular between the point and segment 
+// be computed because the perpendicular between the point and segment
 // doesn't fall on the segment)
 
 // NOTE: The code for the 2D version is based on the algorithm
@@ -231,7 +231,7 @@ coordinate_distance_to_segment (const struct coordinate_class *point,
   //struct coordinate_class segment_difference;
   double segment_length;
 
-  // parameter used to determine whether the perpendicular 
+  // parameter used to determine whether the perpendicular
   // between the point and segment falls on the segment or not
   double u = 0;
 
@@ -241,17 +241,17 @@ coordinate_distance_to_segment (const struct coordinate_class *point,
   segment_length = coordinate_distance (segment_start, segment_end);
 
   // compute parameter "u"
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     u += ((point->c[i] - segment_start->c[i]) *
 	  (segment_end->c[i] - segment_start->c[i]));
   u /= (segment_length * segment_length);
 
-  // if u is not between 0 and 1, it means the perpendicular 
+  // if u is not between 0 and 1, it means the perpendicular
   // doesn't fall on the line segment but outside it
   if (u < 0.0 || u > 1.0)
     return FALSE;
 
-  for (i = 0; i < MAX_COORDINATES; i++)
+  for (i = 0; i < MAX_COORDINATES; ++i)
     intersection->c[i] = segment_start->c[i] +
       u * (segment_end->c[i] - segment_start->c[i]);
 
@@ -271,7 +271,7 @@ coordinate_distance_to_segment (const struct coordinate_class *point,
 // the coordinate of the intersection of the perpendicular line
 // from point to segment in 'intersection';
 // return SUCCESS on success, ERROR on error (i.e., distance cannot
-// be computed because the perpendicular between the point and segment 
+// be computed because the perpendicular between the point and segment
 // doesn't fall on the segment)
 
 // NOTE: This code is based on the algorithm
@@ -288,7 +288,7 @@ coordinate_distance_to_segment_2D (const struct coordinate_class *point,
   //struct coordinate_class segment_difference;
   double segment_length;
 
-  // parameter used to determine whether the perpendicular 
+  // parameter used to determine whether the perpendicular
   // between the point and segment falls on the segment or not
   double u = 0;
 
@@ -298,20 +298,20 @@ coordinate_distance_to_segment_2D (const struct coordinate_class *point,
   segment_length = coordinate_distance_2D (segment_start, segment_end);
 
   // compute parameter "u"
-  for (i = 0; i < MAX_COORDINATES_2D; i++)
+  for (i = 0; i < MAX_COORDINATES_2D; ++i)
     u += ((point->c[i] - segment_start->c[i]) *
 	  (segment_end->c[i] - segment_start->c[i]));
   u /= (segment_length * segment_length);
 
-  // if u is not between 0 and 1, it means the perpendicular 
+  // if u is not between 0 and 1, it means the perpendicular
   // doesn't fall on the line segment but outside it
   if (u < 0.0 || u > 1.0)
     return FALSE;
 
-  for (i = 0; i < MAX_COORDINATES_2D; i++)
+  for (i = 0; i < MAX_COORDINATES_2D; ++i)
     intersection->c[i] = segment_start->c[i] +
       u * (segment_end->c[i] - segment_start->c[i]);
-  for (i = MAX_COORDINATES_2D; i < MAX_COORDINATES; i++)
+  for (i = MAX_COORDINATES_2D; i < MAX_COORDINATES; ++i)
     intersection->c[i] = 0;
 
   *distance = coordinate_distance_2D (point, intersection);
@@ -331,7 +331,7 @@ coordinate_vector_angle_2D (const struct coordinate_class *vector)
   double sum = 0;
   double angle;
 
-  for (i = 0; i < MAX_COORDINATES_2D; i++)
+  for (i = 0; i < MAX_COORDINATES_2D; ++i)
     sum += vector->c[i] * vector->c[i];
 
   if (sum < EPSILON)

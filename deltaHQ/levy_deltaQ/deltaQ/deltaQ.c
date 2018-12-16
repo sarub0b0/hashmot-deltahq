@@ -784,20 +784,20 @@ int main(int argc, char **argv) {
     // print the initial condition of the scenario
     printf("\n-- Initial condition:\n");
     fprintf(stderr, "\n-- Initial condition:\n");
-    for (node_i = 0; node_i < scenario->node_number; node_i++) {
+    for (node_i = 0; node_i < scenario->node_number; ++node_i) {
         node_print(&(scenario->nodes[node_i]));
     }
-    for (obj_i = 0; obj_i < scenario->object_number; obj_i++) {
+    for (obj_i = 0; obj_i < scenario->object_number; ++obj_i) {
         object_print(&(scenario->objects[obj_i]));
     }
-    for (env_i = 0; env_i < scenario->environment_number; env_i++) {
+    for (env_i = 0; env_i < scenario->environment_number; ++env_i) {
         environment_print(&(scenario->environments[env_i]));
     }
-    for (motion_i = 0; motion_i < scenario->motion_number; motion_i++) {
+    for (motion_i = 0; motion_i < scenario->motion_number; ++motion_i) {
         motion_print(&(scenario->motions[motion_i]));
     }
     for (connection_i = 0; connection_i < scenario->connection_number;
-         connection_i++) {
+         ++connection_i) {
         connection_print(&(scenario->connections[connection_i]));
     }
 #endif

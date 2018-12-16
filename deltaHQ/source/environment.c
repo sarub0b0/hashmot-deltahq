@@ -76,7 +76,7 @@ void environment_dynamic_init(struct environment_class *environment,
 
     environment->num_segments = num_segments;
 
-    for (i = 0; i < num_segments; i++) {
+    for (i = 0; i < num_segments; ++i) {
         environment->alpha[i]       = alpha[i];
         environment->sigma[i]       = sigma[i];
         environment->W[i]           = W[i];
@@ -95,7 +95,7 @@ void environment_print(struct environment_class *environment) {
                environment->name,
                environment->type,
                (environment->is_dynamic == TRUE) ? "true" : "false");
-        for (i = 0; i < environment->num_segments; i++)
+        for (i = 0; i < environment->num_segments; ++i)
             printf(
                 "    segment #%d: alpha=%.2f sigma=%.2f W=%.2f \
 noise_power=%.2f length=%.2f\n",
@@ -124,7 +124,7 @@ void environment_copy(struct environment_class *environment_dst,
 
     environment_dst->num_segments = environment_src->num_segments;
 
-    for (i = 0; i < environment_dst->num_segments; i++) {
+    for (i = 0; i < environment_dst->num_segments; ++i) {
         environment_dst->alpha[i]       = environment_src->alpha[i];
         environment_dst->sigma[i]       = environment_src->sigma[i];
         environment_dst->W[i]           = environment_src->W[i];
@@ -249,7 +249,7 @@ int point_on_object_edge2d(double xn,
     int vertex_i, vertex_i2;
 
     printf("Check if point (%.2f,%.2f) is on object edge\n", xn, yn);
-    for (vertex_i = 0; vertex_i < object->vertex_number; vertex_i++) {
+    for (vertex_i = 0; vertex_i < object->vertex_number; ++vertex_i) {
         vertex_i2 =
             ((vertex_i + 1) < object->vertex_number) ? vertex_i + 1 : 0;
 
@@ -299,7 +299,7 @@ int point_in_object3d(double xn,
 
     // check if vertex is on an edge first
     printf("Check if point (%.2f,%.2f) is on object edge\n", xn, yn);
-    for (vertex_i = 0; vertex_i < object->vertex_number; vertex_i++) {
+    for (vertex_i = 0; vertex_i < object->vertex_number; ++vertex_i) {
         vertex_i2 =
             ((vertex_i + 1) < object->vertex_number) ? vertex_i + 1 : 0;
 
@@ -326,7 +326,7 @@ int point_in_object3d(double xn,
     // (including the edge [V[N-1],V[0]], even if the object is not
     // a polygon, so as to avoid strange cases with unaccounted areas)
     DEBUG("Checking point (%f, %f) using a virtual long segment", xn, yn);
-    for (vertex_i = 0; vertex_i < object->vertex_number; vertex_i++) {
+    for (vertex_i = 0; vertex_i < object->vertex_number; ++vertex_i) {
         vertex_i2 = (vertex_i + 1) < object->vertex_number ? vertex_i + 1 : 0;
 
         printf("Object edge (V[%d],V[%d])...\n", vertex_i, vertex_i2);
@@ -341,7 +341,7 @@ int point_in_object3d(double xn,
                               object->vertices[vertex_i2].c[1],
                               &x_intersect,
                               &y_intersect) == TRUE) {
-            intersection_number++;
+            ++intersection_number;
         }
     }
 
@@ -449,7 +449,7 @@ void intersection_print(double *intersections_x,
     if (number <= 0)
         printf("EMPTY\n");
     else {
-        for (i = 0; i < number; i++)
+        for (i = 0; i < number; ++i)
             printf("(%.2f,%.2f) ", intersections_x[i], intersections_y[i]);
         printf("\n");
     }
@@ -480,7 +480,7 @@ int intersection_do_insert(double *intersections_x,
     DEBUG("Inserting point (%.2f,%.2f) at index %d", new_x, new_y, index);
 
     // make room for new point
-    for (i = (*number) - 1; i >= index; i--) {
+    for (i = (*number) - 1; i >= index; --i) {
         intersections_x[i + 1] = intersections_x[i];
         intersections_y[i + 1] = intersections_y[i];
     }
@@ -489,7 +489,7 @@ int intersection_do_insert(double *intersections_x,
     intersections_x[index] = new_x;
     intersections_y[index] = new_y;
 
-    (*number)++;
+    ++(*number);
 
     return SUCCESS;
 }
@@ -517,11 +517,11 @@ int intersection_add_point(double *intersections_x,
         return SUCCESS;
     }
 
-    for (ix = 0; ix < (*number); ix++) {
+    for (ix = 0; ix < (*number); ++ix) {
         // if x coordinates are equal, we must check y coordinates
         if (FLOAT_CMP(intersections_x[ix], new_x)) {
 
-            for (iy = ix; iy < (*number); iy++)
+            for (iy = ix; iy < (*number); ++iy)
                 // if y coordinates are also equal, ignore point
                 if (FLOAT_CMP(intersections_y[iy], new_y)) {
                     WARNING("Ignored identical intersection points");
@@ -673,7 +673,7 @@ Using local environment of receiver node");
     /////////////////////////////////
     // determine intersection points
     for (object_index = 0; object_index < scenario->object_number;
-         object_index++) {
+         ++object_index) {
         int height_check_needed = FALSE;
 
         // first check whether the segment is higher than the object
@@ -705,7 +705,7 @@ Using local environment of receiver node");
         // a polygon, so as to avoid strange cases with unaccounted areas)
         for (vertex_i = 0;
              vertex_i < scenario->objects[object_index].vertex_number;
-             vertex_i++) {
+             ++vertex_i) {
             vertex_i2 = ((vertex_i + 1) <
                          scenario->objects[object_index].vertex_number)
                             ? vertex_i + 1
@@ -805,11 +805,11 @@ differences");
 
     /////////////////////////////////////////////////////////
     // determine the object which corresponds to each segment
-    for (i = 0; i < number - 1; i++) {
+    for (i = 0; i < number - 1; ++i) {
         printf("Processing segment %d\n", i);
         intersections_objects[i] = INVALID_INDEX;
         for (object_index = 0; object_index < scenario->object_number;
-             object_index++) {
+             ++object_index) {
             object_print(&(scenario->objects[object_index]));
             if (segment_in_object3d(intersections_x[i],
                                     intersections_y[i],
@@ -843,7 +843,7 @@ included in the previously detected intersection object %d\n",
                     for (vertex_i = 0;
                          vertex_i <
                          scenario->objects[object_index].vertex_number;
-                         vertex_i++) {
+                         ++vertex_i) {
                         // check first whether vertex is on edge
                         if (point_on_object_edge2d(
                                 scenario->objects[object_index]
@@ -861,7 +861,7 @@ included in the previously detected intersection object %d\n",
                                 vertex_i,
                                 object_index,
                                 intersections_objects[i]);
-                            vertex_number_in++;
+                            ++vertex_number_in;
                         } else if (point_in_object3d(
                                        scenario->objects[object_index]
                                            .vertices[vertex_i]
@@ -882,7 +882,7 @@ included in the previously detected intersection object %d\n",
                                 vertex_i,
                                 object_index,
                                 intersections_objects[i]);
-                            vertex_number_in++;
+                            ++vertex_number_in;
                         } else
                             printf(
                                 "Vertex %d of object %d NOT included in "
@@ -925,7 +925,7 @@ found one => update inclusion information");
     } else
         WARNING("ERROR regarding segment set ends");
 
-    for (i = 0; i < number - 1; i++) {
+    for (i = 0; i < number - 1; ++i) {
         length = sqrt(pow(intersections_x[i] - intersections_x[i + 1], 2) +
                       pow(intersections_y[i] - intersections_y[i + 1], 2));
 
@@ -1028,7 +1028,7 @@ height_diff==%f angle=%f",
                 // 3. segment has both ends on an object edges
                 //    => W_segment = W_object (2 object walls interferes)
                 for (vertex_i = 0; vertex_i < object->vertex_number;
-                     vertex_i++) {
+                     ++vertex_i) {
                     vertex_i2 = ((vertex_i + 1) < object->vertex_number)
                                     ? vertex_i + 1
                                     : 0;
@@ -1053,7 +1053,7 @@ height_diff==%f angle=%f",
                                          object->vertices[vertex_i].c[1],
                                          object->vertices[vertex_i2].c[0],
                                          object->vertices[vertex_i2].c[1]))
-                        num_ends_on_edges++;
+                        ++num_ends_on_edges;
 
                     printf("Check for intersection point (%.2f,%.2f)\n",
                            intersections_x[i + 1],
@@ -1064,7 +1064,7 @@ height_diff==%f angle=%f",
                                          object->vertices[vertex_i].c[1],
                                          object->vertices[vertex_i2].c[0],
                                          object->vertices[vertex_i2].c[1]))
-                        num_ends_on_edges++;
+                        ++num_ends_on_edges;
                 }
 
                 DEBUG("Number of segment ends on object edges = %d",
@@ -1111,7 +1111,7 @@ parameters: alpha=%.2f, sigma=%.2f, W=%.2f, noise_power=%.2f",
             environment->W[env_index]           = DEFAULT_W;
             environment->noise_power[env_index] = DEFAULT_NOISE_POWER;
         }
-        env_index++;
+        ++env_index;
     }
 
     // update field in environment structure

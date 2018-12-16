@@ -283,7 +283,46 @@ long int parse_svn_revision(char *svn_revision_str) {
 
     return retval;
 }
+struct timespec get_elapsed(struct timespec prev, struct timespec current) {
+    struct timespec ret;
+    time_t sec = 0;
+    long nsec  = 0;
+    if (current.tv_sec == prev.tv_sec) {
+        sec  = current.tv_sec - prev.tv_sec;
+        nsec = current.tv_nsec - prev.tv_nsec;
+    } else if (current.tv_sec != prev.tv_sec) {
+        int carry = 1000000000;
+        sec       = current.tv_sec - prev.tv_sec;
+        if (prev.tv_nsec > current.tv_nsec) {
+            nsec = carry - prev.tv_nsec + current.tv_nsec;
+            --sec;
+            if (nsec > carry) {
+                nsec = nsec - carry;
+                ++sec;
+            }
+        } else {
+            nsec = current.tv_nsec - prev.tv_nsec;
+        }
+    }
 
+    ret.tv_sec  = sec;
+    ret.tv_nsec = nsec;
+    return ret;
+}
+
+struct timespec sum_elapsed(struct timespec a, struct timespec b) {
+    struct timespec ret;
+
+    long sum_nsec = a.tv_nsec + b.tv_nsec;
+
+    int div  = sum_nsec / 1000000000;
+    long mod = sum_nsec % 1000000000;
+
+    ret.tv_sec  = a.tv_sec + b.tv_sec + div;
+    ret.tv_nsec = mod;
+
+    return ret;
+}
 // structure holding the names of long options and their
 // short version; when updating also change the 'short_options'
 // structure below
@@ -1117,6 +1156,28 @@ int main(int argc, char **argv) {
         WARNING("init finish");
     }
 
+#ifdef MEASURE
+    struct timespec update_begin, update_end;
+    struct timespec calc_begin, calc_end;
+    struct timespec bmp_begin, bmp_end;
+    struct timespec meteor_begin, meteor_end;
+    struct timespec send_begin, send_end;
+    struct timespec update_elapsed, calc_elapsed, bmp_elapsed, meteor_elapsed,
+        send_elapsed;
+    struct timespec all_update_elapsed, all_calc_elapsed, all_bmp_elapsed,
+        all_meteor_elapsed, all_send_elapsed;
+    all_update_elapsed.tv_sec  = 0;
+    all_update_elapsed.tv_nsec = 0;
+    all_calc_elapsed.tv_sec    = 0;
+    all_calc_elapsed.tv_nsec   = 0;
+    all_bmp_elapsed.tv_sec     = 0;
+    all_bmp_elapsed.tv_nsec    = 0;
+    all_meteor_elapsed.tv_sec  = 0;
+    all_meteor_elapsed.tv_nsec = 0;
+    all_send_elapsed.tv_sec    = 0;
+    all_send_elapsed.tv_nsec   = 0;
+#endif
+
     fprintf(stderr, "\n-- Scenario Loop Start. Update Wait:\n");
     while (loop_exit == FALSE) {
 
@@ -1145,6 +1206,9 @@ int main(int argc, char **argv) {
         // get neighbor node id from stdin
         // ------------------------------------
         if (0 <= own_id) {
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &update_begin);
+#endif
 
             neighbor_number = update_neighbors(scenario,
                                                deltaQ_class->neighbor,
@@ -1156,6 +1220,9 @@ int main(int argc, char **argv) {
                                                &received_center_id,
                                                1);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &update_end);
+#endif
             if (neighbor_number < 0) {
                 fprintf(stderr, "finish message or read error");
                 deltaQ_class->calc_done = TRUE;
@@ -1183,14 +1250,23 @@ int main(int argc, char **argv) {
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
+#endif
 
             TCHK_END(scenario_deltaQ);
             // if (is_other_update != 0 || is_other_delete != 0 ||
             //     neighbor_number != 0) {
             // if (1) {
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
+#endif
             // ------------------------------------
             // set bitmap
             // ------------------------------------
@@ -1206,6 +1282,9 @@ int main(int argc, char **argv) {
                              is_other_delete,
                              scenario->node_number);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &bmp_end);
+#endif
 #ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");
             print_neighbor_bmp(
@@ -1214,6 +1293,10 @@ int main(int argc, char **argv) {
             printf("-------------- current --------------\n");
             print_neighbor_bmp(
                 neighbor_ids_bmp, scenario->node_number, own_id);
+#endif
+
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &meteor_begin);
 #endif
             //
             // send json message
@@ -1227,8 +1310,15 @@ int main(int argc, char **argv) {
                              is_other_delete,
                              received_center_id);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &meteor_end);
+#endif
 #ifdef DEBUG_PRINT
             print_meteor_param(own_id, meteor_param);
+#endif
+
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
 
             if (send_result_to_meteor(meteor_param,
@@ -1237,9 +1327,15 @@ int main(int argc, char **argv) {
                                       is_broadcast,
                                       &info) == ERROR) {
                 WARNING("send_result_to_meteor");
+#ifdef MEASURE
+                clock_gettime(CLOCK_MONOTONIC, &send_begin);
+#endif
             }
             // }
         } else {
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &update_begin);
+#endif
             neighbor_number = update_all_neighbors(scenario,
                                                    deltaQ_class->neighbor,
                                                    &center_id,
@@ -1247,6 +1343,9 @@ int main(int argc, char **argv) {
                                                    &ibuf,
                                                    1);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &update_end);
+#endif
             if (neighbor_number < 0) {
                 WARNING("finish message or read error");
                 deltaQ_class->calc_done = TRUE;
@@ -1274,9 +1373,18 @@ int main(int argc, char **argv) {
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
+#endif
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
+#endif
             // ------------------------------------
             // set bitmap
             // ------------------------------------
@@ -1289,6 +1397,9 @@ int main(int argc, char **argv) {
                                  all_neighbor_ids,
                                  all_neighbor_ids_bmp,
                                  scenario->node_number);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &bmp_end);
+#endif
 
 #ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");
@@ -1300,6 +1411,9 @@ int main(int argc, char **argv) {
                                    scenario->node_number);
 #endif
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &meteor_begin);
+#endif
             //
             // send json message
             //
@@ -1314,10 +1428,16 @@ int main(int argc, char **argv) {
                 del_i = meteor_param->delete[i];
                 all_neighbor_ids_bmp[del_i][center_id] = 0;
             }
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &meteor_end);
+#endif
 #ifdef DEBUG_PRINT
             print_all_meteor_param(center_id, meteor_param);
 #endif
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &send_begin);
+#endif
             if (send_all_result_to_meteor(meteor_param,
                                           center_id,
                                           scenario->node_number,
@@ -1326,9 +1446,65 @@ int main(int argc, char **argv) {
                                           &info) == ERROR) {
                 WARNING("send_result_to_meteor");
             }
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &send_end);
+#endif
             TCHK_END(scenario_deltaQ);
         }
+
+#ifdef MEASURE
+
+        update_elapsed = get_elapsed(update_begin, update_end);
+        calc_elapsed   = get_elapsed(calc_begin, calc_end);
+        bmp_elapsed    = get_elapsed(bmp_begin, bmp_end);
+        meteor_elapsed = get_elapsed(meteor_begin, meteor_end);
+        send_elapsed   = get_elapsed(send_begin, send_end);
+
+        fprintf(stdout,
+                "%lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+                update_elapsed.tv_sec,
+                update_elapsed.tv_nsec,
+
+                calc_elapsed.tv_sec,
+                calc_elapsed.tv_nsec,
+
+                bmp_elapsed.tv_sec,
+                bmp_elapsed.tv_nsec,
+
+                meteor_elapsed.tv_sec,
+                meteor_elapsed.tv_nsec,
+
+                send_elapsed.tv_sec,
+                send_elapsed.tv_nsec);
+
+        all_update_elapsed = sum_elapsed(all_update_elapsed, update_elapsed);
+        all_calc_elapsed   = sum_elapsed(all_calc_elapsed, calc_elapsed);
+        all_bmp_elapsed    = sum_elapsed(all_bmp_elapsed, bmp_elapsed);
+        all_meteor_elapsed = sum_elapsed(all_meteor_elapsed, meteor_elapsed);
+        all_send_elapsed   = sum_elapsed(all_send_elapsed, send_elapsed);
+#endif
     }
+
+#ifdef MEASURE
+
+    fprintf(stderr,
+            "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+            all_update_elapsed.tv_sec,
+            all_update_elapsed.tv_nsec,
+
+            all_calc_elapsed.tv_sec,
+            all_calc_elapsed.tv_nsec,
+
+            all_bmp_elapsed.tv_sec,
+            all_bmp_elapsed.tv_nsec,
+
+            all_meteor_elapsed.tv_sec,
+            all_meteor_elapsed.tv_nsec,
+
+            all_send_elapsed.tv_sec,
+            all_send_elapsed.tv_nsec);
+
+#endif
 
     DEBUG2("br_assign");
     pthread_barrier_wait(&br_assign);
