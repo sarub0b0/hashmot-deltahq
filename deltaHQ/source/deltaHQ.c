@@ -693,6 +693,10 @@ int main(int argc, char **argv) {
                                                &is_other_delete,
                                                &received_center_id,
                                                0);
+            if (neighbor_number < 0) {
+                WARNING("update_neighbors");
+                goto ERROR_HANDLE;
+            }
 
             if (i != own_id) {
                 continue;
@@ -761,6 +765,10 @@ int main(int argc, char **argv) {
             neighbor_number = update_all_neighbors(
                 scenario, neighbor, &center_id, all_neighbor_ids, &ibuf, 0);
 
+            if (neighbor_number < 0) {
+                WARNING("update_all_neighbors");
+                goto ERROR_HANDLE;
+            }
 #ifdef DEBUG_PRINT
             printf("all_neighbor_ids(%d)=", i);
             for (int j = 0; all_neighbor_ids[i][j] != -1; j++) {
