@@ -24,6 +24,7 @@
 #include <json.h>
 #include <input.h>
 #include <socket.h>
+#include <measure.h>
 
 #define SET_STRING_OBJECT(j, p, s)        \
     do {                                  \
@@ -207,7 +208,11 @@ json_t *read_json(input_buffer_t *ibuf) {
 
     printf("read json: %s\n", line);
 
+    TCHK_START(json_loads);
+
     root = json_loads(line, 0, &error);
+
+    TCHK_END(json_loads);
 
     if (root) {
         first_object = json_object_get(root, "finish");
@@ -398,9 +403,10 @@ int update_all_neighbors(struct scenario_class *scenario,
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
 
-        if (node_id < 0) {
-            break;
-        }
+        // if (node_id < 0) {
+        // neighbor_ids[*center_id][0] = -1;
+        // break;
+        // }
 
         neighbor_ids[*center_id][nn++] = node_id;
 
@@ -414,6 +420,10 @@ int update_all_neighbors(struct scenario_class *scenario,
     // node_object = NULL;
 
     neighbor_ids[*center_id][neighbor_array_len] = -1;
+
+    if (neighbor_ids[*center_id][0] == -1) {
+        return 0;
+    }
 
     for (int j = 0; j < nn; j++) {
         same_neighbor = 0;
@@ -1298,6 +1308,77 @@ int send_delete_json(int center_id,
     return SUCCESS;
 }
 
+int send_all_delete_json(int center_id,
+                         meteor_param_t *mp,
+                         int is_broadcast,
+                         bc_info_t *info) {
+
+    int from_id;
+    int to_id;
+
+    from_id = center_id;
+
+    for (int i = 0; mp->delete[i] != -1; i++) {
+        // json_t *json;
+        // json_t *delete;
+        // json_t *pair;
+        // json_t *p0, *p1;
+
+        // json   = json_object();
+        // delete = json_object();
+        // pair   = json_array();
+
+        to_id = mp->delete[i];
+
+        // p0 = json_object();
+        // p1 = json_object();
+
+        // json_object_set(p0, "from_id", json_integer(from_id));
+        // json_object_set(p0, "to_id", json_integer(to_id));
+
+        // json_object_set(p1, "from_id", json_integer(to_id));
+        // json_object_set(p1, "to_id", json_integer(from_id));
+
+        // json_array_append(pair, p0);
+        // json_array_append(pair, p1);
+
+        // json_object_set(delete, "delete", pair);
+        // json_object_set(json, "meteor", delete);
+
+        // info->msg = json_dumps(json, JSON_COMPACT |
+        // JSON_REAL_PRECISION(10));
+
+        snprintf(send_json_buf,
+                 SEND_JSON_MAXLEN,
+                 "{\"meteor\":{\"delete\":[{\"from_id\":%d,\"to_id\":%d},{"
+                 "\"from_id\":%d,\"to_id\":%d}]}}",
+                 from_id,
+                 to_id,
+                 to_id,
+                 from_id);
+
+        info->msg     = send_json_buf;
+        info->msg_len = strlen(info->msg);
+
+        printf("-- %s\n", info->msg);
+
+        if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
+            WARNING("broadcast_sender");
+            return ERROR;
+        }
+
+        // free(info->msg);
+        // info->msg = NULL;
+
+        // while (0 < p0->refcount) json_decref(p0);
+        // while (0 < p1->refcount) json_decref(p1);
+        // while (0 < pair->refcount) json_decref(pair);
+        // while (0 < delete->refcount) json_decref(delete);
+        // while (0 < json->refcount) json_decref(json);
+    }
+
+    return SUCCESS;
+}
 char *send_all_json_message(int center_id,
                             meteor_param_t *mp,
                             int node_number,
@@ -1335,7 +1416,8 @@ char *send_all_json_message(int center_id,
             if (!mp->is_change_delete) {
                 return NULL;
             }
-            if (send_delete_json(center_id, mp, is_broadcast, info) == ERROR)
+            if (send_all_delete_json(center_id, mp, is_broadcast, info) ==
+                ERROR)
                 return NULL;
             break;
     }
@@ -2186,16 +2268,29 @@ Ignored invalid value ('%lu')",
 
 int set_all_neighbor_bmp(int center_id,
                          int **neighbor_ids,
-                         int **neighbor_ids_bmp) {
+                         int **neighbor_ids_bmp,
+                         int node_number) {
 
     int ni = 0;
+
+    if (neighbor_ids[center_id][0] == -1) {
+        memset(neighbor_ids_bmp[center_id], 0, sizeof(int) * node_number);
+        // for (int i = 0; i < node_number; i++) {
+        //     if (i == center_id) {
+        //         continue;
+        //     }
+        //     neighbor_ids_bmp[i][center_id] = 0;
+        // }
+        return SUCCESS;
+    }
 
     for (int i = 0; neighbor_ids[center_id][i] != -1; i++) {
         ni = neighbor_ids[center_id][i];
 
         neighbor_ids_bmp[center_id][ni] = 1;
+        neighbor_ids_bmp[ni][center_id] = 1;
     }
-    return 0;
+    return SUCCESS;
 }
 
 int set_neighbor_bmp(int *neighbor_ids,
@@ -2242,10 +2337,14 @@ int set_all_prev_neighbor_bmp(int center_id,
                               int **neighbor_ids_bmp,
                               int **prev_neighbor_ids_bmp,
                               int node_number) {
-    for (int i = 0; i < node_number; i++) {
-        prev_neighbor_ids_bmp[center_id][i] = neighbor_ids_bmp[center_id][i];
-        neighbor_ids_bmp[center_id][i]      = 0;
-    }
+    memcpy(prev_neighbor_ids_bmp[center_id],
+           neighbor_ids_bmp[center_id],
+           sizeof(int) * node_number);
+    memset(neighbor_ids_bmp[center_id], 0, sizeof(int) * node_number);
+    // for (int i = 0; i < node_number; i++) {
+    //     prev_neighbor_ids_bmp[center_id][i] =
+    //     neighbor_ids_bmp[center_id][i]; neighbor_ids_bmp[center_id][i] = 0;
+    // }
 
     return 0;
 }

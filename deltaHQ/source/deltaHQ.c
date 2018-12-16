@@ -765,12 +765,28 @@ int main(int argc, char **argv) {
             }
             puts("");
 #endif
-            if (neighbor_number < 0) {
-                goto ERROR_HANDLE;
-            }
+            // if (neighbor_number < 0) {
+            //     goto ERROR_HANDLE;
+            // }
 
-            set_all_neighbor_bmp(
-                center_id, all_neighbor_ids, all_neighbor_ids_bmp);
+            set_all_prev_neighbor_bmp(center_id,
+                                      all_neighbor_ids_bmp,
+                                      all_prev_neighbor_ids_bmp,
+                                      scenario->node_number);
+            set_all_neighbor_bmp(center_id,
+                                 all_neighbor_ids,
+                                 all_neighbor_ids_bmp,
+                                 scenario->node_number);
+            // #ifdef DEBUG_PRINT
+            //             printf("-------------- prev --------------\n");
+            //             print_all_neighbor_bmp(all_prev_neighbor_ids_bmp,
+            //                                    scenario->node_number);
+
+            //             printf("\n-------------- current
+            //             --------------\n");
+            //             print_all_neighbor_bmp(all_neighbor_ids_bmp,
+            //                                    scenario->node_number);
+            // #endif
         }
     }
 
@@ -1063,13 +1079,15 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_PRINT
             print_all_meteor_param(i, meteor_param);
 #endif
-            if (send_all_result_to_meteor(meteor_param,
-                                          i,
-                                          scenario->node_number,
-                                          scenario->connections,
-                                          is_broadcast,
-                                          &info) == ERROR) {
-                WARNING("send_result_to_meteor");
+            if (meteor_param->is_change_add == 1) {
+                if (send_all_result_to_meteor(meteor_param,
+                                              i,
+                                              scenario->node_number,
+                                              scenario->connections,
+                                              is_broadcast,
+                                              &info) == ERROR) {
+                    WARNING("send_result_to_meteor");
+                }
             }
         }
     }
@@ -1256,8 +1274,10 @@ int main(int argc, char **argv) {
                                       all_prev_neighbor_ids_bmp,
                                       scenario->node_number);
 
-            set_all_neighbor_bmp(
-                center_id, all_neighbor_ids, all_neighbor_ids_bmp);
+            set_all_neighbor_bmp(center_id,
+                                 all_neighbor_ids,
+                                 all_neighbor_ids_bmp,
+                                 scenario->node_number);
 
 #ifdef DEBUG_PRINT
             printf("-------------- prev --------------\n");
@@ -1278,6 +1298,11 @@ int main(int argc, char **argv) {
                                  center_id,
                                  scenario->node_number);
 
+            int del_i = 0;
+            for (int i = 0; meteor_param->delete[i] != -1; i++) {
+                del_i = meteor_param->delete[i];
+                all_neighbor_ids_bmp[del_i][center_id] = 0;
+            }
 #ifdef DEBUG_PRINT
             print_all_meteor_param(center_id, meteor_param);
 #endif

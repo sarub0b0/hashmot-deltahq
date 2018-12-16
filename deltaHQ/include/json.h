@@ -17,6 +17,7 @@ typedef struct meteor {
     int is_change_update;
     int is_change_add;
     int is_change_delete;
+
 } meteor_param_t;
 
 int json_init_scenario(struct scenario_class *scenario, FILE *init_fd);
@@ -53,6 +54,11 @@ int send_add_json(int own_id,
                   struct connection_class *connections,
                   int is_broadcast,
                   bc_info_t *info);
+int send_delete_json(int center_id,
+                     meteor_param_t *mp,
+                     int is_broadcast,
+                     bc_info_t *info);
+
 char *send_json_message(int own_id,
                         meteor_param_t *mp,
                         struct connection_class *connections,
@@ -102,7 +108,8 @@ int send_all_result_to_meteor(meteor_param_t *mp,
 
 int set_all_neighbor_bmp(int center_id,
                          int **neighbor_ids,
-                         int **neighbor_ids_bmp);
+                         int **neighbor_ids_bmp,
+                         int node_number);
 
 int set_all_prev_neighbor_bmp(int center_id,
                               int **neighbor_ids_bmp,
@@ -124,7 +131,14 @@ int send_all_add_json(int center_id,
                       int node_number,
                       struct connection_class *connections,
                       int is_broadcast,
+
                       bc_info_t *info);
+
+int send_all_delete_json(int center_id,
+                         meteor_param_t *mp,
+                         int is_broadcast,
+                         bc_info_t *info);
+
 char *send_all_json_message(int center_id,
                             meteor_param_t *mp,
                             int node_number,
