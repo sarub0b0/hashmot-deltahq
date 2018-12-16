@@ -758,7 +758,7 @@ int main(int argc, char **argv) {
         //      connection_i++) {
         //     connection_print(&(scenario->connections[connection_i]));
         // }
-        WARNING("update_neighbors");
+        // WARNING("update_neighbors");
 
         fprintf(stderr, "\n-- Initial Neighbors Update:\n");
         for (int i = 0; i < scenario->node_number; ++i) {
