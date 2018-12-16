@@ -1553,6 +1553,9 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
     scenario->node_number = json_array_size(json);
     scenario->nodes = (struct node_class *) malloc(sizeof(struct node_class) *
                                                    scenario->node_number);
+    memset(scenario->nodes,
+           0,
+           sizeof(struct node_class) * scenario->node_number);
 
     struct node_class *s_n;
     for (int i = 0; i < scenario->node_number; i++) {
@@ -1724,6 +1727,10 @@ int parse_environment(struct scenario_class *scenario, json_t *json) {
     scenario->environments = (struct environment_class *) malloc(
         sizeof(struct environment_class) * scenario->environment_number);
 
+    memset(scenario->environments,
+           0,
+           sizeof(struct environment_class) * scenario->environment_number);
+
     int name_provided = FALSE;
 
     struct environment_class *e;
@@ -1839,6 +1846,10 @@ int parse_connection(struct scenario_class *scenario, json_t *json) {
     scenario->connections = (struct connection_class *) malloc(
         sizeof(struct connection_class) * scenario->connection_number);
     scenario->connection_number = 0;
+
+    memset(scenario->connections,
+           0,
+           sizeof(struct connection_class) * scenario->connection_number);
 
     int from_node_provided           = FALSE;
     int to_node_provided             = FALSE;

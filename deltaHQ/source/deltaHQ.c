@@ -41,6 +41,7 @@
 #include <socket.h>
 #include <jansson.h>
 
+#define FILENAME_MAX_STRING 64
 //#define DISABLE_EMPTY_TIME_RECORDS
 
 ///////////////////////////////////////////////////////////
@@ -324,7 +325,7 @@ int main(int argc, char **argv) {
     FILE *init_file     = NULL; // scenario file pointer
 
     // file name related strings
-    char scenario_filename[MAX_STRING];
+    char scenario_filename[FILENAME_MAX_STRING];
 
     // revision related variables
     // long int svn_revision;
@@ -521,13 +522,13 @@ int main(int argc, char **argv) {
     //     strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
     // }
     INFO("\n-- QOMET Emulator: Init Parsing --\n");
-    if (strlen(argv[optind]) > MAX_STRING) {
+    if (strlen(argv[optind]) > FILENAME_MAX_STRING) {
         WARNING("Input file name '%s' longer than %d characters!",
                 argv[optind],
-                MAX_STRING);
+                FILENAME_MAX_STRING);
         goto ERROR_HANDLE;
     } else {
-        strncpy(scenario_filename, argv[optind], MAX_STRING - 1);
+        strncpy(scenario_filename, argv[optind], FILENAME_MAX_STRING - 1);
     }
     init_file = fopen(scenario_filename, "r");
     if (init_file == NULL) {

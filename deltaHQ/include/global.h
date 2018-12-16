@@ -35,9 +35,9 @@
 #define ERROR -1
 
 //#ifndef MAX_STRING
-#define MAX_STRING 256
+#define MAX_STRING 16
 //#endif
-#define MAX_STRING_STR "255"
+#define MAX_STRING_STR "16"
 
 // this is long enough to hold IPv4 addresses
 // (4x3 digits + 3x1 dots + '\0')?
