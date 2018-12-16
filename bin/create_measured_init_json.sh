@@ -14,7 +14,7 @@ radius=$2
 
 echo "-- node($node_number) radius($radius)"
 
-ary_density=(100 200 500 1000 2000 5000 10000)
+ary_density=(100 200 500 1000 2000 5000 10000 20000)
 # ary_density=(100 200 500)
 
 dir=../density_json
@@ -29,13 +29,19 @@ if [ ! -d ${dir}/${node_number}node ]; then
     mkdir ${dir}/${node_number}node
 fi
 
+ary_density=(1 2 5 10 20 50 100)
+
 for density in ${ary_density[@]}
 do
-    length=`echo "scale=2;sqrt( $node_number / $density * 1000000)" | bc`
+    printf "density %6d[nodes/km^2]  "  $density
+    area=`echo "scale=2;$node_number / $density" | bc`
+    printf "area %8.2f[km^2]  " $area
+    length=`echo "scale=2;sqrt($area) * 1000" | bc`
+    printf "length %8.2f[m]\n" $length
 
-    python3 create_init_json.py $node_number $length $radius
-    echo "mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json"
-    mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json
-    echo "create density($density) size($length)"
+    # python3 create_init_json.py $node_number $area $radius
+    # echo "mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json"
+    # mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json
+    # echo "create density($density) size($length)"
 
 done
