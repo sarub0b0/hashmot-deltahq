@@ -118,6 +118,7 @@ int main(int argc, char const *argv[]) {
 
     float field_size[2] = {0};
     float density       = 0;
+    float area          = 0;
 
     int node_number   = 0;
     const Value &root = init_json;
@@ -127,80 +128,112 @@ int main(int argc, char const *argv[]) {
         string key         = iter->name.GetString();
         const Value &value = iter->value;
 
-        chrono::high_resolution_clock::time_point begin, end;
-        chrono::nanoseconds elapsed;
+        if (key == "init") {
 
-        begin = chrono::high_resolution_clock::now();
-        ns->Init(value);
-        end = chrono::high_resolution_clock::now();
+            chrono::high_resolution_clock::time_point begin, end;
+            chrono::nanoseconds elapsed;
 
-        elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
+            begin = chrono::high_resolution_clock::now();
+            ns->Init(value);
+            end = chrono::high_resolution_clock::now();
 
-        fprintf(stderr,
-                "Init elapsed %lld.%09lld\n",
-                elapsed.count() / 1000000000,
-                elapsed.count() % 1000000000);
+            elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
 
-        float min_x, min_y, max_x, max_y;
-        min_x = FLT_MAX;
-        min_y = FLT_MAX;
-        max_x = 0;
-        max_y = 0;
-        int x, y;
-        int node_size = 0;
-        for (auto &&node : value["node"].GetArray()) {
-            x = FLOAT(node["x"].GetDouble());
-            y = FLOAT(node["y"].GetDouble());
-            if (x < min_x) {
-                min_x = x;
+            fprintf(stderr,
+                    "Init elapsed %lld.%09lld\n",
+                    elapsed.count() / 1000000000,
+                    elapsed.count() % 1000000000);
+
+            float min_x, min_y, max_x, max_y;
+            min_x = FLT_MAX;
+            min_y = FLT_MAX;
+            max_x = 0;
+            max_y = 0;
+            int x, y;
+            int node_size = 0;
+            for (auto &&node : value["node"].GetArray()) {
+                x = FLOAT(node["x"].GetDouble());
+                y = FLOAT(node["y"].GetDouble());
+                if (x < min_x) {
+                    min_x = x;
+                }
+                if (max_x < x) {
+                    max_x = x;
+                }
+                if (y < min_y) {
+                    min_y = y;
+                }
+                if (max_y < y) {
+                    max_y = y;
+                }
+                node_size++;
             }
-            if (max_x < x) {
-                max_x = x;
-            }
-            if (y < min_y) {
-                min_y = y;
-            }
-            if (max_y < y) {
-                max_y = y;
-            }
-            node_size++;
-        }
 
-        field_size[0] = max_x - min_x;
-        field_size[1] = max_y - min_y;
+            field_size[0] = max_x - min_x;
+            field_size[1] = max_y - min_y;
 
-        node_number = node_size;
-        density = node_size / ((max_x - min_x) * (max_y - min_y) * 0.000001);
-        fprintf(stderr,
-                "-- Init density(%.2f) top-left(%.2f, %.2f), "
-                "bottom-right(%.2f, "
-                "%.2f)\n",
-                density,
-                min_x,
-                min_y,
-                max_x,
-                max_y);
+            // TODO 密度ってなんだあ
+            if (!value["field"].IsObject()) {
+                fprintf(stderr, "not found field object\n");
+                exit(1);
+            }
 
-        neighbor.reserve(node_size);
-        neighbor.resize(node_size);
-        neighbor.clear();
+            for (Value::ConstMemberIterator iter =
+                     value["field"].MemberBegin();
+                 iter != value["field"].MemberEnd();
+                 ++iter) {
+                string key         = iter->name.GetString();
+                const Value &value = iter->value;
+                if (key == "width") {
+                    field_size[0] = value.GetDouble();
+                }
+                if (key == "height") {
+                    field_size[1] = value.GetDouble();
+                }
+                if (key == "area") {
+                    area = value.GetDouble();
+                }
+            }
+
+            min_x = 0;
+            min_y = 0;
+            max_x = field_size[0];
+            max_y = field_size[1];
+
+            node_number = node_size;
+            density     = node_size / area;
+            fprintf(stderr,
+                    "-- Init density(%.2f) top-left(%.2f, %.2f), "
+                    "bottom-right(%.2f, "
+                    "%.2f)\n",
+                    density,
+                    min_x,
+                    min_y,
+                    max_x,
+                    max_y);
+
+            neighbor.reserve(node_size);
+            neighbor.resize(node_size);
+            neighbor.clear();
 
 #ifndef MEASURE
-        int id = 0;
-        for (auto &&n : value["node"].GetArray()) {
-            // Value node(n, init_json.GetAllocator());
-            // node.AddMember("id", node_number, init_json.GetAllocator());
+            int id = 0;
+            for (auto &&n : value["node"].GetArray()) {
+                // Value node(n, init_json.GetAllocator());
+                // node.AddMember("id", node_number,
+                // init_json.GetAllocator());
 
-            neighbor.clear();
-            ns->GetNeighbor(id, neighbor);
-            // const vector<int> &neighbor = ns->GetNeighbor(node_number);
-            // sort(neighbor.begin(), neighbor.end());
+                neighbor.clear();
+                ns->GetNeighbor(id, neighbor);
+                // const vector<int> &neighbor =
+                // ns->GetNeighbor(node_number); sort(neighbor.begin(),
+                // neighbor.end());
 
-            ns->SendDeltaHQ(neighbor, id, key);
-            ++id;
-        }
-
+                ns->SendDeltaHQ(neighbor, id, key);
+                ++id;
+            }
 #endif
+        }
     }
 
     fprintf(stderr, "\n-- Update wait --\n");
@@ -234,10 +267,10 @@ int main(int argc, char const *argv[]) {
     bool loop_start = false;
     // vector<int> neighbor;
     // string read;
-    char read[9000];
+    char read[9000] = {0};
 
-    char valueBuffer[20000];
-    char parseBuffer[9000];
+    char valueBuffer[20000] = {0};
+    char parseBuffer[9000]  = {0};
 
     MemoryPoolAllocator<> valueAllocator(valueBuffer, sizeof(valueBuffer));
     MemoryPoolAllocator<> parseAllocator(parseBuffer, sizeof(parseBuffer));
@@ -353,7 +386,8 @@ int main(int argc, char const *argv[]) {
 #endif
 
                 // neighbor.shrink_to_fit();
-                // const vector<int> &neighbor = ns->GetNeighbor(update_id);
+                // const vector<int> &neighbor =
+                // ns->GetNeighbor(update_id);
                 neighbor.clear();
                 ns->GetNeighbor(update_id, neighbor);
 
@@ -367,7 +401,8 @@ int main(int argc, char const *argv[]) {
                     neighbor_count += neighbor.size();
                 }
                 // #ifdef TCHK_ELAPSED
-                //                 end = chrono::high_resolution_clock::now();
+                //                 end =
+                //                 chrono::high_resolution_clock::now();
 
                 //                 chrono::nanoseconds search_elapsed =
                 //                     chrono::duration_cast<chrono::nanoseconds>(end
@@ -384,11 +419,13 @@ int main(int argc, char const *argv[]) {
                 //                         search_elapsed.count()) %
                 //                             1000000000,
                 //                         update_elapsed.count() /
-                //                         1000000000, update_elapsed.count()
-                //                         % 1000000000,
+                //                         1000000000,
+                //                         update_elapsed.count() %
+                //                         1000000000,
                 //                         search_elapsed.count() /
-                //                         1000000000, search_elapsed.count()
-                //                         % 1000000000);
+                //                         1000000000,
+                //                         search_elapsed.count() %
+                //                         1000000000);
                 // #endif
 
                 // sort(neighbor.begin(), neighbor.end());
@@ -441,54 +478,56 @@ int main(int argc, char const *argv[]) {
                 send_avg    = send_elapsed / loop_count;
 
                 fprintf(stderr,
-                        "node_number neighbor_avg width height density "
+                        "node_number neighbor_avg area width height density "
                         "update_count "
                         "all_elapsed parse_elapsed update_elapsed "
                         "search_elapsed send_elapsed all_avg_elapsed "
                         "parse_avg_elapsed update_avg_elapsed "
                         "search_avg_elapsed send_avg_elapsed\n");
 
-                fprintf(stdout,
-                        "%d %d %.2f %.2f %.2f %d %lld.%09lld %lld.%09lld "
-                        "%lld.%09lld "
-                        "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
-                        "%lld.%09lld %lld.%09lld %lld.%09lld \n",
-                        node_number,
-                        loop_count,
-                        field_size[0],
-                        field_size[1],
-                        density,
-                        neighbor_count / loop_count,
+                fprintf(
+                    stdout,
+                    "%d %d %.2f %.2f %.2f %.2f %d %lld.%09lld %lld.%09lld "
+                    "%lld.%09lld "
+                    "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
+                    "%lld.%09lld %lld.%09lld %lld.%09lld \n",
+                    node_number,
+                    loop_count,
+                    area,
+                    field_size[0],
+                    field_size[1],
+                    density,
+                    neighbor_count / loop_count,
 
-                        measure_elapsed.count() / 1000000000,
-                        measure_elapsed.count() % 1000000000,
+                    measure_elapsed.count() / 1000000000,
+                    measure_elapsed.count() % 1000000000,
 
-                        parse_elapsed.count() / 1000000000,
-                        parse_elapsed.count() % 1000000000,
+                    parse_elapsed.count() / 1000000000,
+                    parse_elapsed.count() % 1000000000,
 
-                        update_elapsed.count() / 1000000000,
-                        update_elapsed.count() % 1000000000,
+                    update_elapsed.count() / 1000000000,
+                    update_elapsed.count() % 1000000000,
 
-                        search_elapsed.count() / 1000000000,
-                        search_elapsed.count() % 1000000000,
+                    search_elapsed.count() / 1000000000,
+                    search_elapsed.count() % 1000000000,
 
-                        send_elapsed.count() / 1000000000,
-                        send_elapsed.count() % 1000000000,
+                    send_elapsed.count() / 1000000000,
+                    send_elapsed.count() % 1000000000,
 
-                        measure_avg.count() / 1000000000,
-                        measure_avg.count() % 1000000000,
+                    measure_avg.count() / 1000000000,
+                    measure_avg.count() % 1000000000,
 
-                        parse_avg.count() / 1000000000,
-                        parse_avg.count() % 1000000000,
+                    parse_avg.count() / 1000000000,
+                    parse_avg.count() % 1000000000,
 
-                        update_avg.count() / 1000000000,
-                        update_avg.count() % 1000000000,
+                    update_avg.count() / 1000000000,
+                    update_avg.count() % 1000000000,
 
-                        search_avg.count() / 1000000000,
-                        search_avg.count() % 1000000000,
+                    search_avg.count() / 1000000000,
+                    search_avg.count() % 1000000000,
 
-                        send_avg.count() / 1000000000,
-                        send_avg.count() % 1000000000
+                    send_avg.count() / 1000000000,
+                    send_avg.count() % 1000000000
 
                 );
 

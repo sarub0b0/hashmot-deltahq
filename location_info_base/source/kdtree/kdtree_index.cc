@@ -315,10 +315,10 @@ void KdTreeIndex::Update(Node &node) {
     if (max_remove_count_ == remove_pos_ || should_remake_) {
         // if (max_remove_count_ == remove_pos_) {
 
-        fprintf(stderr, "remake\n");
 #ifdef TCHK_ELAPSED
         chrono::high_resolution_clock::time_point remake_begin =
             chrono::high_resolution_clock::now();
+        fprintf(stderr, "remake\n");
 #endif
         int i = 0;
         tree_ = nullptr;
