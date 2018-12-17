@@ -410,7 +410,7 @@ int update_all_neighbors(struct scenario_class *scenario,
     json_t *nei;
 
     nn = 0;
-    for (int j = 0; j < neighbor_array_len; ++j) {
+    for (int j = 0; j < neighbor_array_len; j++) {
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
 
@@ -436,7 +436,7 @@ int update_all_neighbors(struct scenario_class *scenario,
         return 0;
     }
 
-    for (int j = 0; j < nn; ++j) {
+    for (int j = 0; j < nn; j++) {
         same_neighbor = 0;
         nb_id         = neighbor_ids[*center_id][j];
         if (own_id != -1 && *center_id != own_id && nb_id != own_id) {
@@ -598,7 +598,7 @@ int update_neighbors(struct scenario_class *scenario,
     // =====================================================
     nn              = 0;
     neighbor_ids[0] = -1;
-    for (int j = 0; j < neighbor_array_len; ++j) {
+    for (int j = 0; j < neighbor_array_len; j++) {
         nei     = json_array_get(neighbor, j);
         node_id = json_integer_value(nei);
 
@@ -640,7 +640,7 @@ int update_neighbors(struct scenario_class *scenario,
         //     return 0;
         // }
         if (neighbor_ids[0] != -1) {
-            for (int i = 0; i < nn; ++i) {
+            for (int i = 0; i < nn; i++) {
                 nb_id = neighbor_ids[i];
 
                 if (own_id < nb_id) {
@@ -678,7 +678,7 @@ int update_neighbors(struct scenario_class *scenario,
         //         break;
         //     }
         // }
-        for (int i = 0; i < nn; ++i) {
+        for (int i = 0; i < nn; i++) {
             nb_id = neighbor_ids[i];
             if (own_id == nb_id) {
                 // *is_contain_other   = 1;
@@ -832,7 +832,7 @@ int send_all_update_json(int center_id,
     int to_id;
 
     from_id = center_id;
-    for (int i = 0; mp->update[i] != -1; ++i) {
+    for (int i = 0; mp->update[i] != -1; i++) {
         // json_t *json;
         // json_t *update;
         // json_t *pair;
@@ -980,7 +980,7 @@ int send_update_json(int own_id,
 
     from_id = own_id;
     conn_i  = from_id;
-    for (int i = 0; mp->update[i] != -1; ++i) {
+    for (int i = 0; mp->update[i] != -1; i++) {
         to_id  = mp->update[i];
         conn_i = to_id;
         // search_connection(conn_pair, from_id, to_id, connections);
@@ -1080,7 +1080,7 @@ int send_all_add_json(int center_id,
     int to_id;
 
     from_id = center_id;
-    for (int i = 0; mp->add[i] != -1; ++i) {
+    for (int i = 0; mp->add[i] != -1; i++) {
 
         // json_t *json;
         // json_t *add;
@@ -1211,7 +1211,7 @@ int send_add_json(int own_id,
     int conn_i;
 
     from_id = own_id;
-    for (int i = 0; mp->add[i] != -1; ++i) {
+    for (int i = 0; mp->add[i] != -1; i++) {
 
         to_id  = mp->add[i];
         conn_i = to_id;
@@ -1284,7 +1284,7 @@ int send_delete_json(int center_id,
 
     from_id = center_id;
 
-    for (int i = 0; mp->delete[i] != -1; ++i) {
+    for (int i = 0; mp->delete[i] != -1; i++) {
         // json_t *json;
         // json_t *delete;
         // json_t *pair;
@@ -1356,7 +1356,7 @@ int send_all_delete_json(int center_id,
 
     from_id = center_id;
 
-    for (int i = 0; mp->delete[i] != -1; ++i) {
+    for (int i = 0; mp->delete[i] != -1; i++) {
         // json_t *json;
         // json_t *delete;
         // json_t *pair;
@@ -1514,7 +1514,7 @@ int send_all_result_to_meteor(meteor_param_t *mp,
 
     if (mp->is_change_update || mp->is_change_add || mp->is_change_delete)
 
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 3; j++) {
             info->msg = send_all_json_message(center_id,
                                               mp,
                                               node_number,
@@ -1539,7 +1539,7 @@ int send_result_to_meteor(meteor_param_t *mp,
 
     if (mp->is_change_update || mp->is_change_add || mp->is_change_delete)
 
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 3; j++) {
             info->msg = send_json_message(
                 own_id, mp, connections, j, is_broadcast, info);
         }
@@ -1553,7 +1553,7 @@ int sort_neighbor_list(struct connection_class **neighbor,
     int min_from_idx                       = 0;
     for (int i = 0; i < neighbor_number; i += 1) {
         min_from_idx = i;
-        for (int j = i + 1; j < neighbor_number; ++j) {
+        for (int j = i + 1; j < neighbor_number; j++) {
             if (neighbor[j]->from_node_index <
                 neighbor[min_from_idx]->from_node_index) {
                 min_from_idx = j;
@@ -1566,7 +1566,7 @@ int sort_neighbor_list(struct connection_class **neighbor,
             neighbor[min_from_idx] = temp_neighbor;
         }
 
-        for (int j = i + 1; j < neighbor_number; ++j) {
+        for (int j = i + 1; j < neighbor_number; j++) {
             if (neighbor[i]->to_node_index == neighbor[j]->from_node_index &&
                 neighbor[i]->from_node_index == neighbor[j]->to_node_index) {
                 temp_neighbor   = neighbor[i + 1];
@@ -1600,7 +1600,7 @@ int parse_node(struct scenario_class *scenario, json_t *json) {
            sizeof(struct node_class) * scenario->node_number);
 
     struct node_class *s_n;
-    for (int i = 0; i < scenario->node_number; ++i) {
+    for (int i = 0; i < scenario->node_number; i++) {
 
         jn = json_array_get(json, i);
 
@@ -1776,7 +1776,7 @@ int parse_environment(struct scenario_class *scenario, json_t *json) {
     int name_provided = FALSE;
 
     struct environment_class *e;
-    for (int i = 0; i < scenario->environment_number; ++i) {
+    for (int i = 0; i < scenario->environment_number; i++) {
         e = &scenario->environments[i];
         environment_init(e,
                          DEFAULT_ENVIRONMENT_NAME,
@@ -1897,7 +1897,7 @@ int parse_connection(struct scenario_class *scenario, json_t *json) {
     int to_node_provided             = FALSE;
     int through_environment_provided = FALSE;
     struct connection_class c;
-    for (int i = 0; i < json_connection_number; ++i) {
+    for (int i = 0; i < json_connection_number; i++) {
 
         if (connection_init(
                 &c,
@@ -2337,7 +2337,7 @@ int set_all_neighbor_bmp(int center_id,
         return SUCCESS;
     }
 
-    for (int i = 0; neighbor_ids[center_id][i] != -1; ++i) {
+    for (int i = 0; neighbor_ids[center_id][i] != -1; i++) {
         ni = neighbor_ids[center_id][i];
 
         neighbor_ids_bmp[center_id][ni] = 1;
@@ -2379,7 +2379,7 @@ int set_neighbor_bmp(int *neighbor_ids,
         return SUCCESS;
     }
 
-    for (int i = 0; neighbor_ids[i] != -1; ++i) {
+    for (int i = 0; neighbor_ids[i] != -1; i++) {
         ni                   = neighbor_ids[i];
         neighbor_ids_bmp[ni] = 1;
     }
@@ -2426,16 +2426,16 @@ int set_prev_neighbor_bmp(int *neighbor_ids_bmp,
 int clear_neighbor_bmp(int center_id,
                        int **neighbor_ids_bmp,
                        int node_number) {
-    for (int i = 0; i < node_number; ++i) {
+    for (int i = 0; i < node_number; i++) {
         neighbor_ids_bmp[center_id][i] = 0;
     }
     return 0;
 }
 
 void print_all_neighbor_bmp(int **neighbor_ids_bmp, int number) {
-    for (int i = 0; i < number; ++i) {
+    for (int i = 0; i < number; i++) {
         printf("bmp center=%d\t", i);
-        for (int j = 0; j < number; ++j) {
+        for (int j = 0; j < number; j++) {
             if (neighbor_ids_bmp[i][j] == 1) {
                 printf("%2d ", j);
             } else {
@@ -2447,7 +2447,7 @@ void print_all_neighbor_bmp(int **neighbor_ids_bmp, int number) {
 }
 void print_neighbor_bmp(int *neighbor_ids_bmp, int loop_number, int own_id) {
     printf("bmp center=%d\t", own_id);
-    for (int i = 0; i < loop_number; ++i) {
+    for (int i = 0; i < loop_number; i++) {
         if (neighbor_ids_bmp[i] == 1) {
             printf("%2d ", i);
         } else {
@@ -2465,20 +2465,20 @@ void print_all_meteor_param(int center_id, meteor_param_t *m) {
     printf("meteor center=%d\n", center_id);
     // printf("\tupdate=%d\t", m->is_change_update);
     printf("\tupdate\t");
-    for (int j = 0; m->update[j] != -1; ++j) {
+    for (int j = 0; m->update[j] != -1; j++) {
         printf("%d ", m->update[j]);
     }
     puts("");
 
     // printf("\tadd=%d\t", m->is_change_add);
     printf("\tadd\t");
-    for (int j = 0; m->add[j] != -1; ++j) {
+    for (int j = 0; m->add[j] != -1; j++) {
         printf("%d ", m->add[j]);
     }
     puts("");
     // printf("\tdelete=%d\t", m->is_change_delete);
     printf("\tdelete\t");
-    for (int j = 0; m->delete[j] != -1; ++j) {
+    for (int j = 0; m->delete[j] != -1; j++) {
         printf("%d ", m->delete[j]);
     }
     puts("");
@@ -2492,20 +2492,20 @@ void print_meteor_param(int center_id, meteor_param_t *m) {
     printf("meteor center=%d\n", center_id);
     // printf("\tupdate=%d\t", m->is_change_update);
     printf("\tupdate\t");
-    for (int j = 0; m->update[j] != -1; ++j) {
+    for (int j = 0; m->update[j] != -1; j++) {
         printf("%d ", m->update[j]);
     }
     puts("");
 
     // printf("\tadd=%d\t", m->is_change_add);
     printf("\tadd\t");
-    for (int j = 0; m->add[j] != -1; ++j) {
+    for (int j = 0; m->add[j] != -1; j++) {
         printf("%d ", m->add[j]);
     }
     puts("");
     // printf("\tdelete=%d\t", m->is_change_delete);
     printf("\tdelete\t");
-    for (int j = 0; m->delete[j] != -1; ++j) {
+    for (int j = 0; m->delete[j] != -1; j++) {
         printf("%d ", m->delete[j]);
     }
     puts("");
@@ -2526,7 +2526,7 @@ int clear_meteor_param(meteor_param_t *mp) {
 }
 
 int is_same_id(int *arr, int val) {
-    for (int i = 0; arr[i] != -1; ++i) {
+    for (int i = 0; arr[i] != -1; i++) {
         if (arr[i] == val) {
             return 1;
         }
@@ -2545,7 +2545,7 @@ int set_all_meteor_param(meteor_param_t *mp,
 
     clear_meteor_param(mp);
 
-    for (int j = 0; j < node_number; ++j) {
+    for (int j = 0; j < node_number; j++) {
         if (j == center_id) {
             continue;
         }
@@ -2590,7 +2590,7 @@ int set_meteor_param(meteor_param_t *mp,
 
     clear_meteor_param(mp);
 
-    for (int i = 0; i < node_number; ++i) {
+    for (int i = 0; i < node_number; i++) {
         if (is_other_update || is_other_delete) {
             // printf("received_center_id=%d\n", received_center_id);
             i           = received_center_id;
