@@ -1225,7 +1225,7 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &update_end);
 #endif
             if (neighbor_number < 0) {
-                fprintf(stderr, "finish message or read error");
+                fprintf(stderr, "finish message or read error\n");
                 deltaQ_class->calc_done = TRUE;
                 neighbor_number         = 0;
                 loop_exit               = TRUE;
@@ -1328,10 +1328,10 @@ int main(int argc, char **argv) {
                                       is_broadcast,
                                       &info) == ERROR) {
                 WARNING("send_result_to_meteor");
-#ifdef MEASURE
-                clock_gettime(CLOCK_MONOTONIC, &send_begin);
-#endif
             }
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &send_end);
+#endif
             // }
         } else {
 #ifdef MEASURE
@@ -1498,25 +1498,26 @@ int main(int argc, char **argv) {
     all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_send_elapsed);
 
-    fprintf(stderr,
-            "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
-            all_elapsed.tv_sec,
-            all_elapsed.tv_nsec,
+    fprintf(
+        stderr,
+        "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+        all_elapsed.tv_sec,
+        all_elapsed.tv_nsec,
 
-            all_update_elapsed.tv_sec,
-            all_update_elapsed.tv_nsec,
+        all_update_elapsed.tv_sec,
+        all_update_elapsed.tv_nsec,
 
-            all_calc_elapsed.tv_sec,
-            all_calc_elapsed.tv_nsec,
+        all_calc_elapsed.tv_sec,
+        all_calc_elapsed.tv_nsec,
 
-            all_bmp_elapsed.tv_sec,
-            all_bmp_elapsed.tv_nsec,
+        all_bmp_elapsed.tv_sec,
+        all_bmp_elapsed.tv_nsec,
 
-            all_meteor_elapsed.tv_sec,
-            all_meteor_elapsed.tv_nsec,
+        all_meteor_elapsed.tv_sec,
+        all_meteor_elapsed.tv_nsec,
 
-            all_send_elapsed.tv_sec,
-            all_send_elapsed.tv_nsec);
+        all_send_elapsed.tv_sec,
+        all_send_elapsed.tv_nsec);
 
 #endif
 
