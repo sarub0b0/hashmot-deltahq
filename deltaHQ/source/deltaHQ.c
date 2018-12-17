@@ -1176,6 +1176,7 @@ int main(int argc, char **argv) {
     all_meteor_elapsed.tv_nsec = 0;
     all_send_elapsed.tv_sec    = 0;
     all_send_elapsed.tv_nsec   = 0;
+    int loop_number            = 0;
 #endif
 
     fprintf(stderr, "\n-- Scenario Loop Start. Update Wait:\n");
@@ -1482,13 +1483,26 @@ int main(int argc, char **argv) {
         all_bmp_elapsed    = sum_elapsed(all_bmp_elapsed, bmp_elapsed);
         all_meteor_elapsed = sum_elapsed(all_meteor_elapsed, meteor_elapsed);
         all_send_elapsed   = sum_elapsed(all_send_elapsed, send_elapsed);
+        loop_number++;
 #endif
     }
 
 #ifdef MEASURE
+    struct timespec all_elapsed;
+    all_elapsed.tv_sec  = 0;
+    all_elapsed.tv_nsec = 0;
+
+    all_elapsed = sum_elapsed(all_elapsed, all_update_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_calc_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_bmp_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_send_elapsed);
 
     fprintf(stderr,
-            "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+            "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+            all_elapsed.tv_sec,
+            all_elapsed.tv_nsec,
+
             all_update_elapsed.tv_sec,
             all_update_elapsed.tv_nsec,
 

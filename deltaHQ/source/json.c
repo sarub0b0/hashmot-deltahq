@@ -72,6 +72,16 @@ const char *key_init   = "init";
 const char *key_update = "update";
 
 char send_json_buf[SEND_JSON_MAXLEN];
+char send_json_update_buf[SEND_JSON_MAXLEN] =
+    "{\"meteor\":{\"update\":[{\"from_id\":";
+char send_json_add_buf[SEND_JSON_MAXLEN] =
+    "{\"meteor\":{\"add\":[{\"from_id\":";
+char send_json_del_buf[SEND_JSON_MAXLEN] =
+    "{\"meteor\":{\"delete\":[{\"from_id\":";
+
+const int update_buf_write_pos = 32;
+const int add_buf_write_pos    = 29;
+const int delete_buf_write_pos = 32;
 
 void print_json_aux(json_t *element, int indent);
 
@@ -906,10 +916,12 @@ int send_all_update_json(int center_id,
         // while (0 < update->refcount) json_decref(update);
         // while (0 < json->refcount) json_decref(json);
 
-        snprintf(
-            send_json_buf,
-            SEND_JSON_MAXLEN,
-            "{\"meteor\":{\"update\":[{\"from_id\":%d,\"to_id\":%d,"
+        TCHK_START(snprintf);
+        info->msg_len = sprintf(
+            &send_json_update_buf[update_buf_write_pos],
+            // SEND_JSON_MAXLEN,
+            // "{\"meteor\":{\"update\":[{\"from_id\":"
+            "%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
             "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f},{"
             "\"from_id\":%d,\"to_id\":%d,\"fer\":%.6f,\"num_retr\":%.6f,"
@@ -936,11 +948,13 @@ int send_all_update_json(int center_id,
 
         // info->msg = json_dumps(json, JSON_COMPACT |
         // JSON_REAL_PRECISION(10));
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_update_buf;
+        // info->msg     = send_json_buf;
+        // info->msg_len = strlen(info->msg);
 
+        TCHK_END(snprintf);
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
@@ -1019,10 +1033,12 @@ int send_update_json(int own_id,
         //     rx->bandwidth,
         //     rx->loss_rate,
         //     rx->delay);
-        snprintf(
-            send_json_buf,
-            SEND_JSON_MAXLEN,
-            "{\"meteor\":{\"update\":[{\"from_id\":%d,\"to_id\":%d,"
+        info->msg_len = sprintf(
+            // send_json_buf,
+            // SEND_JSON_MAXLEN,
+            &send_json_update_buf[update_buf_write_pos],
+            // "{\"meteor\":{\"update\":[{\"from_id\":"
+            "%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
             "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f}]}}",
             tx->from_node_index,
@@ -1035,11 +1051,11 @@ int send_update_json(int own_id,
             tx->loss_rate,
             tx->delay);
 
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_update_buf;
+        // info->msg_len = strlen(info->msg);
 
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
@@ -1129,10 +1145,12 @@ int send_all_add_json(int center_id,
         // json_object_set(add, "add", pair);
         // json_object_set(json, "meteor", add);
 
-        snprintf(
-            send_json_buf,
-            SEND_JSON_MAXLEN,
-            "{\"meteor\":{\"add\":[{\"from_id\":%d,\"to_id\":%d,"
+        info->msg_len = sprintf(
+            &send_json_add_buf[add_buf_write_pos],
+            // send_json_buf,
+            // SEND_JSON_MAXLEN,
+            // "{\"meteor\":{\"add\":[{\"from_id\":"
+            "%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
             "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f},{"
             "\"from_id\":%d,\"to_id\":%d,\"fer\":%.6f,\"num_retr\":%.6f,"
@@ -1159,11 +1177,11 @@ int send_all_add_json(int center_id,
 
         // info->msg = json_dumps(json, JSON_COMPACT |
         // JSON_REAL_PRECISION(10));
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_add_buf;
+        // info->msg_len = strlen(info->msg);
 
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
@@ -1225,10 +1243,12 @@ int send_add_json(int own_id,
         // rx->loss_rate           = round(rx->loss_rate * 1e6) / 1e6;
         // rx->delay               = round(rx->delay * 1e6) / 1e6;
 
-        snprintf(
-            send_json_buf,
-            SEND_JSON_MAXLEN,
-            "{\"meteor\":{\"add\":[{\"from_id\":%d,\"to_id\":%d,"
+        info->msg_len = sprintf(
+            &send_json_add_buf[add_buf_write_pos],
+            // send_json_buf,
+            // SEND_JSON_MAXLEN,
+            // "{\"meteor\":{\"add\":[{\"from_id\":"
+            "%d,\"to_id\":%d,"
             "\"fer\":%.6f,\"num_retr\":%.6f,\"standard\":%d,\"op_rate\":"
             "%.6f,\"bandwidth\":%.6f,\"loss_rate\":%.6f,\"delay\":%.6f}]}}",
             tx->from_node_index,
@@ -1241,11 +1261,11 @@ int send_add_json(int own_id,
             tx->loss_rate,
             tx->delay);
 
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_add_buf;
+        // info->msg_len = strlen(info->msg);
 
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
             WARNING("broadcast_sender");
@@ -1294,17 +1314,18 @@ int send_delete_json(int center_id,
         // info->msg = json_dumps(json, JSON_COMPACT |
         // JSON_REAL_PRECISION(10));
 
-        snprintf(send_json_buf,
-                 SEND_JSON_MAXLEN,
-                 "{\"meteor\":{\"delete\":[{\"from_id\":%d,\"to_id\":%d}]}}",
-                 from_id,
-                 to_id);
+        info->msg_len = sprintf(&send_json_del_buf[delete_buf_write_pos],
+                                // SEND_JSON_MAXLEN,
+                                // "{\"meteor\":{\"delete\":[{\"from_id\":"
+                                "%d,\"to_id\":%d}]}}",
+                                from_id,
+                                to_id);
 
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_del_buf;
+        // info->msg_len = strlen(info->msg);
 
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
@@ -1365,20 +1386,22 @@ int send_all_delete_json(int center_id,
         // info->msg = json_dumps(json, JSON_COMPACT |
         // JSON_REAL_PRECISION(10));
 
-        snprintf(send_json_buf,
-                 SEND_JSON_MAXLEN,
-                 "{\"meteor\":{\"delete\":[{\"from_id\":%d,\"to_id\":%d},{"
-                 "\"from_id\":%d,\"to_id\":%d}]}}",
-                 from_id,
-                 to_id,
-                 to_id,
-                 from_id);
+        // snprintf(send_json_buf,
+        //          SEND_JSON_MAXLEN,
+        info->msg_len = sprintf(&send_json_del_buf[delete_buf_write_pos],
+                                // "{\"meteor\":{\"delete\":[{\"from_id\":"
+                                "%d,\"to_id\":%d},{"
+                                "\"from_id\":%d,\"to_id\":%d}]}}",
+                                from_id,
+                                to_id,
+                                to_id,
+                                from_id);
 
-        info->msg     = send_json_buf;
-        info->msg_len = strlen(info->msg);
+        info->msg = send_json_del_buf;
+        // info->msg_len = strlen(info->msg);
 
 #ifndef MEASURE
-        printf("-- %s\n", info->msg);
+        printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
