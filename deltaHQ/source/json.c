@@ -843,18 +843,6 @@ int send_all_update_json(int center_id,
         tx = conn_pair[0];
         rx = conn_pair[1];
 
-        tx->frame_error_rate    = tx->frame_error_rate;
-        tx->num_retransmissions = tx->num_retransmissions;
-        tx->bandwidth           = tx->bandwidth;
-        tx->loss_rate           = tx->loss_rate;
-        tx->delay               = tx->delay;
-
-        rx->frame_error_rate    = rx->frame_error_rate;
-        rx->num_retransmissions = rx->num_retransmissions;
-        rx->bandwidth           = rx->bandwidth;
-        rx->loss_rate           = rx->loss_rate;
-        rx->delay               = rx->delay;
-
         // tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         // tx->num_retransmissions = round(tx->num_retransmissions * 1e6) /
         // 1e6; tx->bandwidth           = round(tx->bandwidth * 1e6) / 1e6;
@@ -992,12 +980,6 @@ int send_update_json(int own_id,
 
         tx = &connections[conn_i];
 
-        tx->frame_error_rate    = tx->frame_error_rate;
-        tx->num_retransmissions = tx->num_retransmissions;
-        tx->bandwidth           = tx->bandwidth;
-        tx->loss_rate           = tx->loss_rate;
-        tx->delay               = tx->delay;
-
         // tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         // tx->num_retransmissions = round(tx->num_retransmissions * 1e6) /
         // 1e6; tx->bandwidth           = round(tx->bandwidth * 1e6) / 1e6;
@@ -1102,18 +1084,6 @@ int send_all_add_json(int center_id,
 
         tx = conn_pair[0];
         rx = conn_pair[1];
-
-        tx->frame_error_rate    = tx->frame_error_rate;
-        tx->num_retransmissions = tx->num_retransmissions;
-        tx->bandwidth           = tx->bandwidth;
-        tx->loss_rate           = tx->loss_rate;
-        tx->delay               = tx->delay;
-
-        rx->frame_error_rate    = rx->frame_error_rate;
-        rx->num_retransmissions = rx->num_retransmissions;
-        rx->bandwidth           = rx->bandwidth;
-        rx->loss_rate           = rx->loss_rate;
-        rx->delay               = rx->delay;
 
         // tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         // tx->num_retransmissions = round(tx->num_retransmissions * 1e6) /
@@ -1237,11 +1207,11 @@ int send_add_json(int own_id,
         }
         tx = &connections[conn_i];
 
-        tx->frame_error_rate    = tx->frame_error_rate;
-        tx->num_retransmissions = tx->num_retransmissions;
-        tx->bandwidth           = tx->bandwidth;
-        tx->loss_rate           = tx->loss_rate;
-        tx->delay               = tx->delay;
+        // tx->frame_error_rate    = tx->frame_error_rate;
+        // tx->num_retransmissions = tx->num_retransmissions;
+        // tx->bandwidth           = tx->bandwidth;
+        // tx->loss_rate           = tx->loss_rate;
+        // tx->delay               = tx->delay;
 
         // tx->frame_error_rate    = round(tx->frame_error_rate * 1e6) / 1e6;
         // tx->num_retransmissions = round(tx->num_retransmissions * 1e6) /
