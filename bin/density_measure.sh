@@ -20,8 +20,8 @@ algorithm=$2
 
 ary_loop=()
 
-ary_coe=("0.1" "0.2" "0.4" "0.6" "0.8" "1.0")
-# ary_coe=("0.1" "0.4" "1.0")
+# ary_coe=("0.1" "0.2" "0.4" "0.6" "0.8" "1.0")
+ary_coe=("0.1" "0.4" "1.0")
 
 for c in ${ary_coe[@]}
 do
@@ -51,33 +51,33 @@ do
     ./create_measured_init_json.sh $node_number 160
     files=("`ls $json_dir | grep --color=never -v out | grep -v --color=never tmplog | grep -v --color=never avg`")
 
-    # for file in ${files[@]}
-    # do
-    #     echo "-----------------------------------------------------------------------"
-    #     echo "-- file $file"
+    for file in ${files[@]}
+    do
+        echo "-----------------------------------------------------------------------"
+        echo "-- file $file"
 
-    #     json=../density_json/${node_number}node/${file}
-    #     lib_stdin_file=${json}.out
-    #     for max_loop in ${ary_loop[@]}
-    #     do
-    #         tmp_log=${json}.u${max_loop}.tmplog
-    #         echo "max loop(${max_loop})"
-    #         lib_stdin_file=${json}.u${max_loop}.out
-    #         # if [ ! -f $lib_stdin_file ]; then
-    #         # touch ${log}.tmp
-    #         for i in `seq 1 $loop`;
-    #         do
-    #             python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
-    #             cat -u $lib_stdin_file | ./location_info_base $json $algorithm | tee -a $tmp_log
-    #         done
+        json=../density_json/${node_number}node/${file}
+        lib_stdin_file=${json}.out
+        for max_loop in ${ary_loop[@]}
+        do
+            tmp_log=${json}.u${max_loop}.tmplog
+            echo "max loop(${max_loop})"
+            lib_stdin_file=${json}.u${max_loop}.out
+            # if [ ! -f $lib_stdin_file ]; then
+            # touch ${log}.tmp
+            for i in `seq 1 $loop`;
+            do
+                python3 -u measure.py $json ${max_loop} 0 1 r > $lib_stdin_file
+                cat -u $lib_stdin_file | ./location_info_base $json $algorithm | tee -a $tmp_log
+            done
 
-    #         # cat ${tmp_log} | grep -E --color=never '^[0-9]' | awk '{OFMT="%.9f"}{a+=$1;b+=$2;c+=$3;d+=$4;e+=$5;f+=$6;g+=$7; h+=$8;i+=$9;j+=$10;k+=$11;l+=$12;m+=$13;n+=$14;} END {print a/NR,b/NR,c/NR,d/NR,e/NR,f/NR,g/NR,h/NR,i/NR,j/NR,k/NR,l/NR,m/NR,n/NR}' | tee -a ${tmp_log}.avg
+            # cat ${tmp_log} | grep -E --color=never '^[0-9]' | awk '{OFMT="%.9f"}{a+=$1;b+=$2;c+=$3;d+=$4;e+=$5;f+=$6;g+=$7; h+=$8;i+=$9;j+=$10;k+=$11;l+=$12;m+=$13;n+=$14;} END {print a/NR,b/NR,c/NR,d/NR,e/NR,f/NR,g/NR,h/NR,i/NR,j/NR,k/NR,l/NR,m/NR,n/NR}' | tee -a ${tmp_log}.avg
 
-    #         # fi
-    #     done
+            # fi
+        done
 
-    #     echo ""
-    # done
+        echo ""
+    done
 done
 
 for f in `ls ${json_dir} | grep --color=never tmplog`;
