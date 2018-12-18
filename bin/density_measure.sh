@@ -20,8 +20,8 @@ algorithm=$2
 
 ary_loop=()
 
-# ary_coe=("0.1" "0.2" "0.4" "0.6" "0.8" "1.0")
-ary_coe=("0.1" "0.4" "1.0")
+ary_coe=("0.1" "0.2" "0.4" "0.6" "0.8" "1.0")
+# ary_coe=("0.1" "0.4" "1.0")
 
 for c in ${ary_coe[@]}
 do
@@ -43,6 +43,7 @@ json_dir="../density_json/${node_number}node/"
 log="../density_json/${node_number}.log"
 touch $log
 echo "node_number neighbor_avg area width height density update_count all_elapsed parse_elapsed update_elapsed search_elapsed send_elapsed all_avg_elapsed parse_avg_elapsed update_avg_elapsed search_avg_elapsed send_avg_elapsed" > $log
+echo "" > $log
 
 loop=1
 
