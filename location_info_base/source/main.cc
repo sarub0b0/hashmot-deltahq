@@ -487,7 +487,7 @@ int main(int argc, char const *argv[]) {
 
                 fprintf(
                     stdout,
-                    "%d %d %.2f %.2f %.2f %.2f %d %lld.%09lld %lld.%09lld "
+                    "%d %d %.4f %.4f %.4f %.4f %d %lld.%09lld %lld.%09lld "
                     "%lld.%09lld "
                     "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
                     "%lld.%09lld %lld.%09lld %lld.%09lld \n",
