@@ -42,7 +42,7 @@ json_dir="../density_json/${node_number}node/"
 
 log="../density_json/${node_number}.log"
 touch $log
-echo "node_number neighbor_avg area width height density update_count all_elapsed parse_elapsed update_elapsed search_elapsed send_elapsed all_avg_elapsed parse_avg_elapsed update_avg_elapsed search_avg_elapsed send_avg_elapsed" > $log
+# echo "node_number neighbor_avg area width height density update_count all_elapsed parse_elapsed update_elapsed search_elapsed send_elapsed all_avg_elapsed parse_avg_elapsed update_avg_elapsed search_avg_elapsed send_avg_elapsed" > $log
 echo "" > $log
 
 loop=1
@@ -83,7 +83,7 @@ done
 
 for f in `ls ${json_dir} | grep --color=never tmplog`;
 do
-        cat ${json_dir}/${f} | grep -E --color=never '^[0-9]' | awk '{OFMT="%.9f"}{a+=$1;b+=$2;c+=$3;d+=$4;e+=$5;f+=$6;g+=$7;h+=$8;i+=$9;j+=$10;k+=$11;l+=$12;m+=$13;n+=$14;o+=$15;p+=$15} END {printf "%d %d %.2f %.2f %.2f %d %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n", a/NR,b/NR,c/NR,d/NR,e/NR,f/NR,g/NR,h/NR,i/NR,j/NR,k/NR,l/NR,m/NR,n/NR,o/NR,p/NR}' | tee -a ${log}
+        cat ${json_dir}/${f} | grep -E --color=never '^[0-9]' | awk '{OFMT="%.9f"}{a+=$1;b+=$2;c+=$3;d+=$4;e+=$5;f+=$6;g+=$7;h+=$8;i+=$9;j+=$10;k+=$11;l+=$12;m+=$13;n+=$14;o+=$15;p+=$16;q+=$17} END {printf "%d %d %.4f %.4f %.4f %d %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n", a/NR,b/NR,c/NR,d/NR,e/NR,f/NR,g/NR,h/NR,i/NR,j/NR,k/NR,l/NR,m/NR,n/NR,o/NR,p/NR,q/NR}' | tee -a ${log}
 
         rm ${json_dir}/${f}
 done
