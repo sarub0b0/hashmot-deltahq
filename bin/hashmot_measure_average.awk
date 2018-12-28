@@ -42,8 +42,7 @@ END {
            update_elapsed_avg,
            search_elapsed_avg,
            send_elapsed_avg  > "/dev/stderr";
-}
-{
+
     printf "%d %d %d %.4f %.4f %.4f %.4f %d %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n",
            node_number        / NR,
            loop_count         / NR,

@@ -9,7 +9,7 @@ then
     exit
 fi
 
-nodes=(100)
+nodes=(10000)
 
 
 exec_type=$1

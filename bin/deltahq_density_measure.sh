@@ -25,7 +25,7 @@ echo -n > $log_name
 # =======================================================================
 # id選出
 # =======================================================================
-choice_id=(`python -c "import numpy as np; print(np.random.choice(range(0, $node_number), $loop, replace=False))" | sed "s/\(\[\)\(.*\)\(\]\)/\2/g"`)
+choice_id=(`python3 -c "import numpy as np; print(np.random.choice(range(0, $node_number), $loop, replace=False))" | sed "s/\(\[\)\(.*\)\(\]\)/\2/g"`)
 
 
 # =======================================================================
@@ -69,7 +69,7 @@ do
         then
             for p in ${dproc_ary[@]};
             do
-                id=${choice_id[$i]}
+                id=${choice_id[$(($i - 1))]}
                 tmp_log=${json}.dp${p}.tmplog
                 lib_stdout_file=${json}.dp${p}.out
                 # =======================================================================

@@ -32,8 +32,7 @@ END {
            bmp_elapsed    ,
            meteor_elapsed ,
            send_elapsed   > "/dev/stderr";
-}
-{
+
     printf "%d %d %d %.4f %.4f %.4f %.4f %.9f %.9f %.9f %.9f %.9f %.9f\n",
            node_number    / NR,
            loop_count     / NR,
