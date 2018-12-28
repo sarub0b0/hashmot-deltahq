@@ -82,7 +82,7 @@ class KdTreeIndex {
     vector<TreeNode *> sorted_tnodes_;
     vector<Node> nodes_;
     // vector<Node> id_sorted_nodes_;
-    vector<int> neighbor_;
+    // vector<int> neighbor_;
 
     TreeNode *MakeTree(TreeNode *parent,
                        vector<Node> &nodes,

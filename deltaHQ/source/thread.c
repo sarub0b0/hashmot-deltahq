@@ -1,7 +1,7 @@
 #include "message.h"
 #include "thread.h"
 
-int thread_get_cpu_number(void) {
+inline int thread_get_cpu_number(void) {
     int num = 0;
 #ifndef __APPLE__
     cpu_set_t cpu;
@@ -18,7 +18,7 @@ int thread_get_cpu_number(void) {
     return num;
 }
 
-int thread_get_index(struct array_range *ar) {
+inline int thread_get_index(struct array_range *ar) {
     ar->end = ar->loop;
     ar->loop -= ar->step;
     if (0 < ar->mod) {

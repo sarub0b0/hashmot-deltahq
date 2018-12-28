@@ -2,6 +2,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <string.h>
+#include <err.h>
+#include <errno.h>
 
 #include <dgram.hh>
 
@@ -54,7 +56,12 @@ bool DGram::Bind(const std::string &host, const std::string &port) {
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags    = AI_PASSIVE;
 
-    error = getaddrinfo(host.c_str(), port.c_str(), &hints, &res);
+    if (host == "") {
+        error = getaddrinfo(nullptr, port.c_str(), &hints, &res);
+    } else {
+        error = getaddrinfo(host.c_str(), port.c_str(), &hints, &res);
+    }
+
     if (error) {
 #ifdef DEBUG
         // if (debug) {
@@ -63,8 +70,9 @@ bool DGram::Bind(const std::string &host, const std::string &port) {
                 __FILE__,
                 __LINE__,
                 gai_strerror(error));
-        // }
+// }
 #endif
+        DGRAM_PERROR("getaddrinfo");
         return false;
     }
 
@@ -98,8 +106,11 @@ ssize_t DGram::RecvFrom(void *buf, size_t length) {
                        reinterpret_cast<struct sockaddr *>(&from_addr_),
                        &recv_addr_length_);
     } else {
+        printf(" %s \n", strerror(errno));
+        DGRAM_PERROR("recvfrom");
         return -1;
     }
+
     return ret;
 }
 
@@ -153,7 +164,7 @@ int DGram::Open(const std::string &type, bool is_broadcast) {
     int on = 1;
     if (setsockopt(fd_,
                    SOL_SOCKET,
-                   SO_REUSEADDR,
+                   SO_REUSEPORT,
                    reinterpret_cast<char *>(&on),
                    sizeof(on)) < 0) {
         DGRAM_PERROR("setsockopt");

@@ -3,10 +3,11 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#ifndef __APPLE__
 int get_cpu(int *cpu) {
 
     char statpath[256];
-    sprintf(statpath, "/proc/%ld/stat", syscall(SYS_gettid));
+    sprintf(statpath, "/proc/%d/stat", syscall(SYS_gettid));
     FILE *fp = fopen(statpath, "r");
     if (fp != NULL) {
         // No.       1   2   3   4   5   6   7   8   9   10  11  12  13  14  15
@@ -22,3 +23,4 @@ int get_cpu(int *cpu) {
 
     return 0;
 }
+#endif

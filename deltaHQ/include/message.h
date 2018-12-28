@@ -36,11 +36,12 @@
 
 // display a warning/error message
 #ifdef MESSAGE_WARNING
-#define WARNING(message...)                                                   \
-    do {                                                                      \
-        fprintf(stdout, "deltaQ WARNING: %s, line %d: ", __FILE__, __LINE__); \
-        fprintf(stdout, message);                                             \
-        fprintf(stdout, "\n");                                                \
+#define WARNING(message...)                                               \
+    do {                                                                  \
+        fprintf(                                                          \
+            stderr, "deltaQ WARNING: %s, line %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, message);                                         \
+        fprintf(stderr, "\n");                                            \
     } while (0)
 #else
 #define WARNING(message...) /* message */
@@ -50,9 +51,9 @@
 #ifdef MESSAGE_DEBUG
 #define DEBUG(message...)                                                   \
     do {                                                                    \
-        fprintf(stdout, "deltaQ DEBUG: %s, line %d: ", __FILE__, __LINE__); \
-        fprintf(stdout, message);                                           \
-        fprintf(stdout, "\n");                                              \
+        fprintf(stderr, "deltaQ DEBUG: %s, line %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, message);                                           \
+        fprintf(stderr, "\n");                                              \
     } while (0)
 #else
 #define DEBUG(message...) /* message */
@@ -62,8 +63,8 @@
 #ifdef MESSAGE_INFO
 #define INFO(message...)          \
     do {                          \
-        fprintf(stdout, message); \
-        fprintf(stdout, "\n");    \
+        fprintf(stderr, message); \
+        fprintf(stderr, "\n");    \
     } while (0)
 #else
 #define INFO(message...) /* message */
@@ -72,13 +73,13 @@
 #ifdef MESSAGE_DEBUG2
 #define DEBUG2(message...)                               \
     do {                                                 \
-        fprintf(stdout,                                  \
+        fprintf(stderr,                                  \
                 "deltaQ DEBUG2: %s, func: %s line %d: ", \
                 __FILE__,                                \
                 __func__,                                \
                 __LINE__);                               \
-        fprintf(stdout, message);                        \
-        fprintf(stdout, "\n");                           \
+        fprintf(stderr, message);                        \
+        fprintf(stderr, "\n");                           \
     } while (0)
 #else
 #define DEBUG2(message...) /* message */

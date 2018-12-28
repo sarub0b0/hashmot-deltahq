@@ -13,12 +13,12 @@ from signal import signal, SIGPIPE, SIG_DFL
 if __name__ == '__main__':
 
     if len(sys.argv) < 6:
-        print("arguments:")
-        print("\t$1   filename")
-        print("\t$2   max loop")
-        print("\t$3   delay")
-        print("\t$4   node speed")
-        print("\t$5   update random or linear[r, l]")
+        sys.stderr.write("arguments:\n")
+        sys.stderr.write("\t$1   filename\n")
+        sys.stderr.write("\t$2   max loop\n")
+        sys.stderr.write("\t$3   delay\n")
+        sys.stderr.write("\t$4   node speed\n")
+        sys.stderr.write("\t$5   update random or linear[r, l]\n")
         #  print("\t$6   single or multi line [s, m]")
 
         sys.exit(1)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                 #  sys.stdout.write("\n")
                 #  sys.stdout.flush()
                 #  time.sleep(2)
-                json_list.append('{"finish":"finish"}')
+                json_list.append('{"finish":"finish"}\n')
                 break
 
 

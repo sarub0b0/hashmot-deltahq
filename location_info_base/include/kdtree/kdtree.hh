@@ -41,12 +41,12 @@ class KdTree : public NeighborSearch {
 
     // Node *update_node_;
 
-    char valueBuffer_[20000];
-    char parseBuffer_[9000];
+    // char valueBuffer_[20000];
+    // char parseBuffer_[9000];
 
-    MemoryPoolAllocator<> valueAllocator_;
-    MemoryPoolAllocator<> parseAllocator_;
-    DocumentType json_;
+    // MemoryPoolAllocator<> valueAllocator_;
+    // MemoryPoolAllocator<> parseAllocator_;
+    // DocumentType json_;
 
     // string send_init_, send_update_;
     char send_init_buffer_[9000];

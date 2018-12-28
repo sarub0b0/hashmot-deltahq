@@ -13,6 +13,8 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/encodedstream.h>
 
+#include <getopt_long.hh>
+
 #include <using.hh>
 #include <neighbor_search.hh>
 #include <lsh/lsh.hh>
@@ -27,22 +29,66 @@ using namespace neighbor_search;
 typedef GenericDocument<UTF8<>, MemoryPoolAllocator<>, MemoryPoolAllocator<>>
     DocumentType;
 
-void usage(void) {
+void usage(FILE *f) {
+    fprintf(f, "\nUsage: location_info_base [options] <init_file.json>\n");
+    fprintf(f, "General options:\n");
+    fprintf(f,
+            "  -h, --help             - print this help message and exit\n");
+    // fprintf(f,
+    //         " -v, --version          - print version information and
+    //         exit\n");
+    // fprintf(f,
+    //         " -l, --license          - print license information and
+    //         exit\n");
+    fprintf(f, "\nOutput control: (default stdout)\n");
+    fprintf(f,
+            "  -A --ipaddr     <xxx.xxx.xxx.xxx> - ip address for sending "
+            "message\n");
+    fprintf(f,
+            "  -p --port       <number>          - port number for sending "
+            "message\n");
+    fprintf(f, "  -L --listen     <number>          - listen port\n");
+
+    fprintf(f, "\nComputation control:\n");
+    fprintf(f, "  -N --process    <number>          - number of process\n");
+    fprintf(f, "  -j --job-id     <number>          - job id\n");
+    fprintf(f,
+            "  -a --algorithm <type>             - lsh, kdtree, linear | h, "
+            "t, l\n");
+    fprintf(f, "\n");
     // fprintf(stderr, "arguments $1 $2\n");
-    fprintf(stderr, "arguments $1 $2 $3 $4\n");
-    fprintf(stderr, "$1: Set init file ! \n");
-    fprintf(stderr, "$2: Set neighbor search algrothm ! \n");
-    fprintf(stderr, "\th: LSH\n");
-    fprintf(stderr, "\tt: kd-tree\n");
-    fprintf(stderr, "\tl: linear\n");
-    fprintf(stderr, "$3: Set ip address\n");
-    fprintf(stderr, "$4: Set port\n");
+    // fprintf(stderr, "arguments $1 $2 $3 $4\n");
+    // fprintf(stderr, "$1: Set init file ! \n");
+    // fprintf(stderr, "$2: Set neighbor search algrothm ! \n");
+    // fprintf(stderr, "\th: LSH\n");
+    // fprintf(stderr, "\tt: kd-tree\n");
+    // fprintf(stderr, "\tl: linear\n");
+    // fprintf(stderr, "$3: Set ip address\n");
+    // fprintf(stderr, "$4: Set port\n");
     // fprintf(stderr, "$2: Set single or multi line json\n");
     // fprintf(stderr, "\ts: single line\n");
     // fprintf(stderr, "\tm: multi line\n");
 }
 
-int main(int argc, char const *argv[]) {
+const struct option long_options[] = {
+    {"help", 0, 0, 'h'},
+    {"process", 1, 0, 'N'},
+    {"ipaddr", 1, 0, 'A'},
+    {"port", 1, 0, 'p'},
+    {"listen", 1, 0, 'L'},
+    {"algorithm", 1, 0, 'a'},
+    {"job-id", 1, 0, 'i'},
+    // {"version",   0,   0,   'v'},
+    // {"license",   0,   0,   'l'},
+    // {"process",   1,   0,   't'},
+    {0, 0, 0, 0},
+};
+
+// structure holding name of short options;
+// should match the 'long_options' structure above
+const char short_options[] = "hp:a:L:N:A:j:";
+
+int main(int argc, char *const argv[]) {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
@@ -55,34 +101,104 @@ int main(int argc, char const *argv[]) {
 
     NeighborSearch *ns;
 
-    if (argc <= 2) {
-        usage();
+    DGram dg;
+
+    if (argc == 1) {
+        usage(stdout);
         exit(1);
     }
 
-    init_file = argv[1];
+    int process_number = 1;
+    string ipaddr, port, listen_port;
+    string algorithm;
+    int job_id = -1;
 
-    switch (argv[2][0]) {
-        case 'h':
-            ns = new LSH(d, k, L);
-            break;
-        case 't':
-            ns = new KdTree();
-            break;
-        case 'l':
-            ns = new Linear();
-            break;
-        default:
-            usage();
-            exit(1);
+    bool is_listen = false;
+
+    int opt;
+    class getopt gopt;
+    while ((opt = gopt.getopt_long(
+                argc, argv, short_options, long_options, nullptr)) != -1) {
+        switch (opt) {
+            case 'N':
+                process_number = atoi(gopt.opt_arg);
+                break;
+            case 'p':
+                port = gopt.opt_arg;
+                break;
+            case 'A':
+                ipaddr = gopt.opt_arg;
+                break;
+            case 'L':
+                listen_port = gopt.opt_arg;
+                break;
+            case 'a':
+                algorithm = gopt.opt_arg;
+                break;
+            case 'j':
+                job_id = atoi(gopt.opt_arg);
+                break;
+            case 'h':
+                usage(stdout);
+                exit(0);
+                break;
+            case '?':
+                printf("Try --help for more info\n");
+                exit(1);
+            default:
+                usage(stdout);
+                exit(1);
+        }
     }
 
-    string host, port;
-    if (5 == argc) {
-        host = argv[3];
-        port = argv[4];
-        ns->InitDGram(host, port);
-        printf("host=%s port=%s\n", host.c_str(), port.c_str());
+    // fprintf(
+    //     stderr,
+    //     "argc=%d\nalgorithm=%s\nprocces_number=%d\nlisten_port=%s\nipaddr=%"
+    //     "s\nport=%s\n",
+    //     argc,
+    //     algorithm.c_str(),
+    //     process_number,
+    //     listen_port.c_str(),
+    //     ipaddr.c_str(),
+    //     port.c_str());
+
+    // fprintf(stderr, "optind=%d\n", gopt.opt_ind);
+    if (gopt.opt_ind == argc) {
+        fprintf(stderr, "ERROR unset filename\n");
+        exit(1);
+    }
+
+    init_file = argv[gopt.opt_ind];
+    fprintf(stderr, "-- Read file %s\n", init_file.c_str());
+
+    if (algorithm == "h" || algorithm == "lsh") {
+        ns = new LSH(d, k, L);
+    } else if (algorithm == "t" || algorithm == "kdtree") {
+        ns = new KdTree();
+    } else if (algorithm == "l" || algorithm == "linear") {
+        ns = new Linear();
+    } else {
+        fprintf(stderr, "ERROR unsupport algorithm\n");
+        exit(1);
+    }
+
+    // string host, port;
+    if (ipaddr != "" && port != "") {
+        ns->InitDGram(ipaddr, port);
+        fprintf(stderr, "host=%s port=%s\n", ipaddr.c_str(), port.c_str());
+    }
+    if (listen_port != "") {
+        if (dg.Open("AF_INET", false) == -1) {
+            exit(1);
+        }
+        if (!dg.Bind("", listen_port)) {
+            fprintf(stderr,
+                    "ERROR bind %s: %s\n",
+                    ipaddr.c_str(),
+                    listen_port.c_str());
+            exit(1);
+        }
+        is_listen = true;
     }
 
     // bool is_multiline = false;
@@ -128,7 +244,9 @@ int main(int argc, char const *argv[]) {
         string key         = iter->name.GetString();
         const Value &value = iter->value;
 
+        float min_x, min_y, max_x, max_y;
         if (key == "init") {
+            string global_key = key;
 
             chrono::high_resolution_clock::time_point begin, end;
             chrono::nanoseconds elapsed;
@@ -144,64 +262,73 @@ int main(int argc, char const *argv[]) {
                     elapsed.count() / 1000000000,
                     elapsed.count() % 1000000000);
 
-            float min_x, min_y, max_x, max_y;
-            min_x = FLT_MAX;
-            min_y = FLT_MAX;
-            max_x = 0;
-            max_y = 0;
-            int x, y;
-            int node_size = 0;
-            for (auto &&node : value["node"].GetArray()) {
-                x = FLOAT(node["x"].GetDouble());
-                y = FLOAT(node["y"].GetDouble());
-                if (x < min_x) {
-                    min_x = x;
+            for (auto &&v : value.GetObject()) {
+                string key         = v.name.GetString();
+                const Value &value = v.value;
+
+                if (key == "node") {
+                    // min_x = FLT_MAX;
+                    // min_y = FLT_MAX;
+                    // max_x = 0;
+                    // max_y = 0;
+                    // int x, y;
+                    // for (auto &&node : value["node"].GetArray()) {
+                    //     x = FLOAT(node["x"].GetDouble());
+                    //     y = FLOAT(node["y"].GetDouble());
+                    //     if (x < min_x) {
+                    //         min_x = x;
+                    //     }
+                    //     if (max_x < x) {
+                    //         max_x = x;
+                    //     }
+                    //     if (y < min_y) {
+                    //         min_y = y;
+                    //     }
+                    //     if (max_y < y) {
+                    //         max_y = y;
+                    //     }
+                    //     node_size++;
+                    // }
+
+                    // field_size[0] = max_x - min_x;
+                    // field_size[1] = max_y - min_y;
+                    node_number = value.Size();
+                    neighbor.reserve(node_number + 1);
+                    neighbor.resize(node_number);
+                    neighbor.clear();
+
+#ifndef MEASURE
+                    int id = 0;
+                    if (job_id == 1 || job_id == -1) {
+                        for (auto &&n : value.GetArray()) {
+                            // Value node(n, init_json.GetAllocator());
+                            // node.AddMember("id", node_number,
+                            // init_json.GetAllocator());
+
+                            neighbor.clear();
+                            ns->GetNeighbor(id, neighbor);
+                            // const vector<int> &neighbor =
+                            // ns->GetNeighbor(node_number);
+                            // sort(neighbor.begin(), neighbor.end());
+
+                            ns->SendDeltaHQ(neighbor, id, global_key);
+                            ++id;
+                        }
+                    }
+#endif
                 }
-                if (max_x < x) {
-                    max_x = x;
+                if (key == "field") {
+                    field_size[0] = value["width"].GetDouble();
+                    field_size[1] = value["height"].GetDouble();
+                    area          = value["area"].GetDouble();
+
+                    min_x = 0;
+                    min_y = 0;
+                    max_x = field_size[0];
+                    max_y = field_size[1];
                 }
-                if (y < min_y) {
-                    min_y = y;
-                }
-                if (max_y < y) {
-                    max_y = y;
-                }
-                node_size++;
             }
-
-            field_size[0] = max_x - min_x;
-            field_size[1] = max_y - min_y;
-
-            // TODO 密度ってなんだあ
-            if (!value["field"].IsObject()) {
-                fprintf(stderr, "not found field object\n");
-                exit(1);
-            }
-
-            for (Value::ConstMemberIterator iter =
-                     value["field"].MemberBegin();
-                 iter != value["field"].MemberEnd();
-                 ++iter) {
-                string key         = iter->name.GetString();
-                const Value &value = iter->value;
-                if (key == "width") {
-                    field_size[0] = value.GetDouble();
-                }
-                if (key == "height") {
-                    field_size[1] = value.GetDouble();
-                }
-                if (key == "area") {
-                    area = value.GetDouble();
-                }
-            }
-
-            min_x = 0;
-            min_y = 0;
-            max_x = field_size[0];
-            max_y = field_size[1];
-
-            node_number = node_size;
-            density     = node_size / area;
+            density = node_number / area;
             fprintf(stderr,
                     "-- Init density(%.2f) top-left(%.2f, %.2f), "
                     "bottom-right(%.2f, "
@@ -211,29 +338,55 @@ int main(int argc, char const *argv[]) {
                     min_y,
                     max_x,
                     max_y);
-
-            neighbor.reserve(node_size);
-            neighbor.resize(node_size);
-            neighbor.clear();
-
-#ifndef MEASURE
-            int id = 0;
-            for (auto &&n : value["node"].GetArray()) {
-                // Value node(n, init_json.GetAllocator());
-                // node.AddMember("id", node_number,
-                // init_json.GetAllocator());
-
-                neighbor.clear();
-                ns->GetNeighbor(id, neighbor);
-                // const vector<int> &neighbor =
-                // ns->GetNeighbor(node_number); sort(neighbor.begin(),
-                // neighbor.end());
-
-                ns->SendDeltaHQ(neighbor, id, key);
-                ++id;
-            }
-#endif
         }
+    }
+
+    vector<int> assign_map;
+    bool is_assign = false;
+    if (1 < process_number && job_id != -1) {
+        if (job_id == 0) {
+            fprintf(stderr, "\n-- ERROR too small job_id\n");
+            exit(1);
+        }
+        if (process_number < job_id) {
+            fprintf(stderr, "\n-- ERROR too big job_id\n");
+            exit(1);
+        }
+        if (node_number < process_number) {
+            fprintf(stderr, "\n-- ERROR too big number of process\n");
+            exit(1);
+        }
+        fprintf(stderr, "\n-- Set assign id --\n");
+        assign_map.reserve(node_number + 1);
+        assign_map.resize(node_number, 0);
+        is_assign = true;
+
+        // fprintf(stderr,
+        //         "process_number=%d node_number=%d\n",
+        //         process_number,
+        //         node_number);
+
+        int div = node_number / process_number;
+        if (node_number % 2 == 1 && job_id % 2 == 1) {
+            div += 1;
+        }
+        // fprintf(stderr, "assign_map: ");
+        // fprintf(stderr, "div=%d\n", div);
+        int assign_idx         = job_id - 1;
+        assign_map[assign_idx] = 1;
+        for (int i = 0; i < div; i++) {
+            assign_idx += process_number;
+
+            if (node_number < assign_idx) {
+                break;
+            }
+            assign_map[assign_idx] = 1;
+        }
+
+        // for (auto &&a : assign_map) {
+        //     fprintf(stderr, "%d ", a);
+        // }
+        // fprintf(stderr, "\n");
     }
 
     fprintf(stderr, "\n-- Update wait --\n");
@@ -276,8 +429,9 @@ int main(int argc, char const *argv[]) {
     MemoryPoolAllocator<> parseAllocator(parseBuffer, sizeof(parseBuffer));
     DocumentType json(&valueAllocator, sizeof(parseBuffer), &parseAllocator);
 
-    int neighbor_count = 0;
-    int loop_count     = 0;
+    int neighbor_count    = 0;
+    int loop_count        = 0;
+    int search_loop_count = 0;
     int update_id;
     while (1) {
 
@@ -292,7 +446,19 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
-        while (fgets(read, 9000, stdin) == NULL) {
+        if (is_listen) {
+            int recv_length;
+            if ((recv_length = dg.RecvFrom(read, 9000)) == -1) {
+                fprintf(stderr, "ERROR recvfrom\n");
+                exit(1);
+            }
+            read[recv_length] = '\0';
+
+            // fprintf(stderr, "read: %s\n", read);
+        } else {
+            while (fgets(read, 9000, stdin) == NULL) {
+            }
+            // fprintf(stderr, "read: %s\n", read);
         }
         // #ifdef TCHK_ELAPSED
         //         begin = chrono::high_resolution_clock::now();
@@ -380,75 +546,78 @@ int main(int argc, char const *argv[]) {
                 //                 begin =
                 //                 chrono::high_resolution_clock::now();
                 // #endif
+                if (is_assign) {
+                    if (assign_map[update_id] == 1) {
 
 #ifdef MEASURE
-                search_begin = chrono::high_resolution_clock::now();
+                        search_begin = chrono::high_resolution_clock::now();
 #endif
 
-                // neighbor.shrink_to_fit();
-                // const vector<int> &neighbor =
-                // ns->GetNeighbor(update_id);
-                neighbor.clear();
-                ns->GetNeighbor(update_id, neighbor);
+                        // neighbor.shrink_to_fit();
+                        // const vector<int> &neighbor =
+                        // ns->GetNeighbor(update_id);
+                        neighbor.clear();
+                        ns->GetNeighbor(update_id, neighbor);
 
 #ifdef MEASURE
-                search_end = chrono::high_resolution_clock::now();
-                search_elapsed += chrono::duration_cast<chrono::nanoseconds>(
-                    search_end - search_begin);
+                        search_end = chrono::high_resolution_clock::now();
+                        search_elapsed +=
+                            chrono::duration_cast<chrono::nanoseconds>(
+                                search_end - search_begin);
 #endif
 
-                if (neighbor[0] != -1) {
-                    neighbor_count += neighbor.size();
+                        if (neighbor[0] != -1) {
+                            neighbor_count += neighbor.size();
+                        }
+
+#ifdef MEASURE
+                        send_begin = chrono::high_resolution_clock::now();
+#endif
+                        ns->SendDeltaHQ(neighbor, update_id, key);
+
+#ifdef MEASURE
+                        send_end = chrono::high_resolution_clock::now();
+                        send_elapsed +=
+                            chrono::duration_cast<chrono::nanoseconds>(
+                                send_end - send_begin);
+#endif
+                        search_loop_count++;
+                    }
+                } else {
+#ifdef MEASURE
+                    search_begin = chrono::high_resolution_clock::now();
+#endif
+
+                    // neighbor.shrink_to_fit();
+                    // const vector<int> &neighbor =
+                    // ns->GetNeighbor(update_id);
+                    neighbor.clear();
+                    ns->GetNeighbor(update_id, neighbor);
+
+#ifdef MEASURE
+                    search_end = chrono::high_resolution_clock::now();
+                    search_elapsed +=
+                        chrono::duration_cast<chrono::nanoseconds>(
+                            search_end - search_begin);
+#endif
+
+                    if (neighbor[0] != -1) {
+                        neighbor_count += neighbor.size();
+                    }
+
+#ifdef MEASURE
+                    send_begin = chrono::high_resolution_clock::now();
+#endif
+                    ns->SendDeltaHQ(neighbor, update_id, key);
+
+#ifdef MEASURE
+                    send_end = chrono::high_resolution_clock::now();
+                    send_elapsed +=
+                        chrono::duration_cast<chrono::nanoseconds>(
+                            send_end - send_begin);
+#endif
+                    search_loop_count++;
                 }
-                // #ifdef TCHK_ELAPSED
-                //                 end =
-                //                 chrono::high_resolution_clock::now();
-
-                //                 chrono::nanoseconds search_elapsed =
-                //                     chrono::duration_cast<chrono::nanoseconds>(end
-                //                     - begin);
-
-                //                 fprintf(stderr,
-                //                         "elapsed=%lld.%09lld\n"
-                //                         "\tupdate=%lld.%09lld\n"
-                //                         "\tsearch=%lld.%09lld\n",
-                //                         (update_elapsed.count() +
-                //                         search_elapsed.count()) /
-                //                             1000000000,
-                //                         (update_elapsed.count() +
-                //                         search_elapsed.count()) %
-                //                             1000000000,
-                //                         update_elapsed.count() /
-                //                         1000000000,
-                //                         update_elapsed.count() %
-                //                         1000000000,
-                //                         search_elapsed.count() /
-                //                         1000000000,
-                //                         search_elapsed.count() %
-                //                         1000000000);
-                // #endif
-
-                // sort(neighbor.begin(), neighbor.end());
-
-                // begin = chrono::high_resolution_clock::now();
-
-#ifdef MEASURE
-                send_begin = chrono::high_resolution_clock::now();
-#endif
-                ns->SendDeltaHQ(neighbor, update_id, key);
-
-#ifdef MEASURE
-                send_end = chrono::high_resolution_clock::now();
-                send_elapsed += chrono::duration_cast<chrono::nanoseconds>(
-                    send_end - send_begin);
-#endif
-                // end     = chrono::high_resolution_clock::now();
-                // elapsed = chrono::duration_cast<chrono::microseconds>(
-                // end - begin);
-
-                // fprintf(stderr, "send elapsed: %lld\n",
-                // elapsed.count());
-                // }
                 valueAllocator.Clear();
                 parseAllocator.Clear();
             }
@@ -474,66 +643,68 @@ int main(int argc, char const *argv[]) {
                 measure_avg = measure_elapsed / loop_count;
                 parse_avg   = parse_elapsed / loop_count;
                 update_avg  = update_elapsed / loop_count;
-                search_avg  = search_elapsed / loop_count;
-                send_avg    = send_elapsed / loop_count;
+                search_avg  = search_elapsed / search_loop_count;
+                send_avg    = send_elapsed / search_loop_count;
 
                 fprintf(stderr,
-                        "node_number neighbor_avg area width height density "
-                        "update_count "
+                        "node_number loot_count search_count area width "
+                        "height density "
+                        "neighbor_avg "
                         "all_elapsed parse_elapsed update_elapsed "
                         "search_elapsed send_elapsed all_avg_elapsed "
                         "parse_avg_elapsed update_avg_elapsed "
                         "search_avg_elapsed send_avg_elapsed\n");
 
-                fprintf(
-                    stdout,
-                    "%d %d %.4f %.4f %.4f %.4f %d %lld.%09lld %lld.%09lld "
-                    "%lld.%09lld "
-                    "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
-                    "%lld.%09lld %lld.%09lld %lld.%09lld \n",
-                    node_number,
-                    loop_count,
-                    area,
-                    field_size[0],
-                    field_size[1],
-                    density,
-                    neighbor_count / loop_count,
+                fprintf(stdout,
+                        "%d %d %d %.4f %.4f %.4f %.4f %d %lld.%09lld "
+                        "%lld.%09lld "
+                        "%lld.%09lld "
+                        "%lld.%09lld %lld.%09lld %lld.%09lld %lld.%09lld "
+                        "%lld.%09lld %lld.%09lld %lld.%09lld \n",
+                        node_number,
+                        loop_count,
+                        search_loop_count,
+                        area,
+                        field_size[0],
+                        field_size[1],
+                        density,
+                        neighbor_count / search_loop_count,
 
-                    measure_elapsed.count() / 1000000000,
-                    measure_elapsed.count() % 1000000000,
+                        measure_elapsed.count() / 1000000000,
+                        measure_elapsed.count() % 1000000000,
 
-                    parse_elapsed.count() / 1000000000,
-                    parse_elapsed.count() % 1000000000,
+                        parse_elapsed.count() / 1000000000,
+                        parse_elapsed.count() % 1000000000,
 
-                    update_elapsed.count() / 1000000000,
-                    update_elapsed.count() % 1000000000,
+                        update_elapsed.count() / 1000000000,
+                        update_elapsed.count() % 1000000000,
 
-                    search_elapsed.count() / 1000000000,
-                    search_elapsed.count() % 1000000000,
+                        search_elapsed.count() / 1000000000,
+                        search_elapsed.count() % 1000000000,
 
-                    send_elapsed.count() / 1000000000,
-                    send_elapsed.count() % 1000000000,
+                        send_elapsed.count() / 1000000000,
+                        send_elapsed.count() % 1000000000,
 
-                    measure_avg.count() / 1000000000,
-                    measure_avg.count() % 1000000000,
+                        measure_avg.count() / 1000000000,
+                        measure_avg.count() % 1000000000,
 
-                    parse_avg.count() / 1000000000,
-                    parse_avg.count() % 1000000000,
+                        parse_avg.count() / 1000000000,
+                        parse_avg.count() % 1000000000,
 
-                    update_avg.count() / 1000000000,
-                    update_avg.count() % 1000000000,
+                        update_avg.count() / 1000000000,
+                        update_avg.count() % 1000000000,
 
-                    search_avg.count() / 1000000000,
-                    search_avg.count() % 1000000000,
+                        search_avg.count() / 1000000000,
+                        search_avg.count() % 1000000000,
 
-                    send_avg.count() / 1000000000,
-                    send_avg.count() % 1000000000
+                        send_avg.count() / 1000000000,
+                        send_avg.count() % 1000000000
 
                 );
 
                 fprintf(stderr,
                         "neighbor avg: %d\n",
-                        neighbor_count / loop_count);
+                        neighbor_count / search_loop_count);
 
                 avg = measure_elapsed / loop_count;
                 fprintf(stderr,
@@ -556,14 +727,14 @@ int main(int argc, char const *argv[]) {
                         update_elapsed.count() % 1000000000,
                         avg.count() / 1000000000,
                         avg.count() % 1000000000);
-                avg = search_elapsed / loop_count;
+                avg = search_elapsed / search_loop_count;
                 fprintf(stderr,
                         "\tsearch:%lld.%09lld\n\t\tavg:%lld.%09lld\n",
                         search_elapsed.count() / 1000000000,
                         search_elapsed.count() % 1000000000,
                         avg.count() / 1000000000,
                         avg.count() % 1000000000);
-                avg = send_elapsed / loop_count;
+                avg = send_elapsed / search_loop_count;
                 fprintf(stderr,
                         "\tsend:  %lld.%09lld\n\t\tavg:%lld.%09lld\n",
                         send_elapsed.count() / 1000000000,
@@ -581,6 +752,7 @@ int main(int argc, char const *argv[]) {
     }
 
 FINISH_HANDLER:
+    fprintf(stderr, "\n-- Success --\n");
     delete ns;
 
     return 0;

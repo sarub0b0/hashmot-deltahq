@@ -12,13 +12,6 @@
 namespace neighbor_search {
 
 LSH::LSH(int d, int k, int L) : d_(d), k_(k), L_(L) {
-}
-
-LSH::~LSH() {
-}
-void LSH::Init(const Value &json) {
-    // fprintf(stderr, "LSH Init\n");
-
     char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
     char update_prefix[] = "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
 
@@ -27,6 +20,12 @@ void LSH::Init(const Value &json) {
 
     init_buffer_pos_   = strlen(init_prefix);
     update_buffer_pos_ = strlen(update_prefix);
+}
+
+LSH::~LSH() {
+}
+void LSH::Init(const Value &json) {
+    // fprintf(stderr, "LSH Init\n");
 
     vector<array<float, 2>> points;
 
@@ -35,16 +34,18 @@ void LSH::Init(const Value &json) {
 
     json.Accept(writer);
 
-    int node_number = 0;
-    for (auto &&n : json["node"].GetArray()) {
-        ++node_number;
-    }
+    // int node_number = 0;
+    int node_number = json["node"].Size();
+    // printf("node_number(%d)\n", node_number);
+    // for (auto &&n : json["node"].GetArray()) {
+    //     ++node_number;
+    // }
 
-    points.reserve(node_number);
+    points.reserve(node_number + 1);
     points.resize(node_number);
     points.clear();
 
-    nodes_.reserve(node_number);
+    nodes_.reserve(node_number + 1);
     nodes_.resize(node_number);
     nodes_.clear();
 
@@ -254,8 +255,12 @@ void LSH::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
 
     if (key == "update") {
@@ -269,8 +274,12 @@ void LSH::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
 
 #ifndef MEASURE
@@ -288,7 +297,7 @@ void LSH::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 #endif
     if (is_socket_) {
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
-        dgram_.SendTo(buffer, strlen(buffer), 0);
+        dgram_.SendTo(buffer, str_number, 0);
     }
 }
 void LSH::SendDeltaHQ(void) {

@@ -203,10 +203,29 @@ void print_json(json_t *root) {
 
 json_t *read_json(input_buffer_t *ibuf) {
 
-    char *line = NULL;
+    char line[9000] = {0};
 
-    line = buffer_read(ibuf);
-    if (line == NULL) {
+    // line = buffer_read(ibuf);
+
+    int recv_len = 0;
+    if (ibuf->is_listen_dgram) {
+
+        recv_len = recv(ibuf->dgram.sock, line, 9000, 0);
+        if (recv_len == 0) {
+            return NULL;
+        }
+        if (recv_len == -1) {
+            perror("recv");
+            return NULL;
+        }
+        line[recv_len] = '\0';
+    } else {
+        while (fgets(line, 9000, stdin) == NULL) {
+        }
+        line[strlen(line)] = '\0';
+    }
+
+    if (line[0] == '\0') {
         WARNING("buffer error");
         return (json_t *) 0;
     }
@@ -228,7 +247,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     if (root) {
         first_object = json_object_get(root, "finish");
         if (first_object) {
-            fprintf(stdout, "\n-- Received finish json\n");
+            fprintf(stderr, "\n-- Received finish json\n");
             json_decref(root);
             first_object = NULL;
             root         = NULL;
@@ -361,8 +380,8 @@ int update_all_neighbors(struct scenario_class *scenario,
     nodes  = scenario->nodes;
     own_id = scenario->own_id;
 
-    int same_neighbor = 0;
-    int neighbor_flag = 1;
+    // int same_neighbor = 0;
+    // int neighbor_flag = 1;
 
     neighbor_number = 0;
     nn              = 0;
@@ -437,8 +456,8 @@ int update_all_neighbors(struct scenario_class *scenario,
     }
 
     for (int j = 0; j < nn; j++) {
-        same_neighbor = 0;
-        nb_id         = neighbor_ids[*center_id][j];
+        // same_neighbor = 0;
+        nb_id = neighbor_ids[*center_id][j];
         if (own_id != -1 && *center_id != own_id && nb_id != own_id) {
             continue;
         }
@@ -451,25 +470,26 @@ int update_all_neighbors(struct scenario_class *scenario,
         neighbors[ni++] = &scenario->connections[conn_i];
         ++neighbor_number;
 
-        if (neighbor_ids[*center_id][j] == *center_id) {
-            same_neighbor = 1;
-            break;
-        }
-        if (neighbor_flag && !same_neighbor) {
+        // if (neighbor_ids[*center_id][j] == *center_id) {
+        //     WARNING("nn?");
+        //     same_neighbor = 1;
+        //     break;
+        // }
+        // if (neighbor_flag && !same_neighbor) {
+        // WARNING("nn?");
 
-            nb_id = *center_id;
-            if (neighbor_ids[*center_id][j] < nb_id) {
-                --nb_id;
-            }
-            conn_i =
-                neighbor_ids[*center_id][j] * (scenario->node_number - 1) +
-                nb_id;
-            neighbors[ni++] = &scenario->connections[conn_i];
-            ++neighbor_number;
-
-            // connection_print(&scenario->connections[conn_i]);
-            // connection_print(neighbors[ni - 1]);
+        nb_id = *center_id;
+        if (neighbor_ids[*center_id][j] < nb_id) {
+            --nb_id;
         }
+        conn_i =
+            neighbor_ids[*center_id][j] * (scenario->node_number - 1) + nb_id;
+        neighbors[ni++] = &scenario->connections[conn_i];
+        ++neighbor_number;
+
+        // connection_print(&scenario->connections[conn_i]);
+        // connection_print(neighbors[ni - 1]);
+        // }
     }
     // }
 
@@ -1317,9 +1337,11 @@ int send_delete_json(int center_id,
         info->msg_len = sprintf(&send_json_del_buf[delete_buf_write_pos],
                                 // SEND_JSON_MAXLEN,
                                 // "{\"meteor\":{\"delete\":[{\"from_id\":"
+                                // "%d}]}}",
                                 "%d,\"to_id\":%d}]}}",
                                 from_id,
                                 to_id);
+        // to_id);
 
         info->msg = send_json_del_buf;
         // info->msg_len = strlen(info->msg);
@@ -1391,7 +1413,9 @@ int send_all_delete_json(int center_id,
         info->msg_len = sprintf(&send_json_del_buf[delete_buf_write_pos],
                                 // "{\"meteor\":{\"delete\":[{\"from_id\":"
                                 "%d,\"to_id\":%d},{"
+                                // "%d,\"to_id\":%d}]}}",
                                 "\"from_id\":%d,\"to_id\":%d}]}}",
+                                // "%d}]}}",
                                 from_id,
                                 to_id,
                                 to_id,
@@ -2332,7 +2356,7 @@ int set_all_neighbor_bmp(int center_id,
         //     if (i == center_id) {
         //         continue;
         //     }
-        //     neighbor_ids_bmp[i][center_id] = 0;
+        //     neighbor_ids_bmp[i][center_id] = 1;
         // }
         return SUCCESS;
     }

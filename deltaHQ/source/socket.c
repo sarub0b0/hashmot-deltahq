@@ -24,7 +24,7 @@ int dgram_listen(struct dgram_info *dg_info) {
         return ERROR;
     }
     if (setsockopt(
-            dg_info->sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) <
+            dg_info->sock, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) <
         0) {
         perror("setsockopt");
         return ERROR;

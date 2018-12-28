@@ -74,10 +74,10 @@ void KdTreeIndex::Index(vector<Node> &nodes) {
     remove_pos_       = 0;
 
     int nodes_size = nodes.size();
-    tnodes_.reserve(nodes_size);
-    sorted_tnodes_.reserve(nodes_size);
+    tnodes_.reserve(nodes_size + 1);
+    sorted_tnodes_.reserve(nodes_size + 1);
 
-    neighbor_.reserve(nodes_size);
+    // neighbor_.reserve(nodes_size + 1);
 
     for (auto &&n : nodes) {
         TreeNode *tn = new TreeNode();

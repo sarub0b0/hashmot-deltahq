@@ -15,18 +15,29 @@
 namespace neighbor_search {
 
 Linear::Linear() {
+
+    is_socket_           = false;
+    char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
+    char update_prefix[] = "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
+
+    strcpy(send_init_buffer_, init_prefix);
+    strcpy(send_update_buffer_, update_prefix);
+
+    init_buffer_pos_   = strlen(init_prefix);
+    update_buffer_pos_ = strlen(update_prefix);
 }
 Linear::~Linear() {
 }
 void Linear::Init(const Value &json) {
 
-    int node_number = 0;
-    for (auto &&node : json["node"].GetArray()) {
-        ++node_number;
-    }
+    int node_number = json["node"].Size();
+    // printf("node_number(%d)\n", node_number);
+    // for (auto &&node : json["node"].GetArray()) {
+    //     ++node_number;
+    // }
 
-    nodes_.reserve(node_number);
-    neighbor_.reserve(node_number);
+    nodes_.reserve(node_number + 1);
+    // neighbor_.reserve(node_number);
 
     int id = 0;
     for (auto &&n : json["node"].GetArray()) {
@@ -182,8 +193,12 @@ void Linear::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
 
     if (key == "update") {
@@ -197,11 +212,16 @@ void Linear::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
 #ifndef MEASURE
     // printf("%s\n", buffer.GetString());
+    fprintf(stderr, "len(%d)\n", str_number);
     printf("%s\n", buffer);
     std::flush(std::cout);
 #else
@@ -215,7 +235,8 @@ void Linear::SendDeltaHQ(const vector<int> &neighbor, int id, string &key) {
 #endif
     if (is_socket_) {
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
-        dgram_.SendTo(buffer, strlen(buffer), 0);
+        // dgram_.SendTo(buffer, strlen(buffer), 0);
+        dgram_.SendTo(buffer, str_number, 0);
     }
 }
 void Linear::SendDeltaHQ(void) {

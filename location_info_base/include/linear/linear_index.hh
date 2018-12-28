@@ -21,7 +21,7 @@ class LinearIndex {
 
    private:
     vector<Node> nodes_;
-    vector<int> neighbor_;
+    // vector<int> neighbor_;
 
     // void Search(Node &query, int radius, vector<int> *neighbor);
 

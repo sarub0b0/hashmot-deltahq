@@ -20,11 +20,11 @@ void LSHIndex::Resize(int L) {
         hash_table_.resize(L);
     } else {
         vector<vector<L2Hash>> hash_func;
-        hash_func.reserve(L - L_);
+        hash_func.reserve(L - L_ + 1);
         int l = 0;
         for (int i = L_; i < L; ++i) {
             hash_func.push_back(vector<L2Hash>());
-            hash_func[l].reserve(k_);
+            hash_func[l].reserve(k_ + 1);
             // hash_func[l].resize(k_);
             // hash_func[l].clear();
             ++l;
@@ -36,7 +36,7 @@ void LSHIndex::Resize(int L) {
         for (auto &&g : hash_func) {
             Table t;
             t.g = g;
-            t.g.reserve(k_);
+            t.g.reserve(k_ + 1);
             // t.g.resize(k_);
             // t.g.clear();
             hash_table_.push_back(t);
@@ -97,7 +97,7 @@ void LSHIndex::Index(vector<array<float, DIMENSION>> &points) {
     table_size *= table_size;
 
     for (auto &&table : hash_table_) {
-        table.table.reserve(table_size);
+        table.table.reserve(table_size + 1);
         for (int i = 0; i < table_size; i++) {
             array<float, 2> p{static_cast<float>(i), static_cast<float>(i)};
             table.table[Hash(table.g, p)].push_back(i);
@@ -109,7 +109,7 @@ void LSHIndex::Index(vector<array<float, DIMENSION>> &points) {
     }
 
     int candidate_size = points_.size();
-    candidate_.reserve(candidate_size);
+    candidate_.reserve(candidate_size + 1);
 
     for (int i = 0; i < candidate_size; i++) {
         candidate_.insert(i);

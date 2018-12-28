@@ -16,11 +16,17 @@
 
 namespace neighbor_search {
 
-KdTree::KdTree()
-    : valueAllocator_(valueBuffer_, sizeof(valueBuffer_)),
-      parseAllocator_(parseBuffer_, sizeof(parseBuffer_)),
-      json_(&valueAllocator_, sizeof(parseBuffer_), &parseAllocator_) {
-    is_socket_ = false;
+KdTree::KdTree() {
+
+    is_socket_           = false;
+    char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
+    char update_prefix[] = "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
+
+    strcpy(send_init_buffer_, init_prefix);
+    strcpy(send_update_buffer_, update_prefix);
+
+    init_buffer_pos_   = strlen(init_prefix);
+    update_buffer_pos_ = strlen(update_prefix);
 }
 
 KdTree::~KdTree() {
@@ -33,22 +39,15 @@ void KdTree::Init(const Value &json) {
     // {"update":{"neighbors":{"center":{"id":99985,"x":16287.1,"y":18899.9},"neighbor":[42784]}}}
     // string send_init_   = R"({"init":{"neighbors":{"center":{"id":)";
     // string send_update_ = R"({"update":{"neighbors":{"center":{"id":)";
+    int node_number = json["node"].Size();
+    // printf("node_number(%d)\n", node_number);
 
-    char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
-    char update_prefix[] = "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
+    // int node_number = 0;
+    // for (auto &&node : json["node"].GetArray()) {
+    //     ++node_number;
+    // }
 
-    strcpy(send_init_buffer_, init_prefix);
-    strcpy(send_update_buffer_, update_prefix);
-
-    init_buffer_pos_   = strlen(init_prefix);
-    update_buffer_pos_ = strlen(update_prefix);
-
-    int node_number = 0;
-    for (auto &&node : json["node"].GetArray()) {
-        ++node_number;
-    }
-
-    nodes_.reserve(node_number);
+    nodes_.reserve(node_number + 1);
 
     int id = 0;
     for (auto &&node : json["node"].GetArray()) {
@@ -297,11 +296,14 @@ void KdTree::SendDeltaHQ(const vector<int> &neighbor,
                               id,
                               x,
                               y);
-
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
 
     if (key == "update") {
@@ -315,56 +317,20 @@ void KdTree::SendDeltaHQ(const vector<int> &neighbor,
 
         for (auto &&n : neighbor) {
             str_number += sprintf(&buffer[str_number], "%d,", n);
+            if (9000 < str_number) {
+                fprintf(stderr, "ERROR too many neighbors\n");
+                return;
+            }
         }
-        str_number = sprintf(&buffer[str_number - 1], "]}}}");
+        str_number += sprintf(&buffer[str_number - 1], "]}}}");
     }
-
-    // Json root;
-
-    // json_.SetObject();
-
-    // Value neighbor_object(kObjectType);
-    // Value neighbor_array(kArrayType);
-    // Value center_object(kObjectType);
-    // Value neighbors_object(kObjectType);
-    // Value update_object(kObjectType);
-    // Value node_object(kObjectType);
-
-    // node_object.AddMember("id", id, json_.GetAllocator());
-    // node_object.AddMember("x", nodes_[id].pos[0], json_.GetAllocator());
-    // node_object.AddMember("y", nodes_[id].pos[1], json_.GetAllocator());
-
-    // neighbors_object.AddMember("center", node_object,
-    // json_.GetAllocator());
-
-    // for (auto &&i : neighbor) {
-    //     Value n(kObjectType);
-    //     neighbor_array.PushBack(i, json_.GetAllocator());
-    // }
-
-    // neighbors_object.AddMember(
-    //     "neighbor", neighbor_array, json_.GetAllocator());
-
-    // update_object.AddMember(
-    //     "neighbors", neighbors_object, json_.GetAllocator());
-
-    // if (key == "init") {
-    //     json_.AddMember("init", update_object, json_.GetAllocator());
-    // }
-
-    // if (key == "update") {
-    //     json_.AddMember("update", update_object, json_.GetAllocator());
-    // }
-    // StringBuffer buffer;
-    // Writer<StringBuffer> writer(buffer);
-    // writer.SetMaxDecimalPlaces(4);
-
-    // json_.Accept(writer);
 
 #ifndef MEASURE
     // printf("%s\n", buffer.GetString());
-    printf("%s\n", buffer);
-    std::flush(std::cout);
+    if (!is_socket_) {
+        printf("%s\n", buffer);
+        std::flush(std::cout);
+    }
 #else
     // chrono::high_resolution_clock::time_point end =
     //     chrono::high_resolution_clock::now();
@@ -376,7 +342,7 @@ void KdTree::SendDeltaHQ(const vector<int> &neighbor,
 #endif
     if (is_socket_) {
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
-        dgram_.SendTo(buffer, strlen(buffer), 0);
+        dgram_.SendTo(buffer, str_number, 0);
     }
     // valueAllocator_.Clear();
     // parseAllocator_.Clear();
@@ -388,58 +354,12 @@ void KdTree::SendDeltaHQ(void) {
         dgram_.SendTo(finish.c_str(), finish.size(), 0);
     }
 #ifndef MEASURE
-    printf("%s\n", finish.c_str());
-    std::flush(std::cout);
+    if (!is_socket_) {
+        printf("%s\n", finish.c_str());
+        std::flush(std::cout);
+    }
 #endif
 }
-// void KdTree::SendDeltaHQ(vector<int> &neighbor,
-//                          const Node &node,
-//                          string &key) {
-
-//     Json root;
-
-//     root.SetObject();
-
-//     Value neighbor_object(kObjectType);
-//     Value neighbor_array(kArrayType);
-//     Value center_object(kObjectType);
-//     Value neighbors_object(kObjectType);
-//     Value update_object(kObjectType);
-//     Value node_object(kObjectType);
-
-//     node_object.AddMember("id", node.id, root.GetAllocator());
-//     node_object.AddMember("x", node.pos[0], root.GetAllocator());
-//     node_object.AddMember("y", node.pos[1], root.GetAllocator());
-
-//     neighbors_object.AddMember("center", node_object,
-//     root.GetAllocator());
-
-//     for (auto &&i : neighbor) {
-//         Value n(kObjectType);
-//         neighbor_array.PushBack(i, root.GetAllocator());
-//     }
-
-//     neighbors_object.AddMember(
-//         "neighbor", neighbor_array, root.GetAllocator());
-
-//     update_object.AddMember(
-//         "neighbors", neighbors_object, root.GetAllocator());
-
-//     if (key == "init") {
-//         root.AddMember("init", update_object, root.GetAllocator());
-//     }
-
-//     if (key == "update") {
-//         root.AddMember("update", update_object, root.GetAllocator());
-//     }
-//     StringBuffer buffer;
-//     Writer<StringBuffer> writer(buffer);
-//     writer.SetMaxDecimalPlaces(4);
-
-//     root.Accept(writer);
-//     printf("%s", buffer.GetString());
-//     std::flush(std::cout);
-// }
 
 void KdTree::InitDGram(const string &host, const string &port) {
 

@@ -1,23 +1,19 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-    echo -ne "set argument\n\t\$1: node number\n\t\$2: radius\n"
-    exit
-fi
-if [ -z "$2" ]; then
-    echo "set radius"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo -ne "set argument\n\t\$1: node number\n\t\$2: radius\n\t\$3: json dir\n"
     exit
 fi
 
 node_number=$1
 radius=$2
+dir=$3
 
 echo "-- node($node_number) radius($radius)"
 
-ary_density=(100 200 500 1000 2000 5000 10000 20000)
-# ary_density=(100 200 500)
+ary_density=(100 200 500 1000 2000 5000 10000)
+# ary_density=(20000)
 
-dir=../density_json
 
 if [ ! -d $dir ]; then
     echo "mkdir $dir"

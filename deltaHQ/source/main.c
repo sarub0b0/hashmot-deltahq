@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
              (IS_BETA == TRUE) ? "beta " : "",
              svn_revision_str);
 
-    printf("JANSSON VERSION %s\n", JANSSON_VERSION);
+    fprintf(stderr, "JANSSON VERSION %s\n", JANSSON_VERSION);
 
     memset(ipaddr, 0, sizeof(char) * 16);
     ////////////////////////////////////////////////////////////
@@ -575,6 +575,41 @@ int main(int argc, char **argv) {
         goto ERROR_HANDLE;
     }
 
+    float area, width, height;
+
+    json_t *jroot;
+    json_error_t jerr;
+
+    jroot = json_loadf(init_file, 0, &jerr);
+
+    if (!jroot) {
+
+        fprintf(stderr,
+                "json error on line %d (col %d): %s\n",
+                jerr.line,
+                jerr.column,
+                jerr.text);
+        fprintf(stderr, "%d\n%s\n", jerr.position, jerr.source);
+
+        json_decref(jroot);
+        jroot = NULL;
+        goto ERROR_HANDLE;
+    }
+    json_t *jinit   = json_object_get(jroot, "init");
+    json_t *jfield  = json_object_get(jinit, "field");
+    json_t *jarea   = json_object_get(jfield, "area");
+    json_t *jwidth  = json_object_get(jfield, "width");
+    json_t *jheight = json_object_get(jfield, "height");
+
+    area   = json_number_value(jarea);
+    width  = json_number_value(jwidth);
+    height = json_number_value(jheight);
+
+    json_decref(jroot);
+    jroot = NULL;
+    fclose(init_file);
+    init_file = fopen(scenario_filename, "r");
+
     // open scenario file
     // scenario_file = fopen(scenario_filename, "r");
     // if (scenario_file == NULL) {
@@ -668,9 +703,9 @@ int main(int argc, char **argv) {
         ibuf.buffers[i] = (char *) malloc(sizeof(char) * ibuf.buf_size);
     }
 
-    pthread_t pt_input_buf;
+    // pthread_t pt_input_buf;
 
-    pthread_create(&pt_input_buf, NULL, thread_buffer_write, &ibuf);
+    // pthread_create(&pt_input_buf, NULL, thread_buffer_write, &ibuf);
 
     // =====================================================
     // read json and init scenario
@@ -691,6 +726,12 @@ int main(int argc, char **argv) {
         (int *) malloc(sizeof(int) * (scenario->node_number + 1));
     meteor_param->update =
         (int *) malloc(sizeof(int) * (scenario->node_number + 1));
+
+    memset(meteor_param->add, -1, sizeof(int) * (scenario->node_number + 1));
+    memset(
+        meteor_param->delete, -1, sizeof(int) * (scenario->node_number + 1));
+    memset(
+        meteor_param->update, -1, sizeof(int) * (scenario->node_number + 1));
 
     neighbor = (struct connection_class **) malloc(
         sizeof(struct connection_class *) * scenario->connection_number);
@@ -1225,45 +1266,37 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &update_end);
 #endif
             if (neighbor_number < 0) {
-                fprintf(stderr, "finish message or read error\n");
+                // fprintf(stderr, "finish message or read error\n");
                 deltaQ_class->calc_done = TRUE;
                 neighbor_number         = 0;
                 loop_exit               = TRUE;
                 break;
             }
 
-            ar_conn.loop = neighbor_number;
-            ar_conn.step = neighbor_number / thread_number;
-            ar_conn.mod  = neighbor_number % thread_number;
+            if (own_id == received_center_id) {
 
-            for (int i = 0; i < thread_number; i++) {
+                ar_conn.loop = neighbor_number;
+                ar_conn.step = neighbor_number / thread_number;
+                ar_conn.mod  = neighbor_number % thread_number;
 
-                if (0 < neighbor_number) {
-                    thread_get_index(&ar_conn);
-                    deltaQ_class->start_conn[i] = ar_conn.start;
-                    deltaQ_class->end_conn[i]   = ar_conn.end;
-                } else {
-                    deltaQ_class->start_conn[i] = 0;
-                    deltaQ_class->end_conn[i]   = 0;
+                for (int i = 0; i < thread_number; i++) {
+
+                    if (0 < neighbor_number) {
+                        thread_get_index(&ar_conn);
+                        deltaQ_class->start_conn[i] = ar_conn.start;
+                        deltaQ_class->end_conn[i]   = ar_conn.end;
+                    } else {
+                        deltaQ_class->start_conn[i] = 0;
+                        deltaQ_class->end_conn[i]   = 0;
+                    }
                 }
+            } else {
+                deltaQ_class->start_conn[0] = 0;
+                deltaQ_class->end_conn[0]   = neighbor_number;
             }
 
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
-
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
-#endif
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_end);
-#endif
-
-            TCHK_END(scenario_deltaQ);
-            // if (is_other_update != 0 || is_other_delete != 0 ||
-            //     neighbor_number != 0) {
-            // if (1) {
 
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
@@ -1299,9 +1332,7 @@ int main(int argc, char **argv) {
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &meteor_begin);
 #endif
-            //
-            // send json message
-            //
+
             set_meteor_param(meteor_param,
                              neighbor_ids_bmp,
                              prev_neighbor_ids_bmp,
@@ -1318,6 +1349,23 @@ int main(int argc, char **argv) {
             print_meteor_param(own_id, meteor_param);
 #endif
 
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
+            DEBUG2("br_calc");
+            pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
+#endif
+
+            TCHK_END(scenario_deltaQ);
+            // if (is_other_update != 0 || is_other_delete != 0 ||
+            //     neighbor_number != 0) {
+            // if (1) {
+
+            //
+            // send json message
+            //
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
@@ -1348,41 +1396,37 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &update_end);
 #endif
             if (neighbor_number < 0) {
-                WARNING("finish message or read error");
+                // WARNING("finish message or read error");
                 deltaQ_class->calc_done = TRUE;
                 neighbor_number         = 0;
                 loop_exit               = TRUE;
                 break;
             }
 
-            ar_conn.loop = neighbor_number;
-            ar_conn.step = neighbor_number / thread_number;
-            ar_conn.mod  = neighbor_number % thread_number;
+            if (thread_number <= neighbor_number) {
 
-            for (int i = 0; i < thread_number; i++) {
+                ar_conn.loop = neighbor_number;
+                ar_conn.step = neighbor_number / thread_number;
+                ar_conn.mod  = neighbor_number % thread_number;
 
-                if (0 < neighbor_number) {
-                    thread_get_index(&ar_conn);
-                    deltaQ_class->start_conn[i] = ar_conn.start;
-                    deltaQ_class->end_conn[i]   = ar_conn.end;
-                } else {
-                    deltaQ_class->start_conn[i] = 0;
-                    deltaQ_class->end_conn[i]   = 0;
+                for (int i = 0; i < thread_number; i++) {
+
+                    if (0 < neighbor_number) {
+                        thread_get_index(&ar_conn);
+                        deltaQ_class->start_conn[i] = ar_conn.start;
+                        deltaQ_class->end_conn[i]   = ar_conn.end;
+                    } else {
+                        deltaQ_class->start_conn[i] = 0;
+                        deltaQ_class->end_conn[i]   = 0;
+                    }
                 }
+            } else {
+                deltaQ_class->start_conn[0] = 0;
+                deltaQ_class->end_conn[0]   = neighbor_number;
             }
 
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
-
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
-#endif
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_end);
-#endif
-
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
 #endif
@@ -1406,15 +1450,12 @@ int main(int argc, char **argv) {
             printf("-------------- prev --------------\n");
             print_all_neighbor_bmp(all_prev_neighbor_ids_bmp,
                                    scenario->node_number);
-
-            printf("\n-------------- current --------------\n");
-            print_all_neighbor_bmp(all_neighbor_ids_bmp,
-                                   scenario->node_number);
 #endif
 
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &meteor_begin);
 #endif
+
             //
             // send json message
             //
@@ -1429,11 +1470,26 @@ int main(int argc, char **argv) {
                 del_i = meteor_param->delete[i];
                 all_neighbor_ids_bmp[del_i][center_id] = 0;
             }
+#ifdef DEBUG_PRINT
+            printf("\n-------------- current --------------\n");
+            print_all_neighbor_bmp(all_neighbor_ids_bmp,
+                                   scenario->node_number);
+#endif
+
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &meteor_end);
 #endif
 #ifdef DEBUG_PRINT
             print_all_meteor_param(center_id, meteor_param);
+#endif
+
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
+            DEBUG2("br_calc");
+            pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
 #endif
 
 #ifdef MEASURE
@@ -1461,22 +1517,22 @@ int main(int argc, char **argv) {
         meteor_elapsed = get_elapsed(meteor_begin, meteor_end);
         send_elapsed   = get_elapsed(send_begin, send_end);
 
-        fprintf(stdout,
-                "%lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
-                update_elapsed.tv_sec,
-                update_elapsed.tv_nsec,
+        // fprintf(stderr,
+        //         "%lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
+        //         update_elapsed.tv_sec,
+        //         update_elapsed.tv_nsec,
 
-                calc_elapsed.tv_sec,
-                calc_elapsed.tv_nsec,
+        //         calc_elapsed.tv_sec,
+        //         calc_elapsed.tv_nsec,
 
-                bmp_elapsed.tv_sec,
-                bmp_elapsed.tv_nsec,
+        //         bmp_elapsed.tv_sec,
+        //         bmp_elapsed.tv_nsec,
 
-                meteor_elapsed.tv_sec,
-                meteor_elapsed.tv_nsec,
+        //         meteor_elapsed.tv_sec,
+        //         meteor_elapsed.tv_nsec,
 
-                send_elapsed.tv_sec,
-                send_elapsed.tv_nsec);
+        //         send_elapsed.tv_sec,
+        //         send_elapsed.tv_nsec);
 
         all_update_elapsed = sum_elapsed(all_update_elapsed, update_elapsed);
         all_calc_elapsed   = sum_elapsed(all_calc_elapsed, calc_elapsed);
@@ -1498,26 +1554,43 @@ int main(int argc, char **argv) {
     all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_send_elapsed);
 
-    fprintf(
-        stderr,
-        "sum %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld %lu.%09ld\n",
-        all_elapsed.tv_sec,
-        all_elapsed.tv_nsec,
+    float density = scenario->node_number / area;
+    fprintf(stderr,
+            "node_number loop_count thread_number area width height density "
+            "all_elapsed "
+            "update_elapsed calc_elapsed "
+            "bmp_elapsed "
+            "meteor_elapsed send_elapsed\n");
+    fprintf(stdout,
+            "%d %d %d %.4f %.4f %.4f %.4f %lu.%09ld %lu.%09ld %lu.%09ld "
+            "%lu.%09ld %lu.%09ld "
+            "%lu.%09ld\n",
+            scenario->node_number,
+            loop_number,
+            thread_number,
 
-        all_update_elapsed.tv_sec,
-        all_update_elapsed.tv_nsec,
+            area,
+            width,
+            height,
+            density,
 
-        all_calc_elapsed.tv_sec,
-        all_calc_elapsed.tv_nsec,
+            all_elapsed.tv_sec,
+            all_elapsed.tv_nsec,
 
-        all_bmp_elapsed.tv_sec,
-        all_bmp_elapsed.tv_nsec,
+            all_update_elapsed.tv_sec,
+            all_update_elapsed.tv_nsec,
 
-        all_meteor_elapsed.tv_sec,
-        all_meteor_elapsed.tv_nsec,
+            all_calc_elapsed.tv_sec,
+            all_calc_elapsed.tv_nsec,
 
-        all_send_elapsed.tv_sec,
-        all_send_elapsed.tv_nsec);
+            all_bmp_elapsed.tv_sec,
+            all_bmp_elapsed.tv_nsec,
+
+            all_meteor_elapsed.tv_sec,
+            all_meteor_elapsed.tv_nsec,
+
+            all_send_elapsed.tv_sec,
+            all_send_elapsed.tv_nsec);
 
 #endif
 
@@ -1528,7 +1601,7 @@ int main(int argc, char **argv) {
         pthread_join(pt_scenario[i], NULL);
     }
 
-    pthread_join(pt_input_buf, NULL);
+    // pthread_join(pt_input_buf, NULL);
 
     // FINISH:
     // if (send_result_to_meteor(meteor_param,
