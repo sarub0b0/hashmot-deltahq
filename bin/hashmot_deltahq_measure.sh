@@ -17,7 +17,7 @@ function create_init_json() {
         mkdir ${dir}/${node_number}node
     fi
 
-    ary_density=(100 500 1000 5000 10000)
+    ary_density=(100 200 500 1000 2000 5000 10000)
 
     for density in ${ary_density[@]}
     do
@@ -76,8 +76,8 @@ rm ${node_dir}/*.tmplog
 # =======================================================================
 # 実験ループ
 # =======================================================================
-pproc_ary=(1 4 16 24)
-dproc_ary=(1 4 16 24)
+pproc_ary=(1 2 4 8 16 24)
+dproc_ary=(1 2 4 8 16 24)
 for i in `seq 1 $loop`;
 do
 

@@ -12,7 +12,7 @@ fi
 exec_type=$1
 loop=$2
 
-nodes=(100 500 1000 5000 10000)
+nodes=(100 200 500 1000 2000 5000 10000)
 
 for n in ${nodes[@]};
 do
