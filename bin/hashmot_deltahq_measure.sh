@@ -48,7 +48,7 @@ node_number=$1
 loop=$2
 exec_type=$3
 
-exp_dir=../deltahq_json
+exp_dir=../hashmot_deltahq_json
 node_dir=$exp_dir/${node_number}node
 
 log_name="${exp_dir}/${node_number}.log"
@@ -118,7 +118,8 @@ do
                     # =======================================================================
                     # python3 -u measure.py $json $node_number 0 1 r > $mobility_stdout_file
                     # ./location_info_base $json -a t < $mobility_stdout_file | ./deltaHQ -t $p -i $id $json | tee -a $tmp_log
-                    python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p -i $id $json | tee -a $tmp_log
+                    ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p -i $id $json ) 2>&1 | tee -a $tmp_log
+
                 done
             done
         fi
@@ -143,7 +144,8 @@ do
                     # =======================================================================
                     # python3 -u measure.py $json ${node_number} 0 1 r > $mobility_stdout_file
                     # ./location_info_base $json -a t < $mobility_stdout_file | ./deltaHQ -t $p $json | tee -a $tmp_log
-                    python3 -u measure.py $json $node_number 0 1 r | $mobility_stdout_file | ./location_info_base $json -a t | ./deltaHQ -t $p $json | tee -a $tmp_log
+                    ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p $json ) 2>&1 | tee -a $tmp_log
+
                 done
             done
         fi
