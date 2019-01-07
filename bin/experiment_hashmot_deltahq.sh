@@ -9,14 +9,15 @@ then
     exit
 fi
 
-nodes=(100 200 500 1000 2000 5000 10000)
-
-
 exec_type=$1
 loop=$2
 
+nodes=(100 500 1000 5000 10000)
 
 for n in ${nodes[@]};
 do
-    ./deltahq_density_measure.sh $n $loop $exec_type
+    ./hashmot_deltahq_measure.sh $n $loop $exec_type
 done
+
+
+

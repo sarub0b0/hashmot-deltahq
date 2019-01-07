@@ -101,8 +101,8 @@ if __name__ == '__main__':
 
         json_update = {}
         json_update['id'] = identifier
-        json_update['x'] = x
-        json_update['y'] = y
+        json_update['x'] = round(x, 2)
+        json_update['y'] = round(y, 2)
         json_update['r'] = r
 
         update_node[idx]['x'] = x
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         update = {'update': {}}
         update['update']['node'] = json_update
 
-        json_list.append(json.dumps(update, separators=(',' ':')))
+        json_list.append(json.dumps(update, separators=(',' ':')) + '\n')
 
         loop_count += 1
 
@@ -136,22 +136,22 @@ if __name__ == '__main__':
 
     #  print(update_node)
 
-    json_list.append('{"finish":"finish"}')
+    json_list.append('{"finish":"finish"}\n')
     mt = 0
     str_array = np.array(json_list)
     sys.stderr.write("-- mobility stand-by\n")
-    #  input()
+    input()
+    t0 = time.perf_counter()
     for j in json_list:
-        t0 = time.perf_counter()
 
         sys.stdout.write(j)
-        sys.stdout.write('\n')
+        #  sys.stdout.write('\n')
         sys.stdout.flush()
 
-        t1 = time.perf_counter()
-        mt = mt + (t1 - t0)
 
         #  sys.stderr.write("print elapsed: %f\n" % (t1 - t0))
 
+    t1 = time.perf_counter()
+    mt = t1 - t0
     sys.stderr.write(
         "-- mobility elapsed: %f (%f)\n" % (mt, mt / len(json_list)))

@@ -373,6 +373,7 @@ int main(int argc, char **argv) {
     char c;
 
     int thread_number          = 0;
+    int init_thread_number     = 0;
     unsigned short port        = 0;
     unsigned short listen_port = 0;
     char ipaddr[16];
@@ -478,6 +479,12 @@ int main(int argc, char **argv) {
     if (thread_number <= 0) {
         thread_number = thread_get_cpu_number();
     }
+
+    init_thread_number = thread_get_cpu_number();
+#ifdef __APPLE__
+    init_thread_number = thread_number;
+#endif
+
     if (thread_number <= 0) {
         WARNING("Not get core number error");
         goto ERROR_HANDLE;
@@ -965,7 +972,7 @@ int main(int argc, char **argv) {
     if (scenario_init_state(scenario,
                             xml_scenario->jpgis_filename_provided,
                             xml_scenario->jpgis_filename,
-                            thread_number) == ERROR) {
+                            init_thread_number) == ERROR) {
         fflush(stdout);
         WARNING("Error during scenario initialization. Aborting...");
         goto ERROR_HANDLE;
