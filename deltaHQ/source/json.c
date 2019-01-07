@@ -235,7 +235,7 @@ json_t *read_json(input_buffer_t *ibuf) {
     json_t *root         = NULL;
     json_t *first_object = NULL;
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
     printf("read json: %s\n", line);
 #endif
     TCHK_START(json_loads);
@@ -973,7 +973,7 @@ int send_all_update_json(int center_id,
         // info->msg_len = strlen(info->msg);
 
         TCHK_END(snprintf);
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
@@ -1074,7 +1074,7 @@ int send_update_json(int own_id,
         info->msg = send_json_update_buf;
         // info->msg_len = strlen(info->msg);
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
@@ -1200,7 +1200,7 @@ int send_all_add_json(int center_id,
         info->msg = send_json_add_buf;
         // info->msg_len = strlen(info->msg);
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
@@ -1284,7 +1284,7 @@ int send_add_json(int own_id,
         info->msg = send_json_add_buf;
         // info->msg_len = strlen(info->msg);
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
         if (is_broadcast && broadcast_sendmsg(info) == ERROR) {
@@ -1346,7 +1346,7 @@ int send_delete_json(int center_id,
         info->msg = send_json_del_buf;
         // info->msg_len = strlen(info->msg);
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 
@@ -1424,7 +1424,7 @@ int send_all_delete_json(int center_id,
         info->msg = send_json_del_buf;
         // info->msg_len = strlen(info->msg);
 
-#ifndef MEASURE
+#if !defined(MEASURE) && !defined(MEASURE2)
         printf("--len(%lu) %s\n", info->msg_len, info->msg);
 #endif
 

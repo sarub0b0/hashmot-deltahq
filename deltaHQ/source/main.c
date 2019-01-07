@@ -41,7 +41,7 @@
 #include <socket.h>
 #include <jansson.h>
 
-#define FILENAME_MAX_STRING 64
+#define FILENAME_MAX_STRING 256
 //#define DISABLE_EMPTY_TIME_RECORDS
 
 ///////////////////////////////////////////////////////////
@@ -376,6 +376,11 @@ int main(int argc, char **argv) {
     unsigned short port        = 0;
     unsigned short listen_port = 0;
     char ipaddr[16];
+
+#ifdef MEASURE2
+    struct timespec end_ts;
+    struct tm end_tm;
+#endif
 
     ////////////////////////////////////////////////////////////
     // initialization
@@ -1370,6 +1375,7 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
 
+#ifndef MEASURE2
             if (send_result_to_meteor(meteor_param,
                                       own_id,
                                       scenario->connections,
@@ -1377,6 +1383,7 @@ int main(int argc, char **argv) {
                                       &info) == ERROR) {
                 WARNING("send_result_to_meteor");
             }
+#endif
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &send_end);
 #endif
@@ -1495,6 +1502,7 @@ int main(int argc, char **argv) {
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
+#ifndef MEASURE2
             if (send_all_result_to_meteor(meteor_param,
                                           center_id,
                                           scenario->node_number,
@@ -1503,6 +1511,7 @@ int main(int argc, char **argv) {
                                           &info) == ERROR) {
                 WARNING("send_result_to_meteor");
             }
+#endif
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &send_end);
 #endif
@@ -1592,6 +1601,18 @@ int main(int argc, char **argv) {
             all_send_elapsed.tv_sec,
             all_send_elapsed.tv_nsec);
 
+#endif
+
+#ifdef MEASURE2
+    clock_gettime(CLOCK_REALTIME, &end_ts);
+    localtime_r(&end_ts.tv_sec, &end_tm);
+
+    fprintf(stderr,
+            "deltahq: %02d:%02d:%02d.%09ld\n",
+            end_tm.tm_hour,
+            end_tm.tm_min,
+            end_tm.tm_sec,
+            end_ts.tv_nsec);
 #endif
 
     DEBUG2("br_assign");

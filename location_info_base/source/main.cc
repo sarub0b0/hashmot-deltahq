@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <iostream>
 #include <chrono>
 #include <algorithm>
@@ -91,6 +93,9 @@ const char short_options[] = "hp:a:L:N:A:j:";
 int main(int argc, char *const argv[]) {
     cin.tie(0);
     ios::sync_with_stdio(false);
+
+    struct timespec start_ts;
+    struct tm start_tm;
 
     //* lsh.hh define
     int d = DIMENSION;
@@ -439,12 +444,12 @@ int main(int argc, char *const argv[]) {
         // Read stream
         ///////////////////////////////////////
         // getline(cin, read);
-#ifdef MEASURE
         if (loop_start == false) {
+#ifdef MEASURE
             begin      = chrono::high_resolution_clock::now();
             loop_start = true;
-        }
 #endif
+        }
 
         if (is_listen) {
             int recv_length;
@@ -460,6 +465,13 @@ int main(int argc, char *const argv[]) {
             }
             // fprintf(stderr, "read: %s\n", read);
         }
+
+#ifdef MEASURE2
+        if (loop_start == false) {
+            loop_start = true;
+            clock_gettime(CLOCK_REALTIME, &start_ts);
+        }
+#endif
         // #ifdef TCHK_ELAPSED
         //         begin = chrono::high_resolution_clock::now();
 
@@ -741,6 +753,18 @@ int main(int argc, char *const argv[]) {
                         send_elapsed.count() % 1000000000,
                         avg.count() / 1000000000,
                         avg.count() % 1000000000);
+#endif
+
+#ifdef MEASURE2
+
+                localtime_r(&start_ts.tv_sec, &start_tm);
+
+                fprintf(stderr,
+                        "hashmot: %02d:%02d:%02d.%09ld\n",
+                        start_tm.tm_hour,
+                        start_tm.tm_min,
+                        start_tm.tm_sec,
+                        start_ts.tv_nsec);
 #endif
 
                 valueAllocator.Clear();
