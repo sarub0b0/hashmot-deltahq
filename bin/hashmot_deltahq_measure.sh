@@ -118,7 +118,9 @@ do
                     # =======================================================================
                     # python3 -u measure.py $json $node_number 0 1 r > $mobility_stdout_file
                     # ./location_info_base $json -a t < $mobility_stdout_file | ./deltaHQ -t $p -i $id $json | tee -a $tmp_log
-                    ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p -i $id $json ) 2>&1 | tee -a $tmp_log
+
+                    ./auto_measure_hashmot_deltahq_distributed.exp $json $node_number $p $tmp_log $id
+                    # ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p -i $id $json ) 2>&1 | tee -a $tmp_log
 
                 done
             done
@@ -144,7 +146,8 @@ do
                     # =======================================================================
                     # python3 -u measure.py $json ${node_number} 0 1 r > $mobility_stdout_file
                     # ./location_info_base $json -a t < $mobility_stdout_file | ./deltaHQ -t $p $json | tee -a $tmp_log
-                    ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p $json ) 2>&1 | tee -a $tmp_log
+                    ./auto_measure_hashmot_deltahq_parallel.exp $json $node_number $p $tmp_log
+                    # ( python3 -u measure.py $json $node_number 0 1 r | ./location_info_base $json -a t | ./deltaHQ -t $p $json ) 2>&1 | tee -a $tmp_log
 
                 done
             done

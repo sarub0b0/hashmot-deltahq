@@ -1,0 +1,26 @@
+#!/usr/bin/expect
+
+set timeout 200
+
+set json [lindex $argv 0]
+set node [lindex $argv 1]
+set process [lindex $argv 2]
+set tmp_log [lindex $argv 3]
+
+spawn ./used_parallel_expect_cmd.sh ${json} ${node} ${process} ${tmp_log}
+
+expect {
+    "Update Wait" {
+    }
+}
+expect {
+    "Update Wait" {
+        send "\n"
+    }
+}
+expect {
+    "Scenario processing completed successfully" {
+        exit 0
+    }
+
+}

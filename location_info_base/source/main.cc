@@ -394,7 +394,7 @@ int main(int argc, char *const argv[]) {
         // fprintf(stderr, "\n");
     }
 
-    fprintf(stderr, "\n-- Update wait --\n");
+    fprintf(stderr, "\n-- Update Wait --\n");
 
 #ifdef MEASURE
     chrono::high_resolution_clock::time_point begin, end;
