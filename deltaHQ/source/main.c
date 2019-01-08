@@ -1446,6 +1446,12 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
 #endif
 
+            DEBUG2("br_calc");
+            pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
+#endif
+
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
 #endif
@@ -1500,12 +1506,6 @@ int main(int argc, char **argv) {
 #endif
 #ifdef DEBUG_PRINT
             print_all_meteor_param(center_id, meteor_param);
-#endif
-
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_end);
 #endif
 
 #ifdef MEASURE
@@ -1568,8 +1568,8 @@ int main(int argc, char **argv) {
 
     all_elapsed = sum_elapsed(all_elapsed, all_update_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_calc_elapsed);
-    // all_elapsed = sum_elapsed(all_elapsed, all_bmp_elapsed);
-    // all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_bmp_elapsed);
+    all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_send_elapsed);
 
     float density = scenario->node_number / area;
