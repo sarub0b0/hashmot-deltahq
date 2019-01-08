@@ -1309,10 +1309,14 @@ int main(int argc, char **argv) {
 
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
 
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
 #endif
+
             // ------------------------------------
             // set bitmap
             // ------------------------------------
@@ -1361,9 +1365,6 @@ int main(int argc, char **argv) {
             print_meteor_param(own_id, meteor_param);
 #endif
 
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
-#endif
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);
 #ifdef MEASURE
@@ -1442,6 +1443,10 @@ int main(int argc, char **argv) {
             DEBUG2("br_assign");
             pthread_barrier_wait(&br_assign);
 #ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
+
+#ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &bmp_begin);
 #endif
             // ------------------------------------
@@ -1497,9 +1502,6 @@ int main(int argc, char **argv) {
             print_all_meteor_param(center_id, meteor_param);
 #endif
 
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_begin);
-#endif
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);
 #ifdef MEASURE
@@ -1566,8 +1568,8 @@ int main(int argc, char **argv) {
 
     all_elapsed = sum_elapsed(all_elapsed, all_update_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_calc_elapsed);
-    all_elapsed = sum_elapsed(all_elapsed, all_bmp_elapsed);
-    all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
+    // all_elapsed = sum_elapsed(all_elapsed, all_bmp_elapsed);
+    // all_elapsed = sum_elapsed(all_elapsed, all_meteor_elapsed);
     all_elapsed = sum_elapsed(all_elapsed, all_send_elapsed);
 
     float density = scenario->node_number / area;
