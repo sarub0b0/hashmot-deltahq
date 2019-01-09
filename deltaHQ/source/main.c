@@ -1260,6 +1260,11 @@ int main(int argc, char **argv) {
         // get neighbor node id from stdin
         // ------------------------------------
         if (0 <= own_id) {
+
+            // ========================================================================
+            // distributed calculation
+            // ========================================================================
+
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &update_begin);
 #endif
@@ -1307,10 +1312,16 @@ int main(int argc, char **argv) {
                 deltaQ_class->end_conn[0]   = neighbor_number;
             }
 
-            DEBUG2("br_assign");
-            pthread_barrier_wait(&br_assign);
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
+#endif
+            DEBUG2("br_assign");
+            pthread_barrier_wait(&br_assign);
+
+            DEBUG2("br_calc");
+            pthread_barrier_wait(&br_calc);
+#ifdef MEASURE
+            clock_gettime(CLOCK_MONOTONIC, &calc_end);
 #endif
 
 #ifdef MEASURE
@@ -1365,12 +1376,6 @@ int main(int argc, char **argv) {
             print_meteor_param(own_id, meteor_param);
 #endif
 
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
-#ifdef MEASURE
-            clock_gettime(CLOCK_MONOTONIC, &calc_end);
-#endif
-
             TCHK_END(scenario_deltaQ);
             // if (is_other_update != 0 || is_other_delete != 0 ||
             //     neighbor_number != 0) {
@@ -1397,6 +1402,9 @@ int main(int argc, char **argv) {
 #endif
             // }
         } else {
+            // ========================================================================
+            // parallel calculation
+            // ========================================================================
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &update_begin);
 #endif
@@ -1441,10 +1449,10 @@ int main(int argc, char **argv) {
             }
 
             DEBUG2("br_assign");
-            pthread_barrier_wait(&br_assign);
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
 #endif
+            pthread_barrier_wait(&br_assign);
 
             DEBUG2("br_calc");
             pthread_barrier_wait(&br_calc);

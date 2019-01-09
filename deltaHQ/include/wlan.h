@@ -133,7 +133,7 @@
 // Note: later all structures may be unified
 struct parameters_802_11b {
     // name of the adapter
-    char name[MAX_STRING];
+    char name[64];
 
     // constants of model 1 (Pr-threshold based model)
     int use_model1; // set to TRUE if model 1 is used, FALSE otherwise
@@ -172,7 +172,7 @@ struct parameters_802_11b {
 // data structure to hold 802.11g parameters
 struct parameters_802_11g {
     // name of the adapter
-    char name[MAX_STRING];
+    char name[64];
 
     // constants of model 1 (Pr-threshold based model)
     int use_model1; // set to TRUE if model 1 is used, FALSE otherwise
@@ -205,7 +205,7 @@ struct parameters_802_11g {
 // data structure to hold 802.11a parameters
 struct parameters_802_11a {
     // name of the adapter
-    char name[MAX_STRING];
+    char name[64];
 
     // constants of model 1 (Pr-threshold based model)
     int use_model1; // set to TRUE if model 1 is used, FALSE otherwise
