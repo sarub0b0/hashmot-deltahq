@@ -1101,47 +1101,50 @@ int main(int argc, char **argv) {
 
     TCHK_END(assign_range_calc);
 
-    ar_conn.loop = neighbor_number;
-    ar_conn.step = neighbor_number / thread_number;
-    ar_conn.mod  = neighbor_number % thread_number;
+    if (1 < thread_number && own_id != -1) {
+        ar_conn.loop = neighbor_number;
+        ar_conn.step = neighbor_number / thread_number;
+        ar_conn.mod  = neighbor_number % thread_number;
 
-    for (int i = 0; i < thread_number; i++) {
-        pt_scenario[i] = pthread_self();
+        for (int i = 0; i < thread_number; i++) {
+            pt_scenario[i] = pthread_self();
 #ifndef __APPLE__
-        CPU_ZERO(&cpu);
-        CPU_SET(i, &cpu);
-        if (pthread_setaffinity_np(pt_scenario[i], sizeof(cpu_set_t), &cpu) !=
-            0) {
-            WARNING("pthread_setaffinity_np error");
-            goto ERROR_HANDLE;
-        }
+            CPU_ZERO(&cpu);
+            CPU_SET(i, &cpu);
+            if (pthread_setaffinity_np(
+                    pt_scenario[i], sizeof(cpu_set_t), &cpu) != 0) {
+                WARNING("pthread_setaffinity_np error");
+                goto ERROR_HANDLE;
+            }
 #endif
-        //#ifdef SET_SCHED_PRIORITY
-        //        param.sched_priority = priority;
-        //        if (pthread_setschedparam(pt_scenario[i], policy,
-        //        &param) != 0) {
-        //            WARNING("pthread_setschedparam error");
-        //            goto ERROR_HANDLE;
-        //        }
-        //#endif
-        TCHK_START(assign_connection_range);
+            //#ifdef SET_SCHED_PRIORITY
+            //        param.sched_priority = priority;
+            //        if (pthread_setschedparam(pt_scenario[i], policy,
+            //        &param) != 0) {
+            //            WARNING("pthread_setschedparam error");
+            //            goto ERROR_HANDLE;
+            //        }
+            //#endif
+            TCHK_START(assign_connection_range);
 
-        thread_get_index(&ar_conn);
-        deltaQ_class->start_conn[i] = ar_conn.start;
-        deltaQ_class->end_conn[i]   = ar_conn.end;
+            thread_get_index(&ar_conn);
+            deltaQ_class->start_conn[i] = ar_conn.start;
+            deltaQ_class->end_conn[i]   = ar_conn.end;
 
-        TCHK_END(assign_connection_range);
+            TCHK_END(assign_connection_range);
 
-        sprintf(name, "%d", i);
+            sprintf(name, "%d", i);
 #ifndef __APPLE__
-        pthread_setname_np(pt_scenario[i], name);
+            pthread_setname_np(pt_scenario[i], name);
 #else
-        pthread_setname_np(name);
+            pthread_setname_np(name);
 #endif
-        if (pthread_create(
-                &pt_scenario[i], NULL, scenario_deltaQ, deltaQ_class) != 0) {
-            WARNING("pthread_create error");
-            goto ERROR_HANDLE;
+            if (pthread_create(
+                    &pt_scenario[i], NULL, scenario_deltaQ, deltaQ_class) !=
+                0) {
+                WARNING("pthread_create error");
+                goto ERROR_HANDLE;
+            }
         }
     }
 
@@ -1315,11 +1318,12 @@ int main(int argc, char **argv) {
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
 #endif
-            DEBUG2("br_assign");
-            pthread_barrier_wait(&br_assign);
-
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
+            if (thread_number == 1) {
+                distributed_scenario_deltaQ(deltaQ_class);
+            } else {
+                pthread_barrier_wait(&br_assign);
+                pthread_barrier_wait(&br_calc);
+            }
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_end);
 #endif
@@ -1632,11 +1636,13 @@ int main(int argc, char **argv) {
             end_ts.tv_nsec);
 #endif
 
-    DEBUG2("br_assign");
-    pthread_barrier_wait(&br_assign);
+    if (1 < thread_number && own_id != -1) {
+        DEBUG2("br_assign");
+        pthread_barrier_wait(&br_assign);
 
-    for (int i = 0; i < thread_number; i++) {
-        pthread_join(pt_scenario[i], NULL);
+        for (int i = 0; i < thread_number; i++) {
+            pthread_join(pt_scenario[i], NULL);
+        }
     }
 
     // pthread_join(pt_input_buf, NULL);

@@ -839,6 +839,66 @@ void *scenario_deltaQ(void *arg) {
     return NULL;
 }
 
+void distributed_scenario_deltaQ(struct scenario_deltaQ_class *sdcls) {
+    // printf("distributed\n");
+
+    struct scenario_class *scenario;
+    int start_conn;
+    int end_conn;
+
+    scenario = sdcls->scenario;
+
+    int connection_i, deltaQ_changed;
+    struct connection_class *connection;
+
+    start_conn = sdcls->start_conn[0];
+    end_conn   = sdcls->end_conn[0];
+
+    struct connection_class **neighbor;
+
+    neighbor = sdcls->neighbor;
+
+    // while (1) {
+
+    //     // pthread_barrier_wait(p->br_assign);
+
+    //     if (sdcls->calc_done == TRUE) {
+    //         break;
+    //     }
+
+    // ------------------------------------
+    // connections calculation
+    // ------------------------------------
+    TCHK_START(connection_deltaQ);
+
+    start_conn = sdcls->start_conn[0];
+    end_conn   = sdcls->end_conn[0];
+
+    // calculate the state for active nodes according to
+    // 'connections' object in 'scenario'
+    for (connection_i = start_conn; connection_i < end_conn; connection_i++) {
+
+        connection = sdcls->neighbor[connection_i];
+
+        if (connection_deltaQ(connection, scenario, &deltaQ_changed) ==
+            ERROR) {
+            WARNING("connection_deltaQ error");
+            break;
+        }
+    }
+
+    TCHK_END(connection_deltaQ);
+
+    // pthread_barrier_wait(p->br_calc);
+    // }
+
+#ifdef DEBUG_PRINT
+    fprintf(stdout, "pthread_exit scenario_deltaQ\n");
+#endif
+    // pthread_exit(NULL);
+    // pthread_detach(pthread_self());
+    // return NULL;
+}
 // reset the interference_accounted flag for all nodes
 void scenario_reset_node_interference_flag(struct scenario_class *scenario) {
     int node_i, interf_j;
@@ -1057,9 +1117,9 @@ int scenario_sort_connections(struct connection_class *connections,
                               int connection_number,
                               int own_id) {
 
-    int hit_index     = 0;
-    int swap_index    = 0;
-    int current_id    = 0;
+    int hit_index  = 0;
+    int swap_index = 0;
+    int current_id = 0;
     struct connection_class temp_conn;
     struct connection_class curr_conn;
 

@@ -61,6 +61,8 @@
 #define BEHAVIORAL_MOTION 6
 #define QUALNET_MOTION 7
 
+struct scenario_deltaQ_class;
+
 ////////////////////////////////////////////////
 // Scenario structure definition
 ////////////////////////////////////////////////
@@ -153,6 +155,7 @@ int scenario_init_state(struct scenario_class *scenario,
 // the connection objects;
 // return SUCCESS on succes, ERROR on error
 void *scenario_deltaQ(void *arg);
+void distributed_scenario_deltaQ(struct scenario_deltaQ_class *sdcls);
 
 // reset the interference_accounted flag for all nodes
 void scenario_reset_node_interference_flag(struct scenario_class *scenario);
