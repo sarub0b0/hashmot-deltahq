@@ -16,6 +16,7 @@ local_scenario_dir = local_dir + "/exp_hashmot_deltahq_json"
 deltaHQ_path = remote_dir + '/bin/deltaHQ'
 
 remote_addr = '172.31.0.11'
+identity_file = '~/.ssh/keys/crab'
 
 
 def make_id_list(node_number, process_number, machine_id, numbering):
@@ -86,6 +87,8 @@ def send_scenario_files(node_number):
     sp.run([
         'scp',
         '-r',
+        '-i',
+        identity_file,
         local_scenario_dir + "/%dnode/" % node_number,
         remote_addr + ":" + remote_scenario_dir,
     ])
@@ -95,10 +98,13 @@ def send_scenario_files(node_number):
 
     p = sp.run([
         'ssh',
+        '-i',
+        identity_file,
         remote_addr,
         'ls',
         output_dir + '/*.json',
-    ], stdout=sp.PIPE)
+    ],
+               stdout=sp.PIPE)
 
     output = p.stdout.decode('utf-8')
     scenario_files = output.splitlines()
@@ -114,65 +120,235 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
 
     print("own_ids(%d)" % len(own_ids))
 
-    deltahq_childs = []
-
     if exec_type == 'd':
         for scenario_json in scenario_files:
             json_name = scenario_json.split('/')[-1]
             local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
 
-            log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(process_number) + '.log'
+            local_log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
+                process_number) + '.log'
+            remote_log_file = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
+                process_number) + '.log'
+
+            deltahq_childs = []
             try:
-                os.remove(log_file)
+                os.remove(local_log_file)
             except OSError:
                 pass
 
             for ids in own_ids:
-                deltahq_command = "ssh " + remote_addr + ' ' + remote_dir + "/bin/deltaHQ -t 1 -i " + str(
-                    ids) + " " + scenario_json + " -L " + str(
-                        port) + " 2>&1 | tee " + log_file
+                command_list = [
+                    'ssh',
+                    '-i',
+                    identity_file,
+                    remote_addr,
+                    '\'',
+                    'bash',
+                    '-c',
+                    '\"',
+                    remote_dir + '/bin/deltaHQ',
+                    '-t',
+                    1,
+                    '-i',
+                    ids,
+                    scenario_json,
+                    '-L',
+                    port,
+                    '2>&1',
+                    '|',
+                    'tee',
+                    remote_log_file,
+                    '\"',
+                    '\'',
+                ]
 
-                deltahq_childs.append(pexpect.spawn(deltahq_command))
+                deltahq_command = ' '.join(map(str, command_list))
+                print(deltahq_command)
+
+                deltahq_childs.append(
+                    pexpect.spawn(deltahq_command, timeout=None))
                 deltahq_childs[-1].logfile_read = sys.stdout.buffer
-                print("spawn deltahq")
                 deltahq_childs[-1].expect(
-                    "-- Initial Neighbors Update:", timeout=-1)
-                print("match deltahq Initial")
+                    "Initial Neighbors Update", timeout=None)
 
-                #  childs = pexpect.spawn(deltahq_command)
-                #  childs.logfile_read = sys.stdout.buffer
-                #  print("spawn deltahq")
-                #  childs.expect("-- Initial Neighbors Update:")
-                #  print("match deltahq Initial")
+            command_list = [
+                'bash',
+                '-c',
+                '\'',
+                './measure.py',
+                local_scenario_json,
+                node_number,
+                '0',
+                '1',
+                'r',
+                '|',
+                './location_info_base',
+                '-A',
+                address,
+                '-p',
+                port,
+                local_scenario_json,
+                '-a',
+                't',
+                '2>&1',
+                '|',
+                'tee',
+                local_log_file,
+                '\'',
+            ]
+            #  hashmot_command = "./measure.py " + local_scenario_json + " " + str(
+            #      node_number
+            #  ) + " 0 1 r | ./location_info_base -A " + address + " -p " + str(
+            #      port
+            #  ) + " " + local_scenario_json + " -a t 2>&1 | tee -a " + local_log_file
+            hashmot_command = ' '.join(map(str, command_list))
+            print(hashmot_command)
 
-            #  for ch in childs:
-            #      ch.expect("Initial Neighbors Update")
+            hashmot_child = pexpect.spawn(hashmot_command, timeout=None)
 
-            hashmot_command = "bash -c \"./measure.py " + local_scenario_json + " " + str(
-                node_number
-            ) + " 0 1 r | ./location_info_base -A " + address + " -p " + str(
-                port
-            ) + " " + local_scenario_json + " -a t 2>&1| tee -a " + log_file + "\""
-            hashmot_child = pexpect.spawn(hashmot_command)
             hashmot_child.logfile_read = sys.stdout.buffer
 
-            print("spawn hashmot")
+            #  print("spawn hashmot")
 
-            hashmot_child.expect("-- Update Wait --", timeout=-1)
-            print("match hashot update wait")
+            hashmot_expect_list = ['Update Wait', 'mobility stand-by']
+            index = hashmot_child.expect(hashmot_expect_list, timeout=None)
+            if index == 0 or index == 1:
+                pass
+            index = hashmot_child.expect(hashmot_expect_list, timeout=None)
+            if index == 0 or index == 1:
+                pass
+            print("Match hashot update wait and mobility")
 
+            for ch in deltahq_childs:
+                ch.expect('Update Wait', timeout=30)
             #  time.sleep(5)
 
+            print('### deltahq update wait')
             hashmot_child.sendline("\n")
 
-            #  hashmot_child.expect("-- Success --")
-            hashmot_child.expect(pexpect.EOF, timeout=-1)
+            hashmot_child.expect("-- Success --")
+            print('\n### hashmot done\n')
+            hashmot_child.terminate()
+            hashmot_child.expect(pexpect.EOF)
             #  hashmot_child.close()
 
             for ch in deltahq_childs:
-                #  ch.expect("-- Scenario processing completed successfully")
-                ch.expect(pexpect.EOF, timeout=-1)
+                ch.expect(
+                    "-- Scenario processing completed successfully",
+                    timeout=30)
+                print('\n### deltahq done\n')
+                #  print(ch)
+                ch.terminate()
+                ch.expect(pexpect.EOF)
                 #  ch.close()
+
+    if exec_type == 'p':
+        for scenario_json in scenario_files:
+            json_name = scenario_json.split('/')[-1]
+            local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
+
+            local_log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
+                process_number) + '.log'
+            remote_log_file = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
+                process_number) + '.log'
+
+            command_list = [
+                'ssh',
+                '-i',
+                identity_file,
+                remote_addr,
+                '\'',
+                'bash',
+                '-c',
+                '\"',
+                remote_dir + '/bin/deltaHQ',
+                '-t',
+                process_number,
+                scenario_json,
+                '-L',
+                port,
+                '2>&1',
+                '|',
+                'tee',
+                remote_log_file,
+                '\"',
+                '\'',
+            ]
+
+            deltahq_command = ' '.join(map(str, command_list))
+            print(deltahq_command)
+
+            deltahq_child = pexpect.spawn(deltahq_command, timeout=None)
+            deltahq_child.logfile_read = sys.stdout.buffer
+            deltahq_child.expect("Initial Neighbors Update", timeout=None)
+
+            command_list = [
+                'bash',
+                '-c',
+                '\'',
+                './measure.py',
+                local_scenario_json,
+                node_number,
+                '0',
+                '1',
+                'r',
+                '|',
+                './location_info_base',
+                '-A',
+                address,
+                '-p',
+                port,
+                local_scenario_json,
+                '-a',
+                't',
+                '2>&1',
+                '|',
+                'tee',
+                local_log_file,
+                '\'',
+            ]
+            #  hashmot_command = "./measure.py " + local_scenario_json + " " + str(
+            #      node_number
+            #  ) + " 0 1 r | ./location_info_base -A " + address + " -p " + str(
+            #      port
+            #  ) + " " + local_scenario_json + " -a t 2>&1 | tee -a " + local_log_file
+            hashmot_command = ' '.join(map(str, command_list))
+            print(hashmot_command)
+
+            hashmot_child = pexpect.spawn(hashmot_command, timeout=None)
+
+            hashmot_child.logfile_read = sys.stdout.buffer
+
+            #  print("spawn hashmot")
+
+            hashmot_expect_list = ['Update Wait', 'mobility stand-by']
+            index = hashmot_child.expect(hashmot_expect_list, timeout=None)
+            if index == 0 or index == 1:
+                pass
+            index = hashmot_child.expect(hashmot_expect_list, timeout=None)
+            if index == 0 or index == 1:
+                pass
+            print("Match hashot update wait and mobility")
+
+            deltahq_child.expect('Update Wait', timeout=30)
+            #  time.sleep(5)
+
+            print('### deltahq update wait')
+            hashmot_child.sendline("\n")
+
+            hashmot_child.expect("-- Success --")
+            print('\n### hashmot done\n')
+            hashmot_child.terminate()
+            hashmot_child.expect(pexpect.EOF)
+            #  hashmot_child.close()
+
+            deltahq_child.expect(
+                "-- Scenario processing completed successfully", timeout=30)
+            print('\n### deltahq done\n')
+            #  print(ch)
+            deltahq_child.terminate()
+            deltahq_child.expect(pexpect.EOF)
+            #  ch.close()
 
 
 if __name__ == '__main__':
@@ -186,6 +362,8 @@ if __name__ == '__main__':
 
     node_list = [100, 200, 500, 1000, 2000, 5000, 10000]
     proc_list = [1, 2, 4, 8, 16, 24, 48, 72]
+    node_list = [100, 200]
+    proc_list = [1, 2, 4]
 
     machine_id = 0
     numbering = sys.argv[1]
@@ -193,7 +371,9 @@ if __name__ == '__main__':
     address = sys.argv[3]
     port = int(sys.argv[4])
 
-    sp.run(['mkdir', remote_scenario_dir])
+    sp.run([
+        'ssh', remote_addr, '-i', identity_file, 'mkdir', remote_scenario_dir
+    ])
 
     os.makedirs(local_scenario_dir, exist_ok=True)
     #  print(node_number, process_number, machine_id, numbering)
