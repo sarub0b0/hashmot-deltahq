@@ -35,7 +35,7 @@ do
     length=`echo "scale=4;sqrt($area) * 1000" | bc`
     printf "length %8.4f[m]\n" $length
 
-    python3 create_init_json.py $node_number $area $radius
+    python3 ${home}/hashmot/bin/create_init_json.py $node_number $area $radius
     echo "mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json"
     mv ${node_number}node.json ${dir}/${node_number}node/n${node_number}_d${density}_r${radius}.json
     echo "create density($density) size($length)"
