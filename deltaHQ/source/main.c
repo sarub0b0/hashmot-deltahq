@@ -1395,7 +1395,7 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
 
-#ifndef MEASURE2
+#if !defined(MEASURE) && !defined(MEASURE2)
             if (send_result_to_meteor(meteor_param,
                                       own_id,
                                       scenario->connections,
@@ -1532,7 +1532,7 @@ int main(int argc, char **argv) {
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &send_begin);
 #endif
-#ifndef MEASURE2
+#if !defined(MEASURE) && !defined(MEASURE2)
             if (send_all_result_to_meteor(meteor_param,
                                           center_id,
                                           scenario->node_number,
