@@ -6,15 +6,16 @@ import os
 import numpy as np
 #  from multiprocessing import Process
 import pexpect
-import glob
+#  import glob
 #  import math
 
 remote_dir = '/home/kosay/hashmot'
-scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
+local_dir = '/Users/kosay/work/hashmot'
+remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
+local_scenario_dir = local_dir + "/exp_hashmot_deltahq_json"
 deltaHQ_path = remote_dir + '/bin/deltaHQ'
 
-remote_addr = 'crab'
-
+remote_addr = '172.31.0.11'
 
 
 def make_id_list(node_number, process_number, machine_id, numbering):
@@ -72,18 +73,34 @@ def make_id_list(node_number, process_number, machine_id, numbering):
 def create_scenario_files(node_number, communication_radius, scenario_dir):
 
     create_command = [
-        'ssh', remote_addr, remote_dir + '/bin/create_measured_init_json.sh',
+        './create_measured_init_json.sh',
         str(node_number),
-        str(communication_radius), scenario_dir
+        str(communication_radius),
+        scenario_dir,
     ]
     sp.run(create_command)
 
-    output_dir = scenario_dir + '/%dnode' % node_number
+
+def send_scenario_files(node_number):
+
+    sp.run([
+        'scp',
+        '-r',
+        local_scenario_dir + "/%dnode/" % node_number,
+        remote_addr + ":" + remote_scenario_dir,
+    ])
+
+    output_dir = remote_scenario_dir + '/%dnode' % node_number
     #  scenario_files = glob.glob(output_dir + "/*.json")
 
-    p = sp.run(['ls', output_dir + '/*.json'], stdout=sp.PIPE)
+    p = sp.run([
+        'ssh',
+        remote_addr,
+        'ls',
+        output_dir + '/*.json',
+    ], stdout=sp.PIPE)
 
-    output = p.output.decode('utf-8')
+    output = p.stdout.decode('utf-8')
     scenario_files = output.splitlines()
 
     return scenario_files
@@ -101,17 +118,19 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
 
     if exec_type == 'd':
         for scenario_json in scenario_files:
-            log_file = scenario_json + '.dp' + str(process_number) + '.log'
+            json_name = scenario_json.split('/')[-1]
+            local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
+
+            log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(process_number) + '.log'
             try:
-                print(log_file)
                 os.remove(log_file)
             except OSError:
                 pass
 
             for ids in own_ids:
-                deltahq_command = "ssh " + remote_addr + remote_dir + "/bin/deltaHQ -t 1 -i " + str(
+                deltahq_command = "ssh " + remote_addr + ' ' + remote_dir + "/bin/deltaHQ -t 1 -i " + str(
                     ids) + " " + scenario_json + " -L " + str(
-                        port) + " 2>&1| tee -a " + log_file + "\""
+                        port) + " 2>&1 | tee " + log_file
 
                 deltahq_childs.append(pexpect.spawn(deltahq_command))
                 deltahq_childs[-1].logfile_read = sys.stdout.buffer
@@ -129,11 +148,11 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             #  for ch in childs:
             #      ch.expect("Initial Neighbors Update")
 
-            hashmot_command = "bash -c \"./measure.py " + scenario_json + " " + str(
+            hashmot_command = "bash -c \"./measure.py " + local_scenario_json + " " + str(
                 node_number
             ) + " 0 1 r | ./location_info_base -A " + address + " -p " + str(
                 port
-            ) + " " + scenario_json + " -a t 2>&1| tee -a " + log_file + "\""
+            ) + " " + local_scenario_json + " -a t 2>&1| tee -a " + log_file + "\""
             hashmot_child = pexpect.spawn(hashmot_command)
             hashmot_child.logfile_read = sys.stdout.buffer
 
@@ -174,12 +193,14 @@ if __name__ == '__main__':
     address = sys.argv[3]
     port = int(sys.argv[4])
 
-    sp.run(['mkdir', scenario_dir])
+    sp.run(['mkdir', remote_scenario_dir])
 
-    #  os.makedirs(scenario_dir, exist_ok=True)
+    os.makedirs(local_scenario_dir, exist_ok=True)
     #  print(node_number, process_number, machine_id, numbering)
 
     for node in node_list:
-        scenario_files = create_scenario_files(node, 160, scenario_dir)
+        create_scenario_files(node, 160, local_scenario_dir)
+        scenario_files = send_scenario_files(node)
+
         for proc in proc_list:
             run(node, proc, machine_id, numbering, exec_type, address, port)
