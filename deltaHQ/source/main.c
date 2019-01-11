@@ -1101,7 +1101,10 @@ int main(int argc, char **argv) {
 
     TCHK_END(assign_range_calc);
 
-    if (1 < thread_number && own_id != -1) {
+    int cpusets[24] = {0,  2,  4,  6,  8,  10, 1,  3,  5,  7,  9,  11,
+                       12, 14, 16, 18, 20, 22, 13, 15, 17, 19, 21, 23};
+
+    if (1 < thread_number) {
         ar_conn.loop = neighbor_number;
         ar_conn.step = neighbor_number / thread_number;
         ar_conn.mod  = neighbor_number % thread_number;
@@ -1456,10 +1459,16 @@ int main(int argc, char **argv) {
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
 #endif
-            pthread_barrier_wait(&br_assign);
+            if (thread_number == 1) {
+                distributed_scenario_deltaQ(deltaQ_class);
+            } else {
+                pthread_barrier_wait(&br_assign);
+                pthread_barrier_wait(&br_calc);
+            }
+            // pthread_barrier_wait(&br_assign);
 
-            DEBUG2("br_calc");
-            pthread_barrier_wait(&br_calc);
+            // DEBUG2("br_calc");
+            // pthread_barrier_wait(&br_calc);
 #ifdef MEASURE
             clock_gettime(CLOCK_MONOTONIC, &calc_end);
 #endif
@@ -1636,7 +1645,7 @@ int main(int argc, char **argv) {
             end_ts.tv_nsec);
 #endif
 
-    if (1 < thread_number && own_id != -1) {
+    if (1 < thread_number) {
         DEBUG2("br_assign");
         pthread_barrier_wait(&br_assign);
 
