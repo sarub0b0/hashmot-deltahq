@@ -24,6 +24,7 @@ area = float(sys.argv[2])
 radius = int(sys.argv[3])
 length = math.sqrt(area) * 1000
 
+#  print(node_num, area, radius)
 fd = open(str(node_num) + "node.json", 'w')
 
 root = json.loads('{}')

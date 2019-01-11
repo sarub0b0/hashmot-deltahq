@@ -1637,12 +1637,23 @@ int main(int argc, char **argv) {
     clock_gettime(CLOCK_REALTIME, &end_ts);
     localtime_r(&end_ts.tv_sec, &end_tm);
 
-    fprintf(stderr,
-            "deltahq: %02d:%02d:%02d.%09ld\n",
-            end_tm.tm_hour,
-            end_tm.tm_min,
-            end_tm.tm_sec,
-            end_ts.tv_nsec);
+    if (own_id < 0) {
+
+        fprintf(stderr,
+                "deltahq: %02d:%02d:%02d.%09ld\n",
+                end_tm.tm_hour,
+                end_tm.tm_min,
+                end_tm.tm_sec,
+                end_ts.tv_nsec);
+    } else {
+        fprintf(stderr,
+                "deltahq(%d): %02d:%02d:%02d.%09ld\n",
+                own_id,
+                end_tm.tm_hour,
+                end_tm.tm_min,
+                end_tm.tm_sec,
+                end_ts.tv_nsec);
+    }
 #endif
 
     if (1 < thread_number) {
