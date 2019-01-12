@@ -35,6 +35,10 @@ int dgram_listen(struct dgram_info *dg_info) {
         perror("bind");
         return ERROR;
     }
+
+    // int blocking = 0;
+    // ioctl(dg_info->sock, FIONBIO, &blocking);
+
     return SUCCESS;
 }
 

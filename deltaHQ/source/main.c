@@ -380,7 +380,6 @@ int main(int argc, char **argv) {
 
 #ifdef MEASURE2
     struct timespec end_ts;
-    struct tm end_tm;
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -705,18 +704,12 @@ int main(int argc, char **argv) {
     ////////////////////////////////////////////////////////////
     // open test json file
     ////////////////////////////////////////////////////////////
-    // ibuf.test_json = fopen("input_deltaHQ.json", "r");
-    // if (!ibuf.test_json) {
-    //     WARNING("fopen error");
-    //     goto ERROR_HANDLE;
+        // ibuf.buffers = (char **) malloc(sizeof(char *) * ibuf.bufs_size);
+    // for (int i = 0; i < ibuf.bufs_size; i++) {
+    //     ibuf.buffers[i] = (char *) malloc(sizeof(char) * ibuf.buf_size);
     // }
-    ibuf.buffers = (char **) malloc(sizeof(char *) * ibuf.bufs_size);
-    for (int i = 0; i < ibuf.bufs_size; i++) {
-        ibuf.buffers[i] = (char *) malloc(sizeof(char) * ibuf.buf_size);
-    }
 
     // pthread_t pt_input_buf;
-
     // pthread_create(&pt_input_buf, NULL, thread_buffer_write, &ibuf);
 
     // =====================================================
@@ -1635,24 +1628,32 @@ int main(int argc, char **argv) {
 
 #ifdef MEASURE2
     clock_gettime(CLOCK_REALTIME, &end_ts);
-    localtime_r(&end_ts.tv_sec, &end_tm);
+    // struct tm end_tm;
+    // localtime_r(&end_ts.tv_sec, &end_tm);
 
     if (own_id < 0) {
 
-        fprintf(stderr,
-                "deltahq: %02d:%02d:%02d.%09ld\n",
-                end_tm.tm_hour,
-                end_tm.tm_min,
-                end_tm.tm_sec,
-                end_ts.tv_nsec);
+        fprintf(
+            stderr, "deltahq: %ld.%09ld\n", end_ts.tv_sec, end_ts.tv_nsec);
+        // fprintf(stderr,
+        //         "deltahq: %02d:%02d:%02d.%09ld\n",
+        //         end_tm.tm_hour,
+        //         end_tm.tm_min,
+        //         end_tm.tm_sec,
+        //         end_ts.tv_nsec);
     } else {
         fprintf(stderr,
-                "deltahq(%d): %02d:%02d:%02d.%09ld\n",
+                "deltahq(%d): %ld.%09ld\n",
                 own_id,
-                end_tm.tm_hour,
-                end_tm.tm_min,
-                end_tm.tm_sec,
+                end_ts.tv_sec,
                 end_ts.tv_nsec);
+        // fprintf(stderr,
+        //         "deltahq(%d): %02d:%02d:%02d.%09ld\n",
+        //         own_id,
+        //         end_tm.tm_hour,
+        //         end_tm.tm_min,
+        //         end_tm.tm_sec,
+        //         end_ts.tv_nsec);
     }
 #endif
 
@@ -1745,10 +1746,10 @@ FINAL_HANDLE:
         }
     }
 
-    for (int i = 0; i < ibuf.bufs_size; i++) {
-        if (ibuf.buffers[i]) free(ibuf.buffers[i]);
-        ibuf.buffers[i] = NULL;
-    }
+    // for (int i = 0; i < ibuf.bufs_size; i++) {
+    //     if (ibuf.buffers[i]) free(ibuf.buffers[i]);
+    //     ibuf.buffers[i] = NULL;
+    // }
 
     for (int i = 0; i < scenario->connection_number; i++) {
         if (neighbor[i]) neighbor[i] = NULL;

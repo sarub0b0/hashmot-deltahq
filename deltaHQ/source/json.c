@@ -204,17 +204,13 @@ void print_json(json_t *root) {
 json_t *read_json(input_buffer_t *ibuf) {
 
     char line[9000] = {0};
-
     // line = buffer_read(ibuf);
 
     int recv_len = 0;
     if (ibuf->is_listen_dgram) {
 
         recv_len = recv(ibuf->dgram.sock, line, 9000, 0);
-        if (recv_len == 0) {
-            return NULL;
-        }
-        if (recv_len == -1) {
+        if (recv_len < 1) {
             perror("recv");
             return NULL;
         }
