@@ -6,6 +6,7 @@ import os
 import numpy as np
 #  from multiprocessing import Process
 import pexpect
+import re
 #  import glob
 #  import math
 
@@ -13,6 +14,7 @@ remote_dir = '/home/kosay/hashmot'
 local_dir = '/Users/kosay/work/hashmot'
 remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
 local_scenario_dir = local_dir + "/exp_hashmot_deltahq_json"
+local_log_dir = local_scenario_dir + "/log"
 deltaHQ_path = remote_dir + '/bin/deltaHQ'
 
 remote_addr = '172.31.0.11'
@@ -96,15 +98,17 @@ def send_scenario_files(node_number):
     output_dir = remote_scenario_dir + '/%dnode' % node_number
     #  scenario_files = glob.glob(output_dir + "/*.json")
 
-    p = sp.run([
-        'ssh',
-        '-i',
-        identity_file,
-        remote_addr,
-        'ls',
-        output_dir + '/*.json',
-    ],
-               stdout=sp.PIPE)
+    p = sp.run(
+        [
+            'ssh',
+            '-i',
+            identity_file,
+            remote_addr,
+            'ls',
+            output_dir + '/*.json',
+        ],
+        stdout=sp.PIPE,
+    )
 
     output = p.stdout.decode('utf-8')
     scenario_files = output.splitlines()
@@ -125,16 +129,18 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             json_name = scenario_json.split('/')[-1]
             local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
 
-            local_log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
-                process_number) + '.log'
-            remote_log_file = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
+            local_tmplog_filename = local_log_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
+                process_number) + '.tmplog'
+            #  remote_tmplog_filename = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
+            #      process_number) + '.tmplog'
+
+            local_log_filename = local_log_dir + '/%dnode/' % node_number + json_name + '.dp' + str(
                 process_number) + '.log'
 
+            os.makedirs(local_log_dir + '/%dnode' % node_number, exist_ok=True)
+            local_tmplog_fildes = open(local_tmplog_filename, 'wb')
+
             deltahq_childs = []
-            try:
-                os.remove(local_log_file)
-            except OSError:
-                pass
 
             for ids in own_ids:
                 command_list = [
@@ -155,11 +161,11 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                     '-L',
                     port,
                     '2>&1',
-                    '|',
-                    'tee',
-                    remote_log_file,
                     '\"',
                     '\'',
+                    #  '|',
+                    #  'tee',
+                    #  remote_tmplog_filename,
                 ]
 
                 deltahq_command = ' '.join(map(str, command_list))
@@ -167,9 +173,12 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
 
                 deltahq_childs.append(
                     pexpect.spawn(deltahq_command, timeout=None))
-                deltahq_childs[-1].logfile_read = sys.stdout.buffer
+                #  deltahq_childs[-1].logfile_read = sys.stdout.buffer
+                deltahq_childs[-1].logfile_read = local_tmplog_fildes
                 deltahq_childs[-1].expect(
                     "Initial Neighbors Update", timeout=None)
+
+            print()
 
             command_list = [
                 'bash',
@@ -191,9 +200,9 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 '-a',
                 't',
                 '2>&1',
-                '|',
-                'tee',
-                local_log_file,
+                #  '|',
+                #  'tee',
+                #  local_tmplog_filename,
                 '\'',
             ]
             #  hashmot_command = "./measure.py " + local_scenario_json + " " + str(
@@ -206,7 +215,9 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
 
             hashmot_child = pexpect.spawn(hashmot_command, timeout=None)
 
-            hashmot_child.logfile_read = sys.stdout.buffer
+            print()
+            #  hashmot_child.logfile_read = sys.stdout.buffer
+            hashmot_child.logfile_read = local_tmplog_fildes
 
             #  print("spawn hashmot")
 
@@ -227,7 +238,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             hashmot_child.sendline("\n")
 
             hashmot_child.expect("-- Success --")
-            print('\n### hashmot done\n')
+            print('### hashmot done')
             hashmot_child.terminate()
             hashmot_child.expect(pexpect.EOF)
             #  hashmot_child.close()
@@ -236,21 +247,48 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 ch.expect(
                     "-- Scenario processing completed successfully",
                     timeout=30)
-                print('\n### deltahq done\n')
+                print('### deltahq done')
                 #  print(ch)
                 ch.terminate()
                 ch.expect(pexpect.EOF)
                 #  ch.close()
+
+            local_tmplog_fildes.close()
+
+            tmplog_fildes = open(local_tmplog_filename, 'r')
+            log_fildes = open(local_log_filename, 'w')
+
+            print()
+            pattern = r'^hashmot:.*|^deltahq\([0-9]+\):.*'
+            repattern = re.compile(pattern)
+            for line in tmplog_fildes.readlines():
+                result = repattern.match(line)
+                if result:
+                    log_fildes.write(result.group() + '\n')
+                    print(result.group())
+
+            tmplog_fildes.close()
+            log_fildes.close()
+
+            print()
+
+            #  time.sleep(1)
 
     if exec_type == 'p':
         for scenario_json in scenario_files:
             json_name = scenario_json.split('/')[-1]
             local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
 
-            local_log_file = local_scenario_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
+            local_tmplog_filename = local_log_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
+                process_number) + '.tmplog'
+            #  remote_tmplog_filename = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
+            #      process_number) + '.tmplog'
+
+            local_log_filename = local_log_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
                 process_number) + '.log'
-            remote_log_file = remote_scenario_dir + '/%dnode/' % node_number + json_name + '.pp' + str(
-                process_number) + '.log'
+
+            os.makedirs(local_log_dir + '/%dnode' % node_number, exist_ok=True)
+            local_tmplog_fildes = open(local_tmplog_filename, 'wb')
 
             command_list = [
                 'ssh',
@@ -268,19 +306,21 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 '-L',
                 port,
                 '2>&1',
-                '|',
-                'tee',
-                remote_log_file,
                 '\"',
                 '\'',
+                #  '|',
+                #  'tee',
+                #  remote_tmplog_filename,
             ]
 
             deltahq_command = ' '.join(map(str, command_list))
             print(deltahq_command)
 
             deltahq_child = pexpect.spawn(deltahq_command, timeout=None)
-            deltahq_child.logfile_read = sys.stdout.buffer
+            deltahq_child.logfile_read = local_tmplog_fildes
             deltahq_child.expect("Initial Neighbors Update", timeout=None)
+
+            print()
 
             command_list = [
                 'bash',
@@ -302,9 +342,9 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 '-a',
                 't',
                 '2>&1',
-                '|',
-                'tee',
-                local_log_file,
+                #  '|',
+                #  'tee',
+                #  local_tmplog_filename,
                 '\'',
             ]
             #  hashmot_command = "./measure.py " + local_scenario_json + " " + str(
@@ -316,8 +356,9 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             print(hashmot_command)
 
             hashmot_child = pexpect.spawn(hashmot_command, timeout=None)
+            print()
 
-            hashmot_child.logfile_read = sys.stdout.buffer
+            hashmot_child.logfile_read = local_tmplog_fildes
 
             #  print("spawn hashmot")
 
@@ -337,18 +378,37 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             hashmot_child.sendline("\n")
 
             hashmot_child.expect("-- Success --")
-            print('\n### hashmot done\n')
+            print('### hashmot done')
             hashmot_child.terminate()
             hashmot_child.expect(pexpect.EOF)
             #  hashmot_child.close()
 
             deltahq_child.expect(
                 "-- Scenario processing completed successfully", timeout=30)
-            print('\n### deltahq done\n')
+            print('### deltahq done')
             #  print(ch)
             deltahq_child.terminate()
             deltahq_child.expect(pexpect.EOF)
             #  ch.close()
+
+            local_tmplog_fildes.close()
+
+            tmplog_fildes = open(local_tmplog_filename, 'r')
+            log_fildes = open(local_log_filename, 'w')
+
+            print()
+            pattern = '^hashmot:.*|^deltahq:.*'
+            repattern = re.compile(pattern)
+            for line in tmplog_fildes.readlines():
+                result = repattern.match(line)
+                if result:
+                    log_fildes.write(result.group() + '\n')
+                    print(result.group())
+
+            tmplog_fildes.close()
+            log_fildes.close()
+
+            print()
 
 
 if __name__ == '__main__':
@@ -364,6 +424,7 @@ if __name__ == '__main__':
     proc_list = [1, 2, 4, 8, 16, 24, 48, 72]
     node_list = [100, 200]
     proc_list = [1, 2, 4]
+    proc_list = [1]
 
     machine_id = 0
     numbering = sys.argv[1]
@@ -376,6 +437,7 @@ if __name__ == '__main__':
     ])
 
     os.makedirs(local_scenario_dir, exist_ok=True)
+    os.makedirs(local_log_dir, exist_ok=True)
     #  print(node_number, process_number, machine_id, numbering)
 
     for node in node_list:
