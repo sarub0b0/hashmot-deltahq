@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cfloat>
+#include <thread>
 
 #include <rapidjson/document.h>
 // #include <rapidjson/pointer.h>
@@ -93,9 +94,6 @@ const char short_options[] = "hp:a:L:N:A:j:";
 int main(int argc, char *const argv[]) {
     cin.tie(0);
     ios::sync_with_stdio(false);
-
-    struct timespec start_ts;
-    struct tm start_tm;
 
     //* lsh.hh define
     int d = DIMENSION;
@@ -305,7 +303,10 @@ int main(int argc, char *const argv[]) {
 #ifndef MEASURE
                     int id = 0;
                     if (job_id == 1 || job_id == -1) {
-                        for (auto &&n : value.GetArray()) {
+                        for (int i = 0; i < node_number; i++) {
+
+                            // }
+                            // for (auto &&n : value.GetArray()) {
                             // Value node(n, init_json.GetAllocator());
                             // node.AddMember("id", node_number,
                             // init_json.GetAllocator());
@@ -318,6 +319,8 @@ int main(int argc, char *const argv[]) {
 
                             ns->SendDeltaHQ(neighbor, id, global_key);
                             ++id;
+
+                            // std::this_thread::sleep_for(std::chrono::microseconds(5000));
                         }
                     }
 #endif
@@ -417,6 +420,9 @@ int main(int argc, char *const argv[]) {
         chrono::duration_cast<chrono::nanoseconds>(begin - begin);
     send_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
 
+#endif
+#ifdef MEASURE2
+    struct timespec start_ts;
 #endif
     // #ifdef TCHK_ELAPSED
     //     chrono::high_resolution_clock::time_point begin, end;
@@ -757,16 +763,24 @@ int main(int argc, char *const argv[]) {
 
 #ifdef MEASURE2
 
-                localtime_r(&start_ts.tv_sec, &start_tm);
-
                 fprintf(stderr,
-                        "hashmot: %02d:%02d:%02d.%09ld\n",
-                        start_tm.tm_hour,
-                        start_tm.tm_min,
-                        start_tm.tm_sec,
+                        "hashmot: %ld.%09ld\n",
+                        start_ts.tv_sec,
                         start_ts.tv_nsec);
+
+                // struct tm start_tm;
+                // localtime_r(&start_ts.tv_sec, &start_tm);
+                // fprintf(stderr,
+                //         "hashmot: %02d:%02d:%02d.%09ld\n",
+                //         start_tm.tm_hour,
+                //         start_tm.tm_min,
+                //         start_tm.tm_sec,
+                //         start_ts.tv_nsec);
 #endif
 
+                for (int i = 0; i < 10; i++) {
+                    ns->SendDeltaHQ();
+                }
                 valueAllocator.Clear();
                 parseAllocator.Clear();
                 goto FINISH_HANDLER;
