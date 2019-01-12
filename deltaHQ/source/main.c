@@ -667,6 +667,7 @@ int main(int argc, char **argv) {
     ibuf.buf_count       = 0;
     ibuf.dgram           = dgram;
     ibuf.is_listen_dgram = is_listen_dgram;
+    ibuf.buffers         = NULL;
 
     // ibuf.is_writable        = 1;
     ibuf.mutex_value = &ibuf_mutex_value;
@@ -704,7 +705,7 @@ int main(int argc, char **argv) {
     ////////////////////////////////////////////////////////////
     // open test json file
     ////////////////////////////////////////////////////////////
-        // ibuf.buffers = (char **) malloc(sizeof(char *) * ibuf.bufs_size);
+    // ibuf.buffers = (char **) malloc(sizeof(char *) * ibuf.bufs_size);
     // for (int i = 0; i < ibuf.bufs_size; i++) {
     //     ibuf.buffers[i] = (char *) malloc(sizeof(char) * ibuf.buf_size);
     // }
