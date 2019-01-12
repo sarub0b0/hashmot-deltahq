@@ -790,7 +790,7 @@ int main(int argc, char *const argv[]) {
     }
 
 FINISH_HANDLER:
-    fprintf(stderr, "\n-- Success --\n");
+    fprintf(stderr, "\n-- Success --\n\n");
     delete ns;
 
     return 0;
