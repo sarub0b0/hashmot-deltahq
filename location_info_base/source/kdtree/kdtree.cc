@@ -310,7 +310,6 @@ void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
     data_len = sizeof(struct send_data) +
                (sizeof(int32_t) * (send_data->neighbor_size - 1));
 
-    int str_number = 0;
     if (key == "init") {
         send_data->type = 0;
     }
@@ -323,12 +322,13 @@ void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
     // printf("%s\n", buffer.GetString());
     if (!is_socket_) {
         // printf("%s\n", buffer);
-        printf(
-            "ori: %d(%.2f, %.2f) neighbor(%ld): ", id, x, y, neighbor.size());
-        for (auto i = 0; i < neighbor.size(); i++) {
-            printf("%d ", neighbor[i]);
-        }
-        puts("");
+        // printf(
+        //     "ori: %d(%.2f, %.2f) neighbor(%ld): ", id, x, y,
+        //     neighbor.size());
+        // for (auto i = 0; i < neighbor.size(); i++) {
+        //     printf("%d ", neighbor[i]);
+        // }
+        // puts("");
 
         printf("% 3d: %d(%.2f, %.2f) neighbor(%d): ",
                send_data->type,
@@ -352,14 +352,29 @@ void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
     //        elapsed.count() / 1000000000,
     //        elapsed.count() % 1000000000);
 #endif
+
     if (is_socket_) {
+#ifdef DEBUG_PRINT
+        printf("% 3d: %d(%.2f, %.2f) neighbor(%d): ",
+               send_data->type,
+               send_data->id,
+               send_data->x,
+               send_data->y,
+               send_data->neighbor_size);
+
+        for (int i = 0; i < send_data->neighbor_size; i++) {
+            printf("%d ", send_data->neighbor[i]);
+        }
+        puts("");
+#endif
+
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
         // printf("data_len(%d)\n", data_len);
         dgram_.SendTo(send_data, data_len, 0);
     }
     // valueAllocator_.Clear();
     // parseAllocator_.Clear();
-}
+} // namespace neighbor_search
 
 void KdTree::SendDeltaHQ(void) {
 
