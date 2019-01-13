@@ -63,7 +63,7 @@ class NeighborSearch {
     //     fprintf(stderr, "NeighborSearch Init\n");
     // };
     // virtual void Add(const Value &json);
-    virtual int Update(const Value &json) {
+    virtual int Update(const Value &json, struct send_data &send_data) {
         fprintf(stderr, "NeighborSearch Update\n");
         return 0;
     };
@@ -71,17 +71,14 @@ class NeighborSearch {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void GetNeighbor(int id, vector<int32_t> &neighbor) {
+    virtual void GetNeighbor(int id, struct send_data &send_data) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
     };
     // virtual vector<int> GetNeighbor(const Node &node) {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void SendDeltaHQ(const vector<int32_t> &neighbor,
-                             int id,
-                             // const Value &json,
-                             string &key) {
+    virtual void SendDeltaHQ(const struct send_data &send_data) {
         fprintf(stderr, "NeighborSearch SendDeltaHQ\n");
     };
     // virtual void SendDeltaHQ(vector<int> &neighbor,

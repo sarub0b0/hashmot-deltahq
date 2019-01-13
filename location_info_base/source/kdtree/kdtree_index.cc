@@ -734,12 +734,12 @@ TreeNode *KdTreeIndex::MakeTree(TreeNode *parent,
 //     return neighbor_;
 // }
 // vector<int> KdTreeIndex::Query(Node &query) {
-void KdTreeIndex::Query(Node &query, vector<int> &neighbor) {
+void KdTreeIndex::Query(Node &query, struct send_data &send_data) {
     // neighbor->clear();
     // neighbor_.shrink_to_fit();
     // printTree(tree_, nullptr, false);
 
-    RangeSearch(tree_, query, query.radius, neighbor);
+    RangeSearch(tree_, query, query.radius, send_data);
 
     // return neighbor_;
 }
@@ -773,7 +773,7 @@ void KdTreeIndex::Query(Node &query, vector<int> &neighbor) {
 void KdTreeIndex::RangeSearch(TreeNode *tnode,
                               Node &query,
                               int radius,
-                              vector<int> &neighbor) {
+                              struct send_data &send_data) {
 
     if (tnode == nullptr) return;
 
@@ -799,7 +799,8 @@ void KdTreeIndex::RangeSearch(TreeNode *tnode,
         dist = sqrt(pow(node[0] - q[0], 2) + pow(node[1] - q[1], 2));
 
         if (dist <= radius) {
-            neighbor.push_back(tnode->node.id);
+            // neighbor.push_back(tnode->node.id);
+            send_data.neighbor[send_data.neighbor_size++] = tnode->node.id;
         }
     }
     // #endif
@@ -828,11 +829,11 @@ void KdTreeIndex::RangeSearch(TreeNode *tnode,
         nnext = tnode->left;
     }
 
-    RangeSearch(next, query, radius, neighbor);
+    RangeSearch(next, query, radius, send_data);
 
     float diff = fabs(q[axis] - node[axis]);
 
-    if (diff <= radius) RangeSearch(nnext, query, radius, neighbor);
+    if (diff <= radius) RangeSearch(nnext, query, radius, send_data);
     return;
 } // namespace neighbor_search
 

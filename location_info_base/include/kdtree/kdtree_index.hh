@@ -59,7 +59,7 @@ class KdTreeIndex {
     void Update(Node &node);
     // vector<int> Query(Node &query, int radius);
     // vector<int> Query(Node &query);
-    void Query(Node &query, vector<int32_t> &neighbor);
+    void Query(Node &query, struct send_data &send_data);
     void Clear();
 
     void Validation(vector<Node> &nodes);
@@ -81,8 +81,6 @@ class KdTreeIndex {
     vector<TreeNode *> tnodes_;
     vector<TreeNode *> sorted_tnodes_;
     vector<Node> nodes_;
-    // vector<Node> id_sorted_nodes_;
-    // vector<int> neighbor_;
 
     TreeNode *MakeTree(TreeNode *parent,
                        vector<Node> &nodes,
@@ -90,40 +88,15 @@ class KdTreeIndex {
                        int end,
                        int axis,
                        int depth);
-    // TreeNode *MakeTree(
-    //     TreeNode *parent, vector<Node> &nodes, int begin, int end, int
-    //     axis);
-    // TreeNode *MakeTree(TreeNode *parent,
-    //                    vector<TreeNode *> &nodes,
-    //                    int begin,
-    //                    int end,
-    //                    int axis,
-    //                    int depth);
-    // TreeNode *MakeTree(
-    //     TreeNode *parent, vector<int> &list, int begin, int end, int axis);
-    // TreeNode *MakeTree(vector<int> &list, int begin, int end, int axis);
-
-    // TreeNode *MakeTree(vector<Node> &nodes, int axis);
 
     void RangeSearch(TreeNode *tnode,
                      Node &query,
                      int radius,
-                     vector<int32_t> &neighbor);
-
-    // TreeNode *Search(TreeNode *tnode, Node &node);
-
-    // TreeNode *CheckDestroyBalance(TreeNode *tnode, Node &node);
-
-    // bool IsRemakeTree(TreeNode *tnode, const Node &node);
-    // int IsRemakeTree(TreeNode *tnode, Node &node);
+                     struct send_data &send_data);
 
     void AddIndex(TreeNode *tnode, Node &add_node);
 
-    // TreeNode *DeleteLeaf(TreeNode *tnode);
-
     TreeNode *SwapRemoveNode(TreeNode *tnode);
-
-    // void RemoveIndex();
 
     TreeNode *ReMakeTree(TreeNode *tnode, Node &node);
     void ClearTree(TreeNode *tnode);
@@ -131,22 +104,10 @@ class KdTreeIndex {
     void showTrunks(Trunk *p);
     void printTree(TreeNode *root, Trunk *prev, bool isLeft);
 
-    // float Distance(const array<float, 2> &a, const array<float, 2> &b);
-
-    // static int Median(vector<Node> &nodes, int begin, int end);
     static vector<Node> &Sort(vector<Node> &nodes,
                               int begin,
                               int end,
                               int axis);
-
-    // static vector<TreeNode *> &Sort(vector<TreeNode *> &tnodes,
-    //                                 int begin,
-    //                                 int end,
-    //                                 int axis);
-    // static vector<Node> &Sort(vector<Node> &nodes, int axis);
-    // static vector<Node> &Sort(vector<Node> &nodes);
-    // void MakeNonRecursiveTree(void) {
-    // };
 };
 } // namespace neighbor_search
 

@@ -20,10 +20,10 @@
 
 #include <using.hh>
 #include <neighbor_search.hh>
-#include <lsh/lsh.hh>
-#include <lsh/lsh_index.hh>
+// #include <lsh/lsh.hh>
+// #include <lsh/lsh_index.hh>
 #include <kdtree/kdtree.hh>
-#include <linear/linear.hh>
+// #include <linear/linear.hh>
 
 #define FLOAT(x) static_cast<float>(x)
 
@@ -96,13 +96,24 @@ int main(int argc, char *const argv[]) {
     ios::sync_with_stdio(false);
 
     //* lsh.hh define
-    int d = DIMENSION;
-    int k = K_FUNCS;
-    int L = HASHES;
+    // int d = DIMENSION;
+    // int k = K_FUNCS;
+    // int L = HASHES;
 
     string init_file;
 
     NeighborSearch *ns;
+
+    struct send_data *send_data =
+        static_cast<struct send_data *>(malloc(9000));
+
+    send_data                = static_cast<struct send_data *>(malloc(9000));
+    send_data->type          = -1;
+    send_data->id            = -1;
+    send_data->x             = -1;
+    send_data->y             = -1;
+    send_data->neighbor_size = 0;
+    send_data->neighbor[0]   = -1;
 
     DGram dg;
 
@@ -175,11 +186,11 @@ int main(int argc, char *const argv[]) {
     fprintf(stderr, "-- Read file %s\n", init_file.c_str());
 
     if (algorithm == "h" || algorithm == "lsh") {
-        ns = new LSH(d, k, L);
+        // ns = new LSH(d, k, L);
     } else if (algorithm == "t" || algorithm == "kdtree") {
         ns = new KdTree();
     } else if (algorithm == "l" || algorithm == "linear") {
-        ns = new Linear();
+        // ns = new Linear();
     } else {
         fprintf(stderr, "ERROR unsupport algorithm\n");
         exit(1);
@@ -217,7 +228,7 @@ int main(int argc, char *const argv[]) {
     // }
 
     vector<Node> init_nodes;
-    vector<int32_t> neighbor;
+    // vector<int32_t> neighbor;
 
     ifstream ifs(init_file);
     IStreamWrapper isw(ifs);
@@ -265,6 +276,8 @@ int main(int argc, char *const argv[]) {
                     elapsed.count() / 1000000000,
                     elapsed.count() % 1000000000);
 
+            send_data->type = 0;
+
             for (auto &&v : value.GetObject()) {
                 string key         = v.name.GetString();
                 const Value &value = v.value;
@@ -296,9 +309,9 @@ int main(int argc, char *const argv[]) {
                     // field_size[0] = max_x - min_x;
                     // field_size[1] = max_y - min_y;
                     node_number = value.Size();
-                    neighbor.reserve(node_number + 1);
-                    neighbor.resize(node_number);
-                    neighbor.clear();
+                    // neighbor.reserve(node_number + 1);
+                    // neighbor.resize(node_number);
+                    // neighbor.clear();
 
 #ifndef MEASURE
                     int id = 0;
@@ -311,13 +324,16 @@ int main(int argc, char *const argv[]) {
                             // node.AddMember("id", node_number,
                             // init_json.GetAllocator());
 
-                            neighbor.clear();
-                            ns->GetNeighbor(id, neighbor);
+                            // neighbor.clear();
+                            send_data->id            = id;
+                            send_data->neighbor_size = 0;
+
+                            ns->GetNeighbor(id, *send_data);
                             // const vector<int> &neighbor =
                             // ns->GetNeighbor(node_number);
                             // sort(neighbor.begin(), neighbor.end());
 
-                            ns->SendDeltaHQ(neighbor, id, global_key);
+                            ns->SendDeltaHQ(*send_data);
                             ++id;
 
                             // std::this_thread::sleep_for(std::chrono::microseconds(5000));
@@ -539,7 +555,8 @@ int main(int argc, char *const argv[]) {
                 update_begin = chrono::high_resolution_clock::now();
 #endif
 
-                update_id = ns->Update(value["node"]);
+                update_id       = ns->Update(value["node"], *send_data);
+                send_data->type = 1;
 
 #ifdef MEASURE
                 update_end = chrono::high_resolution_clock::now();
@@ -574,8 +591,9 @@ int main(int argc, char *const argv[]) {
                         // neighbor.shrink_to_fit();
                         // const vector<int> &neighbor =
                         // ns->GetNeighbor(update_id);
-                        neighbor.clear();
-                        ns->GetNeighbor(update_id, neighbor);
+                        // neighbor.clear();
+                        send_data->neighbor_size = 0;
+                        ns->GetNeighbor(update_id, *send_data);
 
 #ifdef MEASURE
                         search_end = chrono::high_resolution_clock::now();
@@ -584,14 +602,14 @@ int main(int argc, char *const argv[]) {
                                 search_end - search_begin);
 #endif
 
-                        if (neighbor[0] != -1) {
-                            neighbor_count += neighbor.size();
+                        if (send_data->neighbor[0] != -1) {
+                            neighbor_count += send_data->neighbor_size;
                         }
 
 #ifdef MEASURE
                         send_begin = chrono::high_resolution_clock::now();
 #endif
-                        ns->SendDeltaHQ(neighbor, update_id, key);
+                        ns->SendDeltaHQ(*send_data);
 
 #ifdef MEASURE
                         send_end = chrono::high_resolution_clock::now();
@@ -609,8 +627,9 @@ int main(int argc, char *const argv[]) {
                     // neighbor.shrink_to_fit();
                     // const vector<int> &neighbor =
                     // ns->GetNeighbor(update_id);
-                    neighbor.clear();
-                    ns->GetNeighbor(update_id, neighbor);
+                    // neighbor.clear();
+                    send_data->neighbor_size = 0;
+                    ns->GetNeighbor(update_id, *send_data);
 
 #ifdef MEASURE
                     search_end = chrono::high_resolution_clock::now();
@@ -619,14 +638,17 @@ int main(int argc, char *const argv[]) {
                             search_end - search_begin);
 #endif
 
-                    if (neighbor[0] != -1) {
-                        neighbor_count += neighbor.size();
+                    if (send_data->neighbor[0] != -1) {
+                        neighbor_count += send_data->neighbor_size;
                     }
+                    // if (neighbor[0] != -1) {
+                    //     neighbor_count += neighbor.size();
+                    // }
 
 #ifdef MEASURE
                     send_begin = chrono::high_resolution_clock::now();
 #endif
-                    ns->SendDeltaHQ(neighbor, update_id, key);
+                    ns->SendDeltaHQ(*send_data);
 
 #ifdef MEASURE
                     send_end = chrono::high_resolution_clock::now();

@@ -28,14 +28,6 @@ KdTree::KdTree() {
     init_buffer_pos_   = strlen(init_prefix);
     update_buffer_pos_ = strlen(update_prefix);
 
-    send_data                = static_cast<struct send_data *>(malloc(9000));
-    send_data->type          = -1;
-    send_data->id            = -1;
-    send_data->x             = -1;
-    send_data->y             = -1;
-    send_data->neighbor_size = 0;
-    send_data->neighbor[0]   = -1;
-
     max_neighbors = (9000 - sizeof(struct send_data)) / sizeof(int32_t);
 }
 
@@ -87,7 +79,7 @@ void KdTree::Init(const Value &json) {
 
 //     kdtree_.Index(nodes_);
 // }
-int KdTree::Update(const Value &json) {
+int KdTree::Update(const Value &json, struct send_data &send_data) {
     int id;
     // int radius;
     // float x, y;
@@ -103,6 +95,9 @@ int KdTree::Update(const Value &json) {
     nodes_[id].pos[1] = json["y"].GetDouble();
     nodes_[id].radius = json["r"].GetInt();
 
+    send_data.id = id;
+    send_data.x  = nodes_[id].pos[0];
+    send_data.y  = nodes_[id].pos[1];
     // fprintf(stderr,
     //         " ========= Update % d (%.2f, %.2f)========= \n",
     //         id,
@@ -115,7 +110,7 @@ int KdTree::Update(const Value &json) {
 }
 
 // vector<int> KdTree::GetNeighbor(int id) {
-void KdTree::GetNeighbor(int id, vector<int> &neighbor) {
+void KdTree::GetNeighbor(int id, struct send_data &send_data) {
     // vector<int> neighbor;
     // int id, r;
     // float x, y;
@@ -127,16 +122,19 @@ void KdTree::GetNeighbor(int id, vector<int> &neighbor) {
     // } else {
     //     r = json["radius"].GetInt();
     // }
+    send_data.x = nodes_[id].pos[0];
+    send_data.y = nodes_[id].pos[1];
 
     // array<float, 2> pos{x, y};
 
     // Node query(id, pos, r);
 
     // neighbor = kdtree_.Query(nodes_[id]);
-    kdtree_.Query(nodes_[id], neighbor);
+    kdtree_.Query(nodes_[id], send_data);
 
-    if (neighbor.size() == 0) {
-        neighbor.push_back(-1);
+    // if (neighbor.size() == 0) {
+    if (send_data.neighbor_size == 0) {
+        send_data.neighbor[0] = -1;
         return;
         // return neighbor;
     }
@@ -280,10 +278,7 @@ void KdTree::GetNeighbor(int id, vector<int> &neighbor) {
 //     return neighbor;
 // }
 
-void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
-                         // const Value &json,
-                         int id,
-                         string &key) {
+void KdTree::SendDeltaHQ(const struct send_data &send_data) {
 
 #ifdef MEASURE
     // chrono::high_resolution_clock::time_point begin =
@@ -292,53 +287,46 @@ void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
 
     // {"init":{"neighbors":{"center":{"id":0,"x":3.24,"y":47.32},"neighbor":[6]}}}
     // {"update":{"neighbors":{"center":{"id":0,"x":87.1,"y":9.9},"neighbor":[4]}}}
-    float x, y;
+    // float x, y;
     // char *buffer;
 
-    int data_len             = 0;
-    send_data->id            = static_cast<int32_t>(id);
-    send_data->x             = nodes_[id].pos[0];
-    send_data->y             = nodes_[id].pos[1];
-    send_data->neighbor_size = neighbor.size();
+    int data_len = 0;
+    // send_data->id            = static_cast<int32_t>(id);
+    // send_data->x             = nodes_[id].pos[0];
+    // send_data->y             = nodes_[id].pos[1];
+    // send_data->neighbor_size = neighbor.size();
 
-    std::memcpy(&send_data->neighbor[0],
-                neighbor.data(),
-                sizeof(int32_t) * send_data->neighbor_size);
-    x = nodes_[id].pos[0];
-    y = nodes_[id].pos[1];
+    // std::memcpy(&send_data->neighbor[0],
+    //             neighbor.data(),
+    //             sizeof(int32_t) * send_data->neighbor_size);
+    // x = nodes_[id].pos[0];
+    // y = nodes_[id].pos[1];
 
     data_len = sizeof(struct send_data) +
-               (sizeof(int32_t) * (send_data->neighbor_size - 1));
+               (sizeof(int32_t) * (send_data.neighbor_size - 1));
 
-    if (key == "init") {
-        send_data->type = 0;
-    }
+    // if (key == "init") {
+    //     send_data->type = 0;
+    // }
 
-    if (key == "update") {
-        send_data->type = 1;
-    }
+    // if (key == "update") {
+    //     send_data->type = 1;
+    // }
 
 #ifndef MEASURE
     // printf("%s\n", buffer.GetString());
+    // printf("%s\n", buffer);
     if (!is_socket_) {
-        // printf("%s\n", buffer);
-        // printf(
-        //     "ori: %d(%.2f, %.2f) neighbor(%ld): ", id, x, y,
-        //     neighbor.size());
-        // for (auto i = 0; i < neighbor.size(); i++) {
-        //     printf("%d ", neighbor[i]);
-        // }
-        // puts("");
 
         printf("% 3d: %d(%.2f, %.2f) neighbor(%d): ",
-               send_data->type,
-               send_data->id,
-               send_data->x,
-               send_data->y,
-               send_data->neighbor_size);
+               send_data.type,
+               send_data.id,
+               send_data.x,
+               send_data.y,
+               send_data.neighbor_size);
 
-        for (int i = 0; i < send_data->neighbor_size; i++) {
-            printf("%d ", send_data->neighbor[i]);
+        for (int i = 0; i < send_data.neighbor_size; i++) {
+            printf("%d ", send_data.neighbor[i]);
         }
         puts("");
         std::flush(std::cout);
@@ -356,21 +344,21 @@ void KdTree::SendDeltaHQ(const vector<int32_t> &neighbor,
     if (is_socket_) {
 #ifdef DEBUG_PRINT
         printf("% 3d: %d(%.2f, %.2f) neighbor(%d): ",
-               send_data->type,
-               send_data->id,
-               send_data->x,
-               send_data->y,
-               send_data->neighbor_size);
+               send_data.type,
+               send_data.id,
+               send_data.x,
+               send_data.y,
+               send_data.neighbor_size);
 
-        for (int i = 0; i < send_data->neighbor_size; i++) {
-            printf("%d ", send_data->neighbor[i]);
+        for (int i = 0; i < send_data.neighbor_size; i++) {
+            printf("%d ", send_data.neighbor[i]);
         }
         puts("");
 #endif
 
         // dgram_.SendTo(buffer.GetString(), strlen(buffer.GetString()), 0);
         // printf("data_len(%d)\n", data_len);
-        dgram_.SendTo(send_data, data_len, 0);
+        dgram_.SendTo(&send_data, data_len, 0);
     }
     // valueAllocator_.Clear();
     // parseAllocator_.Clear();
