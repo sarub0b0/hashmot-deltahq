@@ -20,6 +20,16 @@ typedef struct meteor {
 
 } meteor_param_t;
 
+struct msg {
+    int8_t type;
+    int32_t id;
+    float x;
+    float y;
+    int16_t neighbor_size;
+    int32_t neighbor[1];
+};
+
+void init_msg_struct();
 int json_init_scenario(struct scenario_class *scenario, FILE *init_fd);
 // =====================================================
 int update_neighbors(struct scenario_class *scenario,

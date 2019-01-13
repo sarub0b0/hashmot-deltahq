@@ -586,6 +586,8 @@ int main(int argc, char **argv) {
         goto ERROR_HANDLE;
     }
 
+    init_msg_struct();
+
     float area, width, height;
 
     json_t *jroot;

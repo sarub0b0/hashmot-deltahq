@@ -201,6 +201,57 @@ void print_json(json_t *root) {
     print_json_aux(root, 0);
 }
 
+struct msg *msg;
+
+void init_msg_struct(void) {
+    msg = malloc(9000);
+}
+
+struct msg *read_msg(input_buffer_t *ibuf) {
+
+    int recv_len = 0;
+    if (ibuf->is_listen_dgram) {
+
+        recv_len = recv(ibuf->dgram.sock, msg, 9000, 0);
+        if (recv_len < 1) {
+            perror("recv");
+            return NULL;
+        }
+        // msg[recv_len] = '\0';
+    } else {
+        while (fgets((char *) msg, 9000, stdin) == NULL) {
+        }
+        // line[strlen(line)] = '\0';
+    }
+
+    if (msg->type == -1) {
+        // printf("finish\n");
+        fprintf(stderr, "\n-- Received finish json\n");
+        return 0;
+        // continue;
+        // exit(0);
+    }
+#ifdef DEBUG_PRINT
+    printf("%d: %d(%.2f, %.2f) neighbor(%d): ",
+           msg->type,
+           msg->id,
+           msg->x,
+           msg->y,
+           msg->neighbor_size);
+    for (int32_t i = 0; i < msg->neighbor_size; i++) {
+        // for (int16_t i = 0; i < 10; i++) {
+        printf("%d ", msg->neighbor[i]);
+    }
+    puts("");
+#endif
+    // if (line[0] == '\0') {
+    //     WARNING("buffer error");
+    //     return 0;
+    // }
+
+    return msg;
+}
+
 json_t *read_json(input_buffer_t *ibuf) {
 
     char line[9000] = {0};
@@ -337,27 +388,29 @@ int update_all_neighbors(struct scenario_class *scenario,
                          input_buffer_t *ibuf,
                          int type) {
 
-    json_t *root = NULL;
-    json_t *json = NULL;
+    // json_t *root = NULL;
+    // json_t *json = NULL;
 
-    root = read_json(ibuf);
-    if (!root) {
+    struct msg *recv_msg = read_msg(ibuf);
+
+    // root = read_json(ibuf);
+    if (!recv_msg) {
         return -1;
     }
 
-    if (type == 0) {
-        json = json_object_get(root, key_init);
-    } else {
-        json = json_object_get(root, key_update);
-    }
-    if (!json) {
-        WARNING("json_object_get");
-        return -1;
-    }
+    // if (type == 0) {
+    //     json = json_object_get(root, key_init);
+    // } else {
+    //     json = json_object_get(root, key_update);
+    // }
+    // if (!json) {
+    //     WARNING("json_object_get");
+    //     return -1;
+    // }
 
     // json_t *node_object;
-    json_t *center;
-    json_t *neighbor;
+    // json_t *center;
+    // json_t *neighbor;
 
     struct node_class *nodes;
     struct node_class *node;
@@ -383,23 +436,25 @@ int update_all_neighbors(struct scenario_class *scenario,
     nn              = 0;
     ni              = 0;
 
-    json_t *update_json = NULL;
+    // json_t *update_json = NULL;
 
-    update_json = json_object_get(json, "neighbors");
+    // update_json = json_object_get(json, "neighbors");
 
-    if (!update_json) {
-        WARNING("json_object_get");
-        return -1;
-    }
+    // if (!update_json) {
+    //     WARNING("json_object_get");
+    //     return -1;
+    // }
     // nodes_array_len = json_array_size(update_json);
 
     // for (int i = 0; i < nodes_array_len; i++) {
     // node_object = json_object_get(update_json, i);
 
     // node_object = json_array_get(nodes_array, 0);
-    center = json_object_get(update_json, "center");
+    // center = json_object_get(update_json, "center");
 
-    *center_id = json_integer_value(json_object_get(center, "id"));
+    // *center_id = json_integer_value(json_object_get(center, "id"));
+
+    *center_id = recv_msg->id;
     // printf("center_id=%d\n", *center_id);
 
     // if (-1 < own_id && *center_id != own_id) {
@@ -411,24 +466,28 @@ int update_all_neighbors(struct scenario_class *scenario,
 
     node = &nodes[*center_id];
 
-    node->position.c[0] = json_number_value(json_object_get(center, "x"));
-    node->position.c[1] = json_number_value(json_object_get(center, "y"));
+    // node->position.c[0] = json_number_value(json_object_get(center, "x"));
+    // node->position.c[1] = json_number_value(json_object_get(center, "y"));
+    node->position.c[0] = recv_msg->x;
+    node->position.c[1] = recv_msg->y;
 
     // json_decref(center);
-    center = NULL;
+    // center = NULL;
     // }
 
-    neighbor = json_object_get(update_json, "neighbor");
+    // neighbor = json_object_get(update_json, "neighbor");
 
-    neighbor_array_len = json_array_size(neighbor);
+    // neighbor_array_len = json_array_size(neighbor);
+    neighbor_array_len = recv_msg->neighbor_size;
 
-    json_t *nei;
+    // json_t *nei;
 
     nn = 0;
     for (int j = 0; j < neighbor_array_len; j++) {
-        nei     = json_array_get(neighbor, j);
-        node_id = json_integer_value(nei);
+        // nei     = json_array_get(neighbor, j);
+        // node_id = json_integer_value(nei);
 
+        node_id = recv_msg->neighbor[j];
         // if (node_id < 0) {
         // neighbor_ids[*center_id][0] = -1;
         // break;
@@ -437,11 +496,11 @@ int update_all_neighbors(struct scenario_class *scenario,
         neighbor_ids[*center_id][nn++] = node_id;
 
         // json_decref(nei);
-        nei = NULL;
+        // nei = NULL;
     }
 
     // json_decref(neighbor);
-    neighbor = NULL;
+    // neighbor = NULL;
     // json_decref(node_object);
     // node_object = NULL;
 
@@ -502,14 +561,14 @@ int update_all_neighbors(struct scenario_class *scenario,
     // printf("root->refcount=%zu\n", root->refcount);
     // json_decref(update_json);
     // json_decref(json);
-    json_decref(root);
+    // json_decref(root);
     // printf("update->refcount=%zu\n", update_json->refcount);
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
 
-    update_json = NULL;
-    json        = NULL;
-    root        = NULL;
+    // update_json = NULL;
+    // json        = NULL;
+    // root        = NULL;
 
     INFO("neighbor_number=%d\n", neighbor_number);
 
@@ -527,26 +586,28 @@ int update_neighbors(struct scenario_class *scenario,
                      int *received_center_id,
                      int type) {
 
-    json_t *root = NULL;
-    json_t *json = NULL;
+    // json_t *root = NULL;
+    // json_t *json = NULL;
 
-    root = read_json(ibuf);
-    if (!root) {
+    struct msg *recv_msg = read_msg(ibuf);
+
+    // root = read_json(ibuf);
+    if (!recv_msg) {
         return -1;
     }
 
-    if (type == 0) {
-        json = json_object_get(root, key_init);
-    } else {
-        json = json_object_get(root, key_update);
-    }
-    if (!json) {
-        WARNING("json_object_get");
-        return -1;
-    }
+    // if (type == 0) {
+    //     json = json_object_get(root, key_init);
+    // } else {
+    //     json = json_object_get(root, key_update);
+    // }
+    // if (!json) {
+    //     WARNING("json_object_get");
+    //     return -1;
+    // }
 
-    json_t *center;
-    json_t *neighbor;
+    // json_t *center;
+    // json_t *neighbor;
 
     struct node_class *nodes;
     struct node_class *node;
@@ -569,23 +630,24 @@ int update_neighbors(struct scenario_class *scenario,
     nn              = 0;
     ni              = 0;
 
-    json_t *update_json = NULL;
+    // json_t *update_json = NULL;
 
-    update_json = json_object_get(json, "neighbors");
+    // update_json = json_object_get(json, "neighbors");
 
-    if (!update_json) {
-        WARNING("json_object_get");
-        return -1;
-    }
+    // if (!update_json) {
+    //     WARNING("json_object_get");
+    //     return -1;
+    // }
     // nodes_array_len = json_array_size(update_json);
 
     // for (int i = 0; i < nodes_array_len; i++) {
     // node_object = json_object_get(update_json, i);
 
     // node_object = json_array_get(nodes_array, 0);
-    center = json_object_get(update_json, "center");
+    // center = json_object_get(update_json, "center");
+    // center_id = json_integer_value(json_object_get(center, "id"));
+    center_id = recv_msg->id;
 
-    center_id = json_integer_value(json_object_get(center, "id"));
     // fprintf(stderr, "center_id=%d\n", center_id);
 
     // else {
@@ -595,19 +657,23 @@ int update_neighbors(struct scenario_class *scenario,
     // =====================================================
     // ノードの位置更新
     // =====================================================
-    node                = &nodes[center_id];
-    node->position.c[0] = json_number_value(json_object_get(center, "x"));
-    node->position.c[1] = json_number_value(json_object_get(center, "y"));
+    node = &nodes[center_id];
+    // node->position.c[0] = json_number_value(json_object_get(center, "x"));
+    // node->position.c[1] = json_number_value(json_object_get(center, "y"));
+
+    node->position.c[0] = recv_msg->x;
+    node->position.c[1] = recv_msg->y;
 
     // json_decref(center);
-    center = NULL;
+    // center = NULL;
     // }
 
-    neighbor = json_object_get(update_json, "neighbor");
+    // neighbor = json_object_get(update_json, "neighbor");
 
-    neighbor_array_len = json_array_size(neighbor);
+    // neighbor_array_len = json_array_size(neighbor);
+    neighbor_array_len = recv_msg->neighbor_size;
 
-    json_t *nei;
+    // json_t *nei;
 
     // =====================================================
     // neighbor_idsにneigborをセット
@@ -615,8 +681,9 @@ int update_neighbors(struct scenario_class *scenario,
     nn              = 0;
     neighbor_ids[0] = -1;
     for (int j = 0; j < neighbor_array_len; j++) {
-        nei     = json_array_get(neighbor, j);
-        node_id = json_integer_value(nei);
+        // nei     = json_array_get(neighbor, j);
+        // node_id = json_integer_value(nei);
+        node_id = recv_msg->neighbor[j];
 
         // if (node_id < 0) {
         //     break;
@@ -625,12 +692,12 @@ int update_neighbors(struct scenario_class *scenario,
         neighbor_ids[nn++] = node_id;
 
         // json_decref(nei);
-        nei = NULL;
+        // nei = NULL;
     }
     neighbor_ids[neighbor_array_len] = -1;
 
     // json_decref(neighbor);
-    neighbor = NULL;
+    // neighbor = NULL;
     // json_decref(node_object);
     // node_object = NULL;
 
@@ -774,14 +841,14 @@ int update_neighbors(struct scenario_class *scenario,
     // printf("root->refcount=%zu\n", root->refcount);
     // json_decref(update_json);
     // json_decref(json);
-    json_decref(root);
+    // json_decref(root);
     // printf("update->refcount=%zu\n", update_json->refcount);
     // printf("json->refcount=%zu\n", json->refcount);
     // printf("root->refcount=%zu\n", root->refcount);
 
-    update_json = NULL;
-    json        = NULL;
-    root        = NULL;
+    // update_json = NULL;
+    // json        = NULL;
+    // root        = NULL;
 
     INFO("neighbor_number=%d\n", neighbor_number);
 
