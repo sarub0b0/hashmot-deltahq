@@ -24,9 +24,9 @@ class KdTree : public NeighborSearch {
     // void Add(const Value &json);
     int Update(const Value &json);
     // vector<int> GetNeighbor(const Value &json);
-    void GetNeighbor(int id, vector<int> &neighbor);
+    void GetNeighbor(int id, vector<int32_t> &neighbor);
     // vector<int> GetNeighbor(int id, vector<int> *neighbor);
-    void SendDeltaHQ(const vector<int> &neighbor, int id, string &key);
+    void SendDeltaHQ(const vector<int32_t> &neighbor, int id, string &key);
     // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string
     // &key);
     void SendDeltaHQ(void);
@@ -53,6 +53,9 @@ class KdTree : public NeighborSearch {
     char send_update_buffer_[9000];
     int init_buffer_pos_;
     int update_buffer_pos_;
+
+    int max_neighbors;
+    struct send_data *send_data;
 };
 
 } // namespace neighbor_search

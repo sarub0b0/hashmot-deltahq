@@ -36,7 +36,7 @@ class LSHIndex {
 
     void Index(vector<array<float, DIMENSION>> &points);
     void Update(int id, array<float, DIMENSION> &point);
-    void Query(array<float, DIMENSION> &q, vector<int> &neighbor);
+    void Query(array<float, DIMENSION> &q, vector<int32_t> &neighbor);
 
     bool IsSameRadius(int radius);
 

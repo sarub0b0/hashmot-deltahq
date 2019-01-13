@@ -16,7 +16,7 @@ class LinearIndex {
 
     void Index(vector<Node> &nodes);
     void Update(Node &node);
-    void Query(Node &query, vector<int> &neighbor);
+    void Query(Node &query, vector<int32_t> &neighbor);
     void Clear();
 
    private:

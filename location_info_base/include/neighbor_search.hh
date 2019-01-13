@@ -8,6 +8,19 @@
 
 namespace neighbor_search {
 
+struct send_data {
+    int8_t type;
+    int32_t id;
+    float x;
+    float y;
+    int16_t neighbor_size;
+    int32_t neighbor[1];
+};
+
+struct finish_data {
+    int8_t type;
+};
+
 struct Node {
     int id;
     array<float, 2> pos;
@@ -58,14 +71,14 @@ class NeighborSearch {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void GetNeighbor(int id, vector<int> &neighbor) {
+    virtual void GetNeighbor(int id, vector<int32_t> &neighbor) {
         fprintf(stderr, "NeighborSearch GetNeighbor\n");
     };
     // virtual vector<int> GetNeighbor(const Node &node) {
     //     fprintf(stderr, "NeighborSearch GetNeighbor\n");
     //     return vector<int>();
     // };
-    virtual void SendDeltaHQ(const vector<int> &neighbor,
+    virtual void SendDeltaHQ(const vector<int32_t> &neighbor,
                              int id,
                              // const Value &json,
                              string &key) {

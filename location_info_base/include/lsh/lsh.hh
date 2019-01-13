@@ -22,10 +22,10 @@ class LSH : public NeighborSearch {
     int Update(const Value &json);
     // vector<int> GetNeighbor(const Value &json);
     // vector<int> GetNeighbor(int id, vector<int> *neighbor);
-    void GetNeighbor(int id, vector<int> &neighbor);
+    void GetNeighbor(int id, vector<int32_t> &neighbor);
     // void SendDeltaHQ(vector<int> &neighbor, const Value &json, string
     // &key);
-    void SendDeltaHQ(const vector<int> &neighbor, int id, string &key);
+    void SendDeltaHQ(const vector<int32_t> &neighbor, int id, string &key);
     void SendDeltaHQ(void);
     void InitDGram(const string &host, const string &port);
 

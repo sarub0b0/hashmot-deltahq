@@ -20,7 +20,7 @@ class L2HashFamily {
     L2Hash CreateHashFunc();
     array<float, 2> RandVec();
     float RandOffset();
-    string Combine(vector<int> &hashes);
+    string Combine(vector<int32_t> &hashes);
 
     L2HashFamily &operator=(const L2HashFamily &) {
         return *this;

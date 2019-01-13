@@ -59,7 +59,7 @@ class KdTreeIndex {
     void Update(Node &node);
     // vector<int> Query(Node &query, int radius);
     // vector<int> Query(Node &query);
-    void Query(Node &query, vector<int> &neighbor);
+    void Query(Node &query, vector<int32_t> &neighbor);
     void Clear();
 
     void Validation(vector<Node> &nodes);
@@ -108,7 +108,7 @@ class KdTreeIndex {
     void RangeSearch(TreeNode *tnode,
                      Node &query,
                      int radius,
-                     vector<int> &neighbor);
+                     vector<int32_t> &neighbor);
 
     // TreeNode *Search(TreeNode *tnode, Node &node);
 

@@ -217,7 +217,7 @@ int main(int argc, char *const argv[]) {
     // }
 
     vector<Node> init_nodes;
-    vector<int> neighbor;
+    vector<int32_t> neighbor;
 
     ifstream ifs(init_file);
     IStreamWrapper isw(ifs);
