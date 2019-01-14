@@ -1456,6 +1456,8 @@ int main(int argc, char **argv) {
             clock_gettime(CLOCK_MONOTONIC, &calc_begin);
 #endif
             if (thread_number == 1) {
+                // TODO no threading
+                // *** no threading
                 distributed_scenario_deltaQ(deltaQ_class);
             } else {
                 pthread_barrier_wait(&br_assign);

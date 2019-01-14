@@ -421,16 +421,21 @@ if __name__ == '__main__':
         sys.exit(1)
 
     node_list = [100, 200, 500, 1000, 2000, 5000, 10000]
-    proc_list = [1, 2, 4, 8, 16, 24, 48, 72]
-    node_list = [100, 200]
-    proc_list = [1, 2, 4]
-    proc_list = [1]
 
     machine_id = 0
     numbering = sys.argv[1]
     exec_type = sys.argv[2]
     address = sys.argv[3]
     port = int(sys.argv[4])
+
+    if exec_type == 'd':
+        proc_list = [1, 2, 4, 8, 16, 24, 48, 72, 96]
+    else:
+        proc_list = [1, 2, 4, 8, 16, 24]
+
+    #  node_list = [100, 200]
+    #  proc_list = [1, 2, 4]
+    #  proc_list = [1]
 
     sp.run([
         'ssh', remote_addr, '-i', identity_file, 'mkdir', remote_scenario_dir
