@@ -814,6 +814,7 @@ int main(int argc, char *const argv[]) {
 FINISH_HANDLER:
     fprintf(stderr, "\n-- Success --\n\n");
     delete ns;
+    delete send_data;
 
     return 0;
 }
