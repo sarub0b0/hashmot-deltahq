@@ -296,7 +296,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 #  ch.expect(
                 deltahq_child.expect(
                     "Scenario processing completed",
-                    timeout=300)
+                    timeout=30)
 
             print('### deltahq done')
             #  print(ch)
@@ -435,7 +435,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             #  hashmot_child.close()
 
             deltahq_child.expect(
-                "-- Scenario processing completed successfully", timeout=300)
+                "-- Scenario processing completed successfully", timeout=30)
             print('### deltahq done')
             #  print(ch)
             deltahq_child.terminate()
