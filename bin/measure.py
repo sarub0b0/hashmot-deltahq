@@ -17,7 +17,7 @@ if __name__ == '__main__':
         print("\t$2   max loop")
         print("\t$3   delay")
         print("\t$4   node speed")
-        #  print("\t$5   update random or linear[r, l]")
+        print("\t$5   update random or linear[r, l]")
         #  print("\t$6   single or multi line [s, m]")
 
         sys.exit(1)
@@ -49,8 +49,6 @@ if __name__ == '__main__':
     else:
         is_random = False
 
-    is_random = True
-
     line = f.readline()
     j = json.loads(line)
 
@@ -74,7 +72,10 @@ if __name__ == '__main__':
 
     update_node = node
 
-    choice_nodes = np.random.choice(node, loop_max, replace=False)
+    if is_random:
+        choice_nodes = np.random.choice(node, loop_max, replace=False)
+    else:
+        choice_nodes = node
 
     #  print(choice_nodes)
 
@@ -85,11 +86,6 @@ if __name__ == '__main__':
                 break
 
         t0 = time.perf_counter()
-
-        if is_random:
-            pass
-        else:
-            idx = idx % len(node)
 
         name = cnode['name']
         identifier = int(name[4:len(name)])
@@ -121,13 +117,6 @@ if __name__ == '__main__':
 
         mt = mt + (t1 - t0)
 
-        if is_random:
-            #  print(idx)
-            #  node = np.delete(node, idx)
-            #  print(node)
-            pass
-        else:
-            idx = idx + 1
 
         time.sleep(delay)
         #  sys.exit()
