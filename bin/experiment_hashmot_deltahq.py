@@ -10,16 +10,24 @@ import re
 #  import glob
 #  import math
 
-remote_dir = '/home/kosay/hashmot'
 local_dir = '/Users/kosay/work/hashmot'
-remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
 local_scenario_dir = local_dir + "/exp_hashmot_deltahq_json"
 local_log_dir = local_scenario_dir + "/log"
+
+remote_dir = '/home/kosay/hashmot'
+remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
 deltaHQ_path = remote_dir + '/bin/deltaHQ'
 
-#  remote_addr = '172.31.0.11'
 remote_addr = '172.31.0.11'
 identity_file = '~/.ssh/keys/crab'
+
+hashmot_addr = '172.31.0.11'
+hashmot_addr = 'localhost'
+hashmot_identity_file = '~/.ssh/keys/crab'
+
+hashmot_path = remote_dir + '/bin/hashmot'
+hashmot_remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
+
 
 
 def make_id_list(node_number, process_number, machine_id, numbering):
@@ -125,6 +133,17 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
     print("own_ids(%d)" % len(own_ids))
 
     if exec_type == 'd':
+        if hashmot_addr != 'localhost' and remote_addr != hashmot_addr:
+            sp.run([
+                'scp',
+                '-r',
+                '-i',
+                hashmot_identity_file,
+                local_scenario_dir + "/%dnode/" % node_number,
+                hashmot_addr + ":" + remote_scenario_dir,
+            ])
+
+
         for scenario_json in scenario_files:
             json_name = scenario_json.split('/')[-1]
             local_scenario_json = local_scenario_dir + '/%dnode/' % node_number + json_name
@@ -143,42 +162,6 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             #  deltahq_childs = []
 
             node_str = ' '.join(map(str, own_ids[:process_number]))
-
-            #  for ids in own_ids:
-            #      command_list = [
-            #          'ssh',
-            #          '-i',
-            #          identity_file,
-            #          remote_addr,
-            #          '\'',
-            #          'bash',
-            #          '-c',
-            #          '\"',
-            #          remote_dir + '/bin/deltaHQ',
-            #          '-t',
-            #          1,
-            #          '-i',
-            #          ids,
-            #          scenario_json,
-            #          '-L',
-            #          port,
-            #          '2>&1',
-            #          '\"',
-            #          '\'',
-            #          #  '|',
-            #          #  'tee',
-            #          #  remote_tmplog_filename,
-            #      ]
-
-            #      deltahq_command = ' '.join(map(str, command_list))
-            #      print(deltahq_command)
-
-            #      deltahq_childs.append(
-            #          pexpect.spawn(deltahq_command, timeout=None))
-            #      #  deltahq_childs[-1].logfile_read = sys.stdout.buffer
-            #      deltahq_childs[-1].logfile_read = local_tmplog_fildes
-            #      deltahq_childs[-1].expect(
-            #          "Initial Neighbors Update", timeout=None)
 
             command_list = [
                 'parallel',
@@ -213,7 +196,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             print(deltahq_command)
 
             deltahq_child = pexpect.spawn(deltahq_command, timeout=None)
-            #  deltahq_child.logfile_read = sys.stdout.buffer
+            deltahq_child.logfile_read = sys.stdout.buffer
             deltahq_child.logfile_read = local_tmplog_fildes
 
             #  init_expect_list = [str(i) for i in own_ids]
@@ -226,31 +209,61 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
 
             print()
 
-            command_list = [
-                'bash',
-                '-c',
-                '\'',
-                './measure.py',
-                local_scenario_json,
-                node_number,
-                '0',
-                '1',
-                'r',
-                '|',
-                './location_info_base',
-                '-A',
-                address,
-                '-p',
-                port,
-                local_scenario_json,
-                '-a',
-                't',
-                '2>&1',
-                #  '|',
-                #  'tee',
-                #  local_tmplog_filename,
-                '\'',
-            ]
+            if hashmot_addr == 'localhost':
+                command_list = [
+                    'bash',
+                    '-c',
+                    '\'',
+                    './measure.py',
+                    local_scenario_json,
+                    node_number,
+                    '0',
+                    '1',
+                    'r',
+                    '|',
+                    './location_info_base',
+                    '-A',
+                    address,
+                    '-p',
+                    port,
+                    local_scenario_json,
+                    '-a',
+                    't',
+                    '2>&1',
+                    #  '|',
+                    #  'tee',
+                    #  local_tmplog_filename,
+                    '\'',
+                ]
+            else:
+                command_list = [
+                    'ssh',
+                    '-i',
+                    hashmot_identity_file,
+                    hashmot_addr,
+                    '\'',
+                    'bash',
+                    '-c',
+                    '\"',
+                    remote_dir + '/bin/measure.py',
+                    scenario_json,
+                    node_number,
+                    '0',
+                    '1',
+                    'r',
+                    '|',
+                    remote_dir + '/bin/location_info_base',
+                    '-A',
+                    address,
+                    '-p',
+                    port,
+                    scenario_json,
+                    '-a',
+                    't',
+                    '2>&1',
+                    '\"',
+                    '\'',
+                ]
             #  hashmot_command = "./measure.py " + local_scenario_json + " " + str(
             #      node_number
             #  ) + " 0 1 r | ./location_info_base -A " + address + " -p " + str(
@@ -262,7 +275,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             hashmot_child = pexpect.spawn(hashmot_command, timeout=None)
 
             print()
-            #  hashmot_child.logfile_read = sys.stdout.buffer
+            hashmot_child.logfile_read = sys.stdout.buffer
             hashmot_child.logfile_read = local_tmplog_fildes
 
             #  print("spawn hashmot")
