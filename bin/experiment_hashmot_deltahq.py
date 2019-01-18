@@ -18,12 +18,12 @@ remote_dir = '/home/kosay/hashmot'
 remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
 deltaHQ_path = remote_dir + '/bin/deltaHQ'
 
-remote_addr = '172.31.0.11'
-identity_file = '~/.ssh/keys/crab'
+remote_addr = '172.19.1.21'
+identity_file = '~/.ssh/keys/starbed-exp'
 
-hashmot_addr = '172.31.0.11'
-hashmot_addr = 'localhost'
-hashmot_identity_file = '~/.ssh/keys/crab'
+hashmot_addr = '172.19.1.22'
+#  hashmot_addr = 'localhost'
+hashmot_identity_file = '~/.ssh/keys/starbed-exp'
 
 hashmot_path = remote_dir + '/bin/hashmot'
 hashmot_remote_scenario_dir = remote_dir + "/exp_hashmot_deltahq_json"
@@ -151,12 +151,14 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
             log_fildes = open(local_log_filename, 'w')
             log_fildes.close()
 
-            for l in loop_number:
+            os.remove(local_log_filename)
+            log_fildes = open(local_log_filename, 'w')
+
+            for l in range(loop_number):
 
                 local_tmplog_fildes = open(local_tmplog_filename, 'wb')
 
                 #  deltahq_childs = []
-
 
                 command_list = [
                     'ssh',
@@ -173,6 +175,8 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                     '--jobs',
                     str(process_number),
                     #  'echo',
+                    'numactl --localalloc',
+                    '--physcpubind {}',
                     remote_dir + '/bin/deltaHQ',
                     '-t',
                     1,
@@ -291,6 +295,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                     #  ch.expect('Update Wait', timeout=300)
                 #  time.sleep(5)
 
+
                 print('### deltahq update wait')
                 hashmot_child.sendline("\n")
 
@@ -334,11 +339,11 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 for line in tmplog_fildes.readlines():
                     result = repattern.match(line)
                     if result:
-                        log_fildes.write(result.group() + '\n')
+                        #  log_fildes.write(result.group() + '\n')
                         print(result.group())
 
-                    hashmot_result = hashmot_repattern(line)
-                    deltahq_result = deltahq_repattern(line)
+                    hashmot_result = hashmot_repattern.match(line)
+                    deltahq_result = deltahq_repattern.match(line)
 
                     if hashmot_result:
                         ret = hashmot_result.group()
@@ -350,11 +355,20 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                         t = ret.split(' ')[-1]
                         deltahq_time_list.append(float(t))
 
+                print(deltahq_time_list)
+                print("%.9f" % (deltahq_time_list[0]))
+
+
+                #  if 1 < len(deltahq_time_list):
                 execute_time = max(deltahq_time_list) - hashmot_time
+                #  else:
+                #      execute_time = deltahq_time_list[0] - hashmot_time
+
+                log_fildes.write("%.9f\n" % (execute_time))
                 print("loop(%d) time=%.9f" % (l, execute_time))
                 tmplog_fildes.close()
 
-                time.sleep(3)
+                time.sleep(5)
 
 
             log_fildes.close()
@@ -521,13 +535,16 @@ if __name__ == '__main__':
     loop_number = int(sys.argv[5])
 
     if exec_type == 'd':
-        proc_list = [1, 2, 4, 8, 16, 24, 48, 72, 96]
+        proc_list = [1, 2, 4, 8, 12, 18, 24, 48, 72, 96]
     else:
-        proc_list = [1, 2, 4, 8, 16, 24]
+        proc_list = [1, 2, 4, 8, 12, 18, 24]
 
     #  node_list = [100, 200]
     #  proc_list = [1, 2, 4]
-    #  proc_list = [16]
+    proc_list = [8]
+    proc_list = [12, 20]
+    proc_list = [1, 2, 4, 8, 12, 16, 24]
+    node_list = [2000, 5000]
 
     sp.run([
         'ssh', remote_addr, '-i', identity_file, 'mkdir', remote_scenario_dir

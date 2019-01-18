@@ -25,7 +25,7 @@ echo -n > $log_name
 # =======================================================================
 # id選出
 # =======================================================================
-choice_id=(`python3 -c "import numpy as np; print(np.random.choice(range(0, $node_number), $loop, replace=False))" | sed "s/\(\[\)\(.*\)\(\]\)/\2/g"`)
+choice_id=(`python3 -c "import numpy as np;np.random.seed(0); print(np.random.choice(range(0, $node_number), $loop, replace=False))" | sed "s/\(\[\)\(.*\)\(\]\)/\2/g"`)
 
 
 # =======================================================================
@@ -41,8 +41,8 @@ rm ${node_dir}/*.tmplog
 # =======================================================================
 # 実験ループ
 # =======================================================================
-pproc_ary=(1 2 4 8 16 24)
-dproc_ary=(1 2 4 8 16 24)
+pproc_ary=(1 2 4 8 12 18 24)
+dproc_ary=(1 2 4 8 12 18 24)
 for i in `seq 1 $loop`;
 do
 

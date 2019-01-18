@@ -60,7 +60,8 @@ if __name__ == '__main__':
 
     now = datetime.now()
     now_ts = now.timestamp()
-    random.seed(now_ts)
+    random.seed(0)
+    np.random.seed(0)
 
     mt = 0
 
