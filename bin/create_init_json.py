@@ -19,6 +19,8 @@ if len(sys.argv) < 4:
     print("\t$3: radius")
     sys.exit(1)
 
+np.random.seed(0)
+
 node_num = int(sys.argv[1])
 area = float(sys.argv[2])
 radius = int(sys.argv[3])
@@ -33,7 +35,6 @@ root['init']['node'] = []
 root['init']['environment'] = []
 root['init']['connection'] = []
 root['init']['field'] = {'width': length, 'height': length, "area": area}
-
 
 rand_x = np.random.uniform(0, length, node_num)
 rand_y = np.random.uniform(0, length, node_num)
@@ -66,15 +67,14 @@ for i in range(node_num):
         'consider_interference': False
     })
 
-
 root['init']['environment'].append({
-            'name': 'env_outdoor',
-            'is_dynamic': False,
-            'alpha': 3.2,
-            'sigma': 0.0,
-            'W': 0.0,
-            'noise_power': -100.0
-        })
+    'name': 'env_outdoor',
+    'is_dynamic': False,
+    'alpha': 3.2,
+    'sigma': 0.0,
+    'W': 0.0,
+    'noise_power': -100.0,
+})
 
 write_file(fd, root)
 #  fd.write("{\"init\":\"finish\"}\n")
