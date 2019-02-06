@@ -368,7 +368,7 @@ def run(node_number, process_number, machine_id, numbering, exec_type, address,
                 print("loop(%d) time=%.9f" % (l, execute_time))
                 tmplog_fildes.close()
 
-                time.sleep(5)
+                time.sleep(3)
 
 
             log_fildes.close()
@@ -535,7 +535,7 @@ if __name__ == '__main__':
     loop_number = int(sys.argv[5])
 
     if exec_type == 'd':
-        proc_list = [1, 2, 4, 8, 12, 18, 24, 48, 72, 96]
+        proc_list = [1, 2, 4, 8, 12, 16, 20, 24, 48, 72, 96]
     else:
         proc_list = [1, 2, 4, 8, 12, 18, 24]
 
@@ -544,7 +544,9 @@ if __name__ == '__main__':
     proc_list = [8]
     proc_list = [12, 20]
     proc_list = [1, 2, 4, 8, 12, 16, 24]
-    node_list = [2000, 5000]
+    proc_list = [1, 2, 4]
+    proc_list = [12]
+    node_list = [10000]
 
     sp.run([
         'ssh', remote_addr, '-i', identity_file, 'mkdir', remote_scenario_dir
