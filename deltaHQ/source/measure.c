@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2019 kosay  All rights reserved.
+ *
+ * See the file 'LICENSE' for licensing information.
+ *
+ */
 #include "measure.h"
 #include <stdio.h>
 #include <sys/syscall.h>

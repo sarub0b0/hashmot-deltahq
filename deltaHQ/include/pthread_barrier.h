@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2019 kosay  All rights reserved.
+ *
+ * See the file 'LICENSE' for licensing information.
+ *
+ */
 #ifdef __APPLE__
 
 #ifndef PTHREAD_BARRIER_H_

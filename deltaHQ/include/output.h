@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2019 kosay  All rights reserved.
+ *
+ * See the file 'LICENSE' for licensing information.
+ *
+ */
 #ifndef _OUTPUT_H
 #define _OUTPUT_H
 

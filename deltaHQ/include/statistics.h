@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2019 kosay  All rights reserved.
+ *
+ * See the file 'LICENSE' for licensing information.
+ *
+ */
 
 /*
  * Copyright (c) 2006-2013 The StarBED Project  All rights reserved.
