@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,9 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-// #include <set>
-// #include <unordered_set>
 #include <chrono>
 
 #include <using.hh>
@@ -50,8 +47,6 @@ void LSHIndex::Resize(int L) {
         for (int i = L_; i < L; ++i) {
             hash_func.push_back(vector<L2Hash>());
             hash_func[l].reserve(k_ + 1);
-            // hash_func[l].resize(k_);
-            // hash_func[l].clear();
             ++l;
             for (int j = 0; j < k_; ++j) {
                 hash_func[i].push_back(hash_family_->CreateHashFunc());
@@ -62,8 +57,6 @@ void LSHIndex::Resize(int L) {
             Table t;
             t.g = g;
             t.g.reserve(k_ + 1);
-            // t.g.resize(k_);
-            // t.g.clear();
             hash_table_.push_back(t);
         }
     }
@@ -71,14 +64,6 @@ void LSHIndex::Resize(int L) {
 
 array<uint32_t, K_FUNCS> LSHIndex::Hash(vector<L2Hash> &g,
                                         array<float, DIMENSION> &v) {
-    // vector<int> hashes;
-    // hashes.reserve(k_);
-    // for (auto &&h : g) {
-    //     point p(v[0], v[1]);
-    //     hashes.push_back(h.Hash(p));
-    // }
-    // printf("hash=%s\n", hash_family_->Combine(hashes).c_str());
-    // return hash_family_->Combine(hashes);
     array<uint32_t, K_FUNCS> hashes;
     for (int i = 0; i < K_FUNCS; ++i) {
         point p(v[0], v[1]);
@@ -167,23 +152,10 @@ void LSHIndex::Update(int id, array<float, DIMENSION> &point) {
         table.table[new_hash].push_back(id);
     }
 
-    // points_[id] = point;
     old_point = new_point;
-    // for (auto &&table : hash_table_) {
-    //     table.table[Hash(table.g, point)].push_back(id);
-
-    //     // for (auto itr = table.table.begin(); itr != table.table.end();
-    //     //      ++itr) {
-
-    //     //     printf("key=%s: ", itr->first.c_str());
-    //     //     for (auto &&l : itr->second) {
-    //     //         printf("%d ", l);
-    //     //     }
-    //     //     puts("");
-    //     // }
-    // }
 
 #ifdef TCHK_ELAPSED
+
     end = chrono::high_resolution_clock::now();
 
     elapsed = chrono::duration_cast<chrono::nanoseconds>(end - begin);
@@ -194,54 +166,24 @@ void LSHIndex::Update(int id, array<float, DIMENSION> &point) {
 #endif
 }
 
-// vector<int> LSHIndex::Query(array<float, DIMENSION> &q) {
-void LSHIndex::Query(array<float, DIMENSION> &q,
-                     struct send_data &send_data) {
+void LSHIndex::Query(array<float, DIMENSION> &q, struct send_data &send_data) {
     candidate_.clear();
 
     for (auto &&table : hash_table_) {
         list<int> &match = table.table[Hash(table.g, q)];
         candidate_.insert(match.begin(), match.end());
-        // temp_candidate.insert(
-        // temp_candidate.end(), match.begin(), match.end());
     }
-    // temp_candidate.sort();
-    // temp_candidate.unique();
-
-    // puts("Candidate:");
-    // for (auto &&i : temp_candidate) {
-    //     printf("%d ", i);
-    // }
-    // puts("");
-
-    // puts("Hits:");
-
-    // TODO ソートしてからradiusで枝刈りしたほうが早いかもしれない
-    //
-    // vector<int> candidate;
-    // candidate.reserve(temp_candidate.size());
     for (auto &&i : candidate_) {
         float d;
-        // point a, b;
-        // a = point(q[0], q[1]);
-        // b = point(points_[i][0], points_[i][1]);
-        // d = L2Hash::Norm(a, b);
 
         array<float, 2> &a = q;
         array<float, 2> &b = points_[i];
 
-        d = sqrt((a[0] - b[0]) * (a[0] - b[0]) +
-                 (a[1] - b[1]) * (a[1] - b[1]));
+        d = sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]));
         if (d <= radius_ && d != 0.0) {
-            // printf("%d ", i);
-            // neighbor.push_back(i);
             send_data.neighbor[send_data.neighbor_size++] = i;
         }
     }
-
-    // candidate.shrink_to_fit();
-    // puts("");
-    // return candidate;
 }
 
 bool LSHIndex::IsSameRadius(int radius) {

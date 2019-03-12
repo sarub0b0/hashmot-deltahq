@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -46,30 +46,22 @@ struct TreeNode {
     TreeNode *left;
     TreeNode *right;
     int axis;
-    // array<int, 2> range;
-    // list<int> list;
-    // int own_idx;
 
     int depth;
     int remove_count;
     TreeNode() {
-        this->parent = nullptr;
-        this->left   = nullptr;
-        this->right  = nullptr;
-        // this->range        = {-1, -1};
-        // this->own_idx      = -1;
+        this->parent       = nullptr;
+        this->left         = nullptr;
+        this->right        = nullptr;
         this->axis         = -1;
         this->depth        = 0;
         this->remove_count = 0;
     }
     ~TreeNode() {
-        // this->list.clear();
         this->parent = nullptr;
         this->left   = nullptr;
         this->right  = nullptr;
     }
-    // TODO なんかのリストか宛先を持つと早くなる？
-    // 隣のノード？
 };
 
 class KdTreeIndex {
@@ -79,8 +71,6 @@ class KdTreeIndex {
 
     void Index(vector<Node> &nodes);
     void Update(Node &node);
-    // vector<int> Query(Node &query, int radius);
-    // vector<int> Query(Node &query);
     void Query(Node &query, struct send_data &send_data);
     void Clear();
 

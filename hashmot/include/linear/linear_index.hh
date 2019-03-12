@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -38,26 +38,11 @@ class LinearIndex {
 
     void Index(vector<Node> &nodes);
     void Update(Node &node);
-    // void Query(Node &query, vector<int32_t> &neighbor);
     void Query(Node &query, struct send_data &send_data);
     void Clear();
 
    private:
     vector<Node> nodes_;
-    // vector<int> neighbor_;
-
-    // void Search(Node &query, int radius, vector<int> *neighbor);
-
-    // float Distance(array<float, 2> &a, array<float, 2> &b);
-
-    // static int Median(vector<Node> &nodes, int begin, int end);
-    // static vector<Node> &Sort(vector<Node> &nodes,
-    //                            int begin,
-    //                            int end,
-    //                            int axis);
-
-    // static vector<Node> &Sort(vector<Node> &nodes, int axis);
-    // static vector<Node> &Sort(vector<Node> &nodes);
 };
 } // namespace neighbor_search
 

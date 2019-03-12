@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -30,6 +30,7 @@
 #include <neighbor_search.hh>
 #include <dgram.hh>
 #include "kdtree_index.hh"
+
 namespace neighbor_search {
 
 typedef GenericDocument<UTF8<>, MemoryPoolAllocator<>, MemoryPoolAllocator<>>
@@ -53,23 +54,7 @@ class KdTree : public NeighborSearch {
     DGram dgram_;
     bool is_socket_;
 
-    // Node *update_node_;
-
-    // char valueBuffer_[20000];
-    // char parseBuffer_[9000];
-
-    // MemoryPoolAllocator<> valueAllocator_;
-    // MemoryPoolAllocator<> parseAllocator_;
-    // DocumentType json_;
-
-    // string send_init_, send_update_;
-    // char send_init_buffer_[9000];
-    // char send_update_buffer_[9000];
-    // int init_buffer_pos_;
-    // int update_buffer_pos_;
-
     int max_neighbors_;
-    // struct send_data *send_data;
 };
 
 } // namespace neighbor_search

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -28,7 +27,6 @@
 #include <chrono>
 
 #include <rapidjson/document.h>
-// #include <rapidjson/pointer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
@@ -42,37 +40,16 @@ namespace neighbor_search {
 KdTree::KdTree() {
 
     is_socket_ = false;
-    // char init_prefix[]   = "{\"init\":{\"neighbors\":{\"center\":{\"id\":";
-    // char update_prefix[] =
-    // "{\"update\":{\"neighbors\":{\"center\":{\"id\":";
-
-    // strcpy(send_init_buffer_, init_prefix);
-    // strcpy(send_update_buffer_, update_prefix);
-
-    // init_buffer_pos_   = strlen(init_prefix);
-    // update_buffer_pos_ = strlen(update_prefix);
 
     max_neighbors_ = (9000 - sizeof(struct send_data)) / sizeof(int32_t);
 }
 
 KdTree::~KdTree() {
-    // fprintf(stderr, "KdTree Destructor\n");
-    // kdtree_.Clear();
 }
 
 void KdTree::Init(const Value &json) {
 
-    // {"init":{"neighbors":{"center":{"id":99983,"x":8833.24,"y":12147.32},"neighbor":[40646]}}}
-    // {"update":{"neighbors":{"center":{"id":99985,"x":16287.1,"y":18899.9},"neighbor":[42784]}}}
-    // string send_init_   = R"({"init":{"neighbors":{"center":{"id":)";
-    // string send_update_ = R"({"update":{"neighbors":{"center":{"id":)";
     int node_number = json["node"].Size();
-    // printf("node_number(%d)\n", node_number);
-
-    // int node_number = 0;
-    // for (auto &&node : json["node"].GetArray()) {
-    //     ++node_number;
-    // }
 
     nodes_.reserve(node_number + 1);
 
@@ -89,31 +66,11 @@ void KdTree::Init(const Value &json) {
     }
 
     kdtree_.Index(nodes_);
-} // namespace neighbor_search
-// void KdTree::Init(const vector<Node> &nodes) {
+}
 
-//     nodes_ = nodes;
-
-//     // for (auto &&n : nodes) {
-//     //     Node p;
-//     //     p.id  = n.id;
-//     //     p.pos = array<float, 2>{n.x, n.y};
-//     //     points_.push_back(p);
-//     // }
-
-//     kdtree_.Index(nodes_);
-// }
 int KdTree::Update(const Value &json, struct send_data &send_data) {
     int id;
-    // int radius;
-    // float x, y;
     id = json["id"].GetInt();
-    // x      = json["x"].GetDouble();
-    // y      = json["y"].GetDouble();
-    // radius = json["r"].GetInt();
-
-    // Node n(id, array<float, 2>{x, y}, radius);
-    // nodes_[id] = n;
 
     nodes_[id].pos[0] = json["x"].GetDouble();
     nodes_[id].pos[1] = json["y"].GetDouble();
@@ -122,45 +79,20 @@ int KdTree::Update(const Value &json, struct send_data &send_data) {
     send_data.id = id;
     send_data.x  = nodes_[id].pos[0];
     send_data.y  = nodes_[id].pos[1];
-    // fprintf(stderr,
-    //         " ========= Update % d (%.2f, %.2f)========= \n",
-    //         id,
-    //         n.pos[0],
-    //         n.pos[1]);
 
-    // kdtree_.Update(n);
     kdtree_.Update(nodes_[id]);
     return id;
 }
 
-// vector<int> KdTree::GetNeighbor(int id) {
 void KdTree::GetNeighbor(int id, struct send_data &send_data) {
-    // vector<int> neighbor;
-    // int id, r;
-    // float x, y;
-    // id = json["id"].GetInt();
-    // x  = json["x"].GetDouble();
-    // y  = json["y"].GetDouble();
-    // if (json.FindMember("r") != json.MemberEnd()) {
-    //     r = json["r"].GetInt();
-    // } else {
-    //     r = json["radius"].GetInt();
-    // }
     send_data.x = nodes_[id].pos[0];
     send_data.y = nodes_[id].pos[1];
 
-    // array<float, 2> pos{x, y};
-
-    // Node query(id, pos, r);
-
-    // neighbor = kdtree_.Query(nodes_[id]);
     kdtree_.Query(nodes_[id], send_data);
 
-    // if (neighbor.size() == 0) {
     if (send_data.neighbor_size == 0) {
         send_data.neighbor[0] = -1;
         return;
-        // return neighbor;
     }
 #ifdef QUERY_VALIDATION
     kdtree_.Validation(nodes_);
@@ -214,8 +146,8 @@ void KdTree::GetNeighbor(int id, struct send_data &send_data) {
 
     assert(exact.size() == neighbor.size());
 #endif
-    // return neighbor;
-} // namespace neighbor_search
+    return;
+}
 void KdTree::SendDeltaHQ(const struct send_data &send_data) {
 
     int data_len = 0;
@@ -263,7 +195,6 @@ void KdTree::SendDeltaHQ(void) {
     finish_data.type = -1;
     string finish    = R"({"finish":"finish"})";
     if (is_socket_) {
-        // dgram_.SendTo(finish.c_str(), finish.size(), 0);
         dgram_.SendTo(&finish_data, sizeof(struct finish_data), 0);
     }
 #ifndef MEASURE
@@ -275,7 +206,6 @@ void KdTree::SendDeltaHQ(void) {
 }
 void KdTree::InitDGram(const string &host, const string &port) {
     dgram_.Open("AF_INET", true);
-    // dgram_.Bind(host, port);
     dgram_.SetTo(host, port);
     is_socket_ = true;
 }

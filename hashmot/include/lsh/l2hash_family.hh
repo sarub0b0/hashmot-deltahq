@@ -23,8 +23,6 @@
 #ifndef L2HASH_FAMILY_H
 #define L2HASH_FAMILY_H
 
-// #include <vector>
-// #include <string>
 #include <array>
 #include <random>
 
@@ -53,7 +51,6 @@ class L2HashFamily {
     int d_;
 
     std::random_device seed_gen_;
-    // std::default_random_engine engine_;
     std::mt19937 engine_;
     std::normal_distribution<> gauss_;
     std::uniform_real_distribution<> uniform_;

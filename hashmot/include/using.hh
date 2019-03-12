@@ -31,7 +31,6 @@
 #define DIMENSION 2
 #define HASHES 24
 
-// using int32_t = int;
 
 namespace neighbor_search {
 

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,7 +19,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 
 #include <array>
 #include <cmath>
@@ -32,7 +31,6 @@ L2HashFamily::L2HashFamily() : w_(0), d_(0) {
 }
 
 L2HashFamily::L2HashFamily(float w, int d) : w_(w), d_(d) {
-    // engine_ = std::default_random_engine(seed_gen_());
     engine_  = mt19937(seed_gen_());
     gauss_   = normal_distribution<>(0.0, 1.0);
     uniform_ = uniform_real_distribution<>(0.0, w_);
@@ -55,17 +53,5 @@ inline array<float, 2> L2HashFamily::RandVec() {
 inline float L2HashFamily::RandOffset() {
     return uniform_(engine_);
 }
-
-// string L2HashFamily::Combine(vector<int> &hashes) {
-//     // string key;
-//     string key(15, '\0');
-//     // key = "[";
-//     for (auto &&i : hashes) {
-//         key += to_string(i) + ",";
-//     }
-//     key.pop_back();
-//     // key += "]";
-//     return key;
-// }
 
 } // namespace neighbor_search

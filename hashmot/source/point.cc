@@ -33,12 +33,6 @@ point::point(float x_, float y_) : x(x_), y(y_) {
 point::~point() {
 }
 
-// point &point::operator=(point &p) {
-//     return p;
-// }
-// point point::operator=(point p) {
-//     return p;
-// }
 point point::operator+(point p) {
     return point(x + p.x, y + p.y);
 }

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,51 +26,8 @@
 #include <array>
 #include <unordered_map>
 
-#include <using.hh>
+#include "using.hh"
 
-namespace neighbor_search {
-
-// struct umap_key {
-//     std::vector<int> key;
-//     umap_key() {
-//         key.reserve(3);
-//     }
-// };
-
-// inline bool operator==(const umap_key &lhs, const umap_key &rhs) {
-
-//     int lhs_size = lhs.key.size();
-//     int rhs_size = rhs.key.size();
-
-//     if (lhs_size != rhs_size) {
-//         return false;
-//     }
-
-//     for (int i = 0; i < lhs_size; ++i) {
-//         if (lhs.key[i] != rhs.key[i]) {
-//             return false;
-//         }
-//     }
-
-//     return true;
-// }
-
-// } // namespace neighbor_search
-// namespace std {
-// template <>
-// struct hash<neighbor_search::umap_key> {
-//     size_t operator()(const neighbor_search::umap_key &key) const {
-//         size_t seed = 0;
-
-//         for (auto &&k : key.key) {
-//             seed ^= k + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-//         }
-
-//         return seed;
-//     }
-// };
-
-} // namespace neighbor_search
 namespace std {
 
 inline bool operator==(const array<uint32_t, K_FUNCS> &lhs,
@@ -99,37 +56,4 @@ struct hash<array<uint32_t, K_FUNCS>> {
 };
 
 } // namespace std
-// namespace std {
-// inline bool operator==(const vector<int> &lhs, const vector<int> &rhs) {
-
-//     int lhs_size = lhs.size();
-//     int rhs_size = rhs.size();
-
-//     if (lhs_size != rhs_size) {
-//         return false;
-//     }
-
-//     for (int i = 0; i < lhs_size; ++i) {
-//         if (lhs[i] != rhs[i]) {
-//             return false;
-//         }
-//     }
-
-//     return true;
-// }
-// template <>
-// struct hash<vector<int>> {
-//     size_t operator()(const vector<int> &vec) const {
-//         size_t seed = 0;
-
-//         for (auto &&v : vec) {
-//             seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-//         }
-
-//         return seed;
-//     }
-// };
-
-// } // namespace std
-
 #endif

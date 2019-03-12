@@ -36,12 +36,6 @@ L2Hash::~L2Hash() {
 }
 
 int L2Hash::Hash(point &vec) {
-    // printf("hash=%d vec=(%.2f, %.2f) rand=(%.2f, %.2f)\n",
-    //        int(Dot(vec, rand_) + b_ / w_),
-    //        vec.x,
-    //        vec.y,
-    //        rand_.x,
-    //        rand_.y);
 
     return int((Dot(vec, rand_) + b_) / w_);
 }

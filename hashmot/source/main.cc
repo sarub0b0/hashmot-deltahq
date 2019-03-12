@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,7 +19,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 
 #include <time.h>
 
@@ -32,7 +31,6 @@
 #include <thread>
 
 #include <rapidjson/document.h>
-// #include <rapidjson/pointer.h>
 #include <rapidjson/error/en.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/stringbuffer.h>
@@ -43,10 +41,9 @@
 
 #include <using.hh>
 #include <neighbor_search.hh>
-// #include <lsh/lsh.hh>
-// #include <lsh/lsh_index.hh>
+#include <lsh/lsh.hh>
 #include <kdtree/kdtree.hh>
-// #include <linear/linear.hh>
+#include <linear/linear.hh>
 
 #define FLOAT(x) static_cast<float>(x)
 
@@ -58,14 +55,7 @@ typedef GenericDocument<UTF8<>, MemoryPoolAllocator<>, MemoryPoolAllocator<>>
 void usage(FILE *f) {
     fprintf(f, "\nUsage: location_info_base [options] <init_file.json>\n");
     fprintf(f, "General options:\n");
-    fprintf(f,
-            "  -h, --help             - print this help message and exit\n");
-    // fprintf(f,
-    //         " -v, --version          - print version information and
-    //         exit\n");
-    // fprintf(f,
-    //         " -l, --license          - print license information and
-    //         exit\n");
+    fprintf(f, "  -h, --help             - print this help message and exit\n");
     fprintf(f, "\nOutput control: (default stdout)\n");
     fprintf(f,
             "  -A --ipaddr     <xxx.xxx.xxx.xxx> - ip address for sending "
@@ -82,18 +72,6 @@ void usage(FILE *f) {
             "  -a --algorithm <type>             - lsh, kdtree, linear | h, "
             "t, l\n");
     fprintf(f, "\n");
-    // fprintf(stderr, "arguments $1 $2\n");
-    // fprintf(stderr, "arguments $1 $2 $3 $4\n");
-    // fprintf(stderr, "$1: Set init file ! \n");
-    // fprintf(stderr, "$2: Set neighbor search algrothm ! \n");
-    // fprintf(stderr, "\th: LSH\n");
-    // fprintf(stderr, "\tt: kd-tree\n");
-    // fprintf(stderr, "\tl: linear\n");
-    // fprintf(stderr, "$3: Set ip address\n");
-    // fprintf(stderr, "$4: Set port\n");
-    // fprintf(stderr, "$2: Set single or multi line json\n");
-    // fprintf(stderr, "\ts: single line\n");
-    // fprintf(stderr, "\tm: multi line\n");
 }
 
 const struct option long_options[] = {
@@ -104,9 +82,6 @@ const struct option long_options[] = {
     {"listen", 1, 0, 'L'},
     {"algorithm", 1, 0, 'a'},
     {"job-id", 1, 0, 'i'},
-    // {"version",   0,   0,   'v'},
-    // {"license",   0,   0,   'l'},
-    // {"process",   1,   0,   't'},
     {0, 0, 0, 0},
 };
 
@@ -118,17 +93,16 @@ int main(int argc, char *const argv[]) {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    //* lsh.hh define
-    // int d = DIMENSION;
-    // int k = K_FUNCS;
-    // int L = HASHES;
+    // defined in include/using.hh
+    int d = DIMENSION;
+    int k = K_FUNCS;
+    int L = HASHES;
 
     string init_file;
 
     NeighborSearch *ns;
 
-    struct send_data *send_data =
-        static_cast<struct send_data *>(malloc(9000));
+    struct send_data *send_data = static_cast<struct send_data *>(malloc(9000));
 
     send_data                = static_cast<struct send_data *>(malloc(9000));
     send_data->type          = -1;
@@ -188,18 +162,6 @@ int main(int argc, char *const argv[]) {
         }
     }
 
-    // fprintf(
-    //     stderr,
-    //     "argc=%d\nalgorithm=%s\nprocces_number=%d\nlisten_port=%s\nipaddr=%"
-    //     "s\nport=%s\n",
-    //     argc,
-    //     algorithm.c_str(),
-    //     process_number,
-    //     listen_port.c_str(),
-    //     ipaddr.c_str(),
-    //     port.c_str());
-
-    // fprintf(stderr, "optind=%d\n", gopt.opt_ind);
     if (gopt.opt_ind == argc) {
         fprintf(stderr, "ERROR unset filename\n");
         exit(1);
@@ -209,11 +171,11 @@ int main(int argc, char *const argv[]) {
     fprintf(stderr, "-- Read file %s\n", init_file.c_str());
 
     if (algorithm == "h" || algorithm == "lsh") {
-        // ns = new LSH(d, k, L);
+        ns = new LSH(d, k, L);
     } else if (algorithm == "t" || algorithm == "kdtree") {
         ns = new KdTree();
     } else if (algorithm == "l" || algorithm == "linear") {
-        // ns = new Linear();
+        ns = new Linear();
     } else {
         fprintf(stderr, "ERROR unsupport algorithm\n");
         exit(1);
@@ -238,20 +200,7 @@ int main(int argc, char *const argv[]) {
         is_listen = true;
     }
 
-    // bool is_multiline = false;
-    // switch (argv[1][0]) {
-    //     case 's':
-    //         break;
-    //     case 'm':
-    //         is_multiline = true;
-    //         break;
-    //     default:
-    //         usage();
-    //         exit(1);
-    // }
-
     vector<Node> init_nodes;
-    // vector<int32_t> neighbor;
 
     ifstream ifs(init_file);
     IStreamWrapper isw(ifs);
@@ -306,60 +255,17 @@ int main(int argc, char *const argv[]) {
                 const Value &value = v.value;
 
                 if (key == "node") {
-                    // min_x = FLT_MAX;
-                    // min_y = FLT_MAX;
-                    // max_x = 0;
-                    // max_y = 0;
-                    // int x, y;
-                    // for (auto &&node : value["node"].GetArray()) {
-                    //     x = FLOAT(node["x"].GetDouble());
-                    //     y = FLOAT(node["y"].GetDouble());
-                    //     if (x < min_x) {
-                    //         min_x = x;
-                    //     }
-                    //     if (max_x < x) {
-                    //         max_x = x;
-                    //     }
-                    //     if (y < min_y) {
-                    //         min_y = y;
-                    //     }
-                    //     if (max_y < y) {
-                    //         max_y = y;
-                    //     }
-                    //     node_size++;
-                    // }
-
-                    // field_size[0] = max_x - min_x;
-                    // field_size[1] = max_y - min_y;
                     node_number = value.Size();
-                    // neighbor.reserve(node_number + 1);
-                    // neighbor.resize(node_number);
-                    // neighbor.clear();
-
 #ifndef MEASURE
                     int id = 0;
                     if (job_id == 1 || job_id == -1) {
                         for (int i = 0; i < node_number; i++) {
-
-                            // }
-                            // for (auto &&n : value.GetArray()) {
-                            // Value node(n, init_json.GetAllocator());
-                            // node.AddMember("id", node_number,
-                            // init_json.GetAllocator());
-
-                            // neighbor.clear();
                             send_data->id            = id;
                             send_data->neighbor_size = 0;
 
                             ns->GetNeighbor(id, *send_data);
-                            // const vector<int> &neighbor =
-                            // ns->GetNeighbor(node_number);
-                            // sort(neighbor.begin(), neighbor.end());
-
                             ns->SendDeltaHQ(*send_data);
                             ++id;
-
-                            // std::this_thread::sleep_for(std::chrono::microseconds(5000));
                         }
                     }
 #endif
@@ -408,17 +314,10 @@ int main(int argc, char *const argv[]) {
         assign_map.resize(node_number, 0);
         is_assign = true;
 
-        // fprintf(stderr,
-        //         "process_number=%d node_number=%d\n",
-        //         process_number,
-        //         node_number);
-
         int div = node_number / process_number;
         if (node_number % 2 == 1 && job_id % 2 == 1) {
             div += 1;
         }
-        // fprintf(stderr, "assign_map: ");
-        // fprintf(stderr, "div=%d\n", div);
         int assign_idx         = job_id - 1;
         assign_map[assign_idx] = 1;
         for (int i = 0; i < div; i++) {
@@ -429,13 +328,7 @@ int main(int argc, char *const argv[]) {
             }
             assign_map[assign_idx] = 1;
         }
-
-        // for (auto &&a : assign_map) {
-        //     fprintf(stderr, "%d ", a);
-        // }
-        // fprintf(stderr, "\n");
     }
-
     fprintf(stderr, "\n-- Update Wait --\n");
 
 #ifdef MEASURE
@@ -450,26 +343,18 @@ int main(int argc, char *const argv[]) {
     chrono::nanoseconds search_elapsed;
     chrono::nanoseconds send_elapsed;
 
-    measure_elapsed =
-        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
-    update_elapsed =
-        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
-    parse_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
-    search_elapsed =
-        chrono::duration_cast<chrono::nanoseconds>(begin - begin);
-    send_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    measure_elapsed = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    update_elapsed  = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    parse_elapsed   = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    search_elapsed  = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
+    send_elapsed    = chrono::duration_cast<chrono::nanoseconds>(begin - begin);
 
 #endif
 #ifdef MEASURE2
     struct timespec start_ts;
 #endif
-    // #ifdef TCHK_ELAPSED
-    //     chrono::high_resolution_clock::time_point begin, end;
-    //     std::chrono::nanoseconds parse_elapsed;
-    // #endif
     bool loop_start = false;
-    // vector<int> neighbor;
-    // string read;
+
     char read[9000] = {0};
 
     char valueBuffer[20000] = {0};
@@ -488,7 +373,6 @@ int main(int argc, char *const argv[]) {
         ///////////////////////////////////////
         // Read stream
         ///////////////////////////////////////
-        // getline(cin, read);
         if (loop_start == false) {
 #ifdef MEASURE
             begin      = chrono::high_resolution_clock::now();
@@ -504,11 +388,9 @@ int main(int argc, char *const argv[]) {
             }
             read[recv_length] = '\0';
 
-            // fprintf(stderr, "read: %s\n", read);
         } else {
             while (fgets(read, 9000, stdin) == NULL) {
             }
-            // fprintf(stderr, "read: %s\n", read);
         }
 
 #ifdef MEASURE2
@@ -517,46 +399,29 @@ int main(int argc, char *const argv[]) {
             clock_gettime(CLOCK_REALTIME, &start_ts);
         }
 #endif
-        // #ifdef TCHK_ELAPSED
-        //         begin = chrono::high_resolution_clock::now();
-
-        // #endif
 #ifdef MEASURE
         parse_begin = chrono::high_resolution_clock::now();
 #endif
-        // Json json;
         json.Parse(read);
-        // json.Parse(read.c_str());
-        // json.Parse(init.c_str());
 
 #ifdef MEASURE
         parse_end = chrono::high_resolution_clock::now();
-        parse_elapsed += chrono::duration_cast<chrono::nanoseconds>(
-            parse_end - parse_begin);
+        parse_elapsed +=
+            chrono::duration_cast<chrono::nanoseconds>(parse_end - parse_begin);
 #endif
-        // #ifdef TCHK_ELAPSED
-        //         end = chrono::high_resolution_clock::now();
-        //         parse_elapsed =
-        //             std::chrono::duration_cast<std::chrono::nanoseconds>(end
-        //             - begin);
-        //         printf("parse:%lld.%09lld\n",
-        //                parse_elapsed.count() / 1000000000,
-        //                parse_elapsed.count() % 1000000000);
-        // #endif
         ///////////////////////////////////////
         // Check parse error
         ///////////////////////////////////////
-        // bool error = json.HasParseError();
-        // if (error) {
-        //     size_t offset       = json.GetErrorOffset();
-        //     ParseErrorCode code = json.GetParseError();
-        //     const char *msg     = GetParseError_En(code);
+        bool error = json.HasParseError();
+        if (error) {
+            size_t offset       = json.GetErrorOffset();
+            ParseErrorCode code = json.GetParseError();
+            const char *msg     = GetParseError_En(code);
 
-        //     printf("%lu:%d(%s)\n", offset, code, msg);
-        //     exit(1);
-        // }
+            printf("%lu:%d(%s)\n", offset, code, msg);
+            exit(1);
+        }
 
-        // const Value &root = json;
         for (Value::ConstMemberIterator iter = json.MemberBegin();
              iter != json.MemberEnd();
              ++iter) {
@@ -564,15 +429,6 @@ int main(int argc, char *const argv[]) {
             const Value &value = iter->value;
 
             if (key == "update") {
-                // std::cout << key << std::endl;
-                // if (!value.HasMember("node")) {
-                //     continue;
-                // }
-                // #ifdef TCHK_ELAPSED
-                //                 chrono::high_resolution_clock::time_point
-                //                 begin =
-                //                     chrono::high_resolution_clock::now();
-                // #endif
 
 #ifdef MEASURE
                 update_begin = chrono::high_resolution_clock::now();
@@ -586,24 +442,6 @@ int main(int argc, char *const argv[]) {
                 update_elapsed += chrono::duration_cast<chrono::nanoseconds>(
                     update_end - update_begin);
 #endif
-                // #ifdef TCHK_ELAPSED
-                //                 chrono::high_resolution_clock::time_point
-                //                 end =
-                //                     chrono::high_resolution_clock::now();
-
-                //                 chrono::nanoseconds update_elapsed =
-                //                     chrono::duration_cast<chrono::nanoseconds>(end
-                //                     - begin);
-
-                //                 // fprintf(stderr, "update elapsed:
-                //                 %lld\n",
-                //                 // elapsed.count());
-                // #endif
-
-                // #ifdef TCHK_ELAPSED
-                //                 begin =
-                //                 chrono::high_resolution_clock::now();
-                // #endif
                 if (is_assign) {
                     if (assign_map[update_id] == 1) {
 
@@ -611,10 +449,6 @@ int main(int argc, char *const argv[]) {
                         search_begin = chrono::high_resolution_clock::now();
 #endif
 
-                        // neighbor.shrink_to_fit();
-                        // const vector<int> &neighbor =
-                        // ns->GetNeighbor(update_id);
-                        // neighbor.clear();
                         send_data->neighbor_size = 0;
                         ns->GetNeighbor(update_id, *send_data);
 
@@ -647,10 +481,6 @@ int main(int argc, char *const argv[]) {
                     search_begin = chrono::high_resolution_clock::now();
 #endif
 
-                    // neighbor.shrink_to_fit();
-                    // const vector<int> &neighbor =
-                    // ns->GetNeighbor(update_id);
-                    // neighbor.clear();
                     send_data->neighbor_size = 0;
                     ns->GetNeighbor(update_id, *send_data);
 
@@ -664,9 +494,6 @@ int main(int argc, char *const argv[]) {
                     if (send_data->neighbor[0] != -1) {
                         neighbor_count += send_data->neighbor_size;
                     }
-                    // if (neighbor[0] != -1) {
-                    //     neighbor_count += neighbor.size();
-                    // }
 
 #ifdef MEASURE
                     send_begin = chrono::high_resolution_clock::now();
@@ -675,9 +502,8 @@ int main(int argc, char *const argv[]) {
 
 #ifdef MEASURE
                     send_end = chrono::high_resolution_clock::now();
-                    send_elapsed +=
-                        chrono::duration_cast<chrono::nanoseconds>(
-                            send_end - send_begin);
+                    send_elapsed += chrono::duration_cast<chrono::nanoseconds>(
+                        send_end - send_begin);
 #endif
                     search_loop_count++;
                 }
@@ -813,14 +639,6 @@ int main(int argc, char *const argv[]) {
                         start_ts.tv_sec,
                         start_ts.tv_nsec);
 
-                // struct tm start_tm;
-                // localtime_r(&start_ts.tv_sec, &start_tm);
-                // fprintf(stderr,
-                //         "hashmot: %02d:%02d:%02d.%09ld\n",
-                //         start_tm.tm_hour,
-                //         start_tm.tm_min,
-                //         start_tm.tm_sec,
-                //         start_ts.tv_nsec);
 #endif
 
                 for (int i = 0; i < 10; i++) {

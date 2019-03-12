@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,8 +25,8 @@
 #include <cstdio>
 #include <array>
 
-#include <using.hh>
-#include <dgram.hh>
+#include "using.hh"
+#include "dgram.hh"
 
 namespace neighbor_search {
 
@@ -46,9 +46,8 @@ struct finish_data {
 struct Node {
     int id;
     array<float, 2> pos;
-    // float x, y;
     int radius;
-    // Node() : id(-1), x(0.0), y(0.0), radius(0) {
+
     Node() : id(-1), radius(0) {
         this->pos[0] = 0.0;
         this->pos[1] = 0.0;
@@ -65,15 +64,8 @@ struct Node {
     }
 };
 
-// struct Node {
-//     int id;
-//     float x, y;
-//     int radius;
-// };
-
 class NeighborSearch {
    public:
-    // NeighborSearch();
     virtual ~NeighborSearch(){};
 
     virtual void Init(const Value &json) {
@@ -90,9 +82,6 @@ class NeighborSearch {
     virtual void SendDeltaHQ(void){};
     virtual void InitDGram(const string &host, const string &port){};
 
-    // DGram dgram_;
-    // bool is_socket_;
-    // int max_neighbors_;
 }; // namespace neighbor_search
 }; // namespace neighbor_search
 #endif

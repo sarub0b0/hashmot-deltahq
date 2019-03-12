@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -76,7 +76,6 @@ loop_start:
     std::string arg(argv[current_index]);
 
     if (arg[0] == '-' && arg[1] == '-') {
-        // fprintf(stderr, "curr long opt\n");
         std::string arg_name(&arg[2]);
 
         for (int i = 0; longopts[i].name != 0; i++) {
@@ -97,7 +96,6 @@ loop_start:
         }
 
     } else if (arg[0] == '-') {
-        // fprintf(stderr, "curr short opt\n");
         char opt = arg[1];
 
         for (int i = 0; optstring[i] != '\0'; i++) {
@@ -113,10 +111,6 @@ loop_start:
                         return -1;
                     }
                 }
-
-                // printf("opt=%c\n", opt);
-                // printf("optstr=%c\n", optstr);
-                // printf("optarg=%s\n", opt_arg);
                 current_index++;
                 return opt;
             }
@@ -132,8 +126,6 @@ loop_start:
         }
         goto loop_start;
     }
-
-    // printf("%s\n", arg.c_str());
 
     return opt_opt;
 }

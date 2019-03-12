@@ -27,7 +27,6 @@
 #include <array>
 
 #include <rapidjson/document.h>
-// #include <rapidjson/pointer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
@@ -46,13 +45,7 @@ Linear::~Linear() {
 void Linear::Init(const Value &json) {
 
     int node_number = json["node"].Size();
-    // printf("node_number(%d)\n", node_number);
-    // for (auto &&node : json["node"].GetArray()) {
-    //     ++node_number;
-    // }
-
     nodes_.reserve(node_number + 1);
-    // neighbor_.reserve(node_number);
 
     int id = 0;
     for (auto &&n : json["node"].GetArray()) {
@@ -68,23 +61,11 @@ void Linear::Init(const Value &json) {
 
     linear_.Index(nodes_);
 }
-// void Linear::Init(const vector<Node> &nodes) {
-//     nodes_ = nodes;
 
-//     for (auto &&n : nodes) {
-//         Node p;
-//         p.id  = n.id;
-//         p.pos = n.pos;
-//         nodes_.push_back(p);
-//     }
-//     linear_.Index(nodes_);
-// }
 int Linear::Update(const Value &json, struct send_data &send_data) {
     int id;
-    // float x, y;
     id = json["id"].GetInt();
-    // x                 = json["x"].GetDouble();
-    // y                 = json["y"].GetDouble();
+
     nodes_[id].pos[0] = json["x"].GetDouble();
     nodes_[id].pos[1] = json["y"].GetDouble();
     nodes_[id].radius = json["r"].GetInt();
@@ -92,14 +73,11 @@ int Linear::Update(const Value &json, struct send_data &send_data) {
     send_data.id = id;
     send_data.x  = nodes_[id].pos[0];
     send_data.y  = nodes_[id].pos[1];
-    // array<float, 2> pos{x, y};
-    // Node p(id, pos);
-    // nodes_[id] = p;
 
     linear_.Update(nodes_[id]);
     return id;
 }
-// vector<int> Linear::GetNeighbor(int id) {
+
 void Linear::GetNeighbor(int id, struct send_data &send_data) {
     int r;
     r = nodes_[id].radius;
@@ -107,15 +85,11 @@ void Linear::GetNeighbor(int id, struct send_data &send_data) {
     send_data.x = nodes_[id].pos[0];
     send_data.y = nodes_[id].pos[1];
 
-    // neighbor->clear();
-    // neighbor_ = linear_.Query(nodes_[id], r);
     linear_.Query(nodes_[id], send_data);
     if (send_data.neighbor_size == 0) {
         send_data.neighbor[0] = -1;
         return;
-        // return neighbor;
     }
-    // return neighbor_;
 }
 void Linear::SendDeltaHQ(const struct send_data &send_data) {
 
@@ -164,7 +138,6 @@ void Linear::SendDeltaHQ(void) {
     finish_data.type = -1;
     string finish    = R"({"finish":"finish"})";
     if (is_socket_) {
-        // dgram_.SendTo(finish.c_str(), finish.size(), 0);
         dgram_.SendTo(&finish_data, sizeof(struct finish_data), 0);
     }
 #ifndef MEASURE
@@ -176,7 +149,6 @@ void Linear::SendDeltaHQ(void) {
 }
 void Linear::InitDGram(const string &host, const string &port) {
     dgram_.Open("AF_INET", true);
-    // dgram_.Bind(host, port);
     dgram_.SetTo(host, port);
     is_socket_ = true;
 }

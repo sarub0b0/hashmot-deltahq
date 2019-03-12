@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,8 +22,6 @@
 
 #ifndef LSH_INDEX_H
 #define LSH_INDEX_H
-
-// #include <bits/stdc++.h>
 
 #include <array>
 #include <string>
@@ -41,7 +39,6 @@ namespace neighbor_search {
 struct Table {
     vector<L2Hash> g;
     unordered_map<array<uint32_t, K_FUNCS>, list<int>> table;
-    // unordered_map<vector<int>, list<int>> table;
 };
 
 class LSHIndex {
@@ -52,13 +49,11 @@ class LSHIndex {
 
     void Resize(int L);
 
-    // vector<int> Hash(vector<L2Hash> &g, array<float, 2> &v);
     array<uint32_t, K_FUNCS> Hash(vector<L2Hash> &g,
                                   array<float, DIMENSION> &v);
 
     void Index(vector<array<float, DIMENSION>> &points);
     void Update(int id, array<float, DIMENSION> &point);
-    // void Query(array<float, DIMENSION> &q, vector<int32_t> &neighbor);
     void Query(array<float, DIMENSION> &q, struct send_data &send_data);
 
     bool IsSameRadius(int radius);

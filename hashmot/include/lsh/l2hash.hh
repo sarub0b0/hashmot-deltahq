@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -34,14 +34,9 @@ namespace neighbor_search {
 class L2Hash {
    public:
     L2Hash(array<float, 2> rand, float offset, float w);
-    // L2Hash(const L2Hash &l2hash);
     ~L2Hash();
 
     int Hash(point &vec);
-
-    // L2Hash &operator=(const L2Hash &) {
-    //     return *this;
-    // }
 
     static float Norm(point &a, point &b);
 
